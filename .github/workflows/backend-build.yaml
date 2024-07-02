@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-      - '.github/workflow/backend-build.yaml'
+      - '.github/workflows/backend-build.yaml'
       - 'backend/**'
 
 defaults:
