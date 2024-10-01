@@ -12,6 +12,11 @@ type skillUnlockTurnModifierEffect struct {
 	delta int
 }
 
+// Desc returns the effect's description.
+func (e skillUnlockTurnModifierEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
 // ModifySkillUnlockTurn returns the modified turn number when skill is to be unlocked.
 func (e skillUnlockTurnModifierEffect) ModifySkillUnlockTurn(unlockTurn int) int {
 	return unlockTurn + e.delta
@@ -19,6 +24,11 @@ func (e skillUnlockTurnModifierEffect) ModifySkillUnlockTurn(unlockTurn int) int
 
 type skillAvailabilityFilterEffect struct {
 	isAvailable bool
+}
+
+// Desc returns the effect's description.
+func (e skillAvailabilityFilterEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
 }
 
 // IsSkillAvailable reports whether the skill can be used.

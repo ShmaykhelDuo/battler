@@ -47,6 +47,11 @@ func TestNewCharacter(t *testing.T) {
 type defenceModifierEffect struct {
 }
 
+// Desc returns the effect's description.
+func (e defenceModifierEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
 // ModifyDefences returns the modified defences.
 func (e defenceModifierEffect) ModifyDefences(def map[game.Colour]int) {
 	def[game.ColourBlack] += 1
@@ -103,6 +108,79 @@ func TestCharacter_Defences(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.defences, c.Defences())
+		})
+	}
+}
+
+type descriptionEffect struct {
+	desc game.EffectDescription
+}
+
+// Desc returns the effect's description.
+func (e descriptionEffect) Desc() game.EffectDescription {
+	return e.desc
+}
+
+func TestCharacter_Effect(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		effs []game.Effect
+		desc game.EffectDescription
+		eff  game.Effect
+	}{
+		{
+			name: "Empty",
+			desc: game.EffectDescription{Name: "TestName1"},
+			eff:  nil,
+		},
+		{
+			name: "Found",
+			effs: []game.Effect{
+				descriptionEffect{
+					desc: game.EffectDescription{Name: "TestName1"},
+				},
+				descriptionEffect{
+					desc: game.EffectDescription{Name: "TestName2"},
+				},
+				descriptionEffect{
+					desc: game.EffectDescription{Name: "TestName3"},
+				},
+			},
+			desc: game.EffectDescription{Name: "TestName2"},
+			eff: descriptionEffect{
+				desc: game.EffectDescription{Name: "TestName2"},
+			},
+		},
+		{
+			name: "NotFound",
+			effs: []game.Effect{
+				descriptionEffect{
+					desc: game.EffectDescription{Name: "TestName1"},
+				},
+				descriptionEffect{
+					desc: game.EffectDescription{Name: "TestName3"},
+				},
+			},
+			desc: game.EffectDescription{Name: "TestName2"},
+			eff:  nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			data := game.CharacterData{}
+			c := game.NewCharacter(data)
+
+			for _, e := range tt.effs {
+				c.AddEffect(e)
+			}
+
+			eff := c.Effect(tt.desc)
+			assert.Equal(t, tt.eff, eff)
 		})
 	}
 }
@@ -183,8 +261,18 @@ func TestCharacter_SetMaxHP(t *testing.T) {
 
 type testEffect struct{}
 
+// Desc returns the effect's description.
+func (e testEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
 type effectFilterEffect struct {
 	isAllowed bool
+}
+
+// Desc returns the effect's description.
+func (e effectFilterEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
 }
 
 // IsEffectAllowed reports whether the effect can be applied to a character.
@@ -250,6 +338,11 @@ type dealtDamageModifierEffect struct {
 	delta int
 }
 
+// Desc returns the effect's description.
+func (e dealtDamageModifierEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
 // ModifyDealtDamage returns the modified amount of damage based on provided amount of damage and damage colour.
 func (e dealtDamageModifierEffect) ModifyDealtDamage(dmg int, colour game.Colour) int {
 	return dmg + e.delta
@@ -257,6 +350,11 @@ func (e dealtDamageModifierEffect) ModifyDealtDamage(dmg int, colour game.Colour
 
 type takenDamageModifierEffect struct {
 	delta int
+}
+
+// Desc returns the effect's description.
+func (e takenDamageModifierEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
 }
 
 // ModifyTakenDamage returns the modified amount of damage based on provided amount of damage and damage colour.
@@ -396,6 +494,11 @@ type healFilterEffect struct {
 	isAllowed bool
 }
 
+// Desc returns the effect's description.
+func (e healFilterEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
 // IsHealAllowed reports whether the healing is allowed based on provided amount of healing.
 func (e healFilterEffect) IsHealAllowed(heal int) bool {
 	return e.isAllowed
@@ -495,6 +598,11 @@ func TestCharacter_Heal(t *testing.T) {
 type turnEndHandlerEffect struct {
 	gotC, gotOpp *game.Character
 	gotGameCtx   game.Context
+}
+
+// Desc returns the effect's description.
+func (e *turnEndHandlerEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
 }
 
 // OnTurnEnd executes the end-of-turn action.

@@ -117,6 +117,18 @@ func (c *Character) Effects() []Effect {
 	return c.effects
 }
 
+// Effect returns an applied effect with matching description.
+// If no such effect is found, nil is returned.
+func (c *Character) Effect(desc EffectDescription) Effect {
+	for _, e := range c.effects {
+		if e.Desc() == desc {
+			return e
+		}
+	}
+
+	return nil
+}
+
 // Skills returns an array of skills provided by the character.
 func (c *Character) Skills() [SkillCount]*Skill {
 	return c.skills
