@@ -27,7 +27,7 @@ type SkillAvailabilityFilter interface {
 // SkillUnlockTurnModifier modified the turn number when skill is to be unlocked.
 type SkillUnlockTurnModifier interface {
 	// ModifySkillUnlockTurn returns the modified turn number when skill is to be unlocked.
-	ModifySkillUnlockTurn(unlockTurn int) int
+	ModifySkillUnlockTurn(s *Skill, unlockTurn int) int
 }
 
 // ErrSkillNotAvailable is an error which is returned when skill is not available.
@@ -80,7 +80,7 @@ func (s *Skill) UnlockTurn() int {
 	for _, e := range s.c.Effects() {
 		mod, ok := e.(SkillUnlockTurnModifier)
 		if ok {
-			turn = mod.ModifySkillUnlockTurn(turn)
+			turn = mod.ModifySkillUnlockTurn(s, turn)
 		}
 	}
 

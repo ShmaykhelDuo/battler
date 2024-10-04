@@ -7,5 +7,6 @@ const (
 
 // Context contains any additional data needed to be used.
 type Context struct {
-	TurnNum int // the current character's turn number
+	TurnNum      int  // the current character's turn number
+	IsGoingFirst bool // whether the current character is going first
 }

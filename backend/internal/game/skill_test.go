@@ -18,7 +18,7 @@ func (e skillUnlockTurnModifierEffect) Desc() game.EffectDescription {
 }
 
 // ModifySkillUnlockTurn returns the modified turn number when skill is to be unlocked.
-func (e skillUnlockTurnModifierEffect) ModifySkillUnlockTurn(unlockTurn int) int {
+func (e skillUnlockTurnModifierEffect) ModifySkillUnlockTurn(s *game.Skill, unlockTurn int) int {
 	return unlockTurn + e.delta
 }
 
