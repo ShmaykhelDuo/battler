@@ -1,0 +1,340 @@
+package euphoria_test
+
+import (
+	"testing"
+
+	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/characters/euphoria"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestSkillAmpleness_Use(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name                 string
+		oppData              game.CharacterData
+		initMaxHP            int
+		initOppMaxHP         int
+		effs                 []game.Effect
+		gameCtx              game.Context
+		maxHP                int
+		oppMaxHP             int
+		euphoricSourceAmount int
+	}{
+		{
+			name: "Opponent1",
+			oppData: game.CharacterData{
+				Desc: game.CharacterDescription{
+					Number: 33,
+				},
+				DefaultHP: 113,
+			},
+			initMaxHP:            117,
+			initOppMaxHP:         113,
+			maxHP:                129,
+			oppMaxHP:             125,
+			euphoricSourceAmount: 12,
+		},
+		{
+			name: "Opponent2",
+			oppData: game.CharacterData{
+				Desc: game.CharacterDescription{
+					Number: 51,
+				},
+				DefaultHP: 114,
+			},
+			effs: []game.Effect{
+				euphoria.NewEffectEuphoricSource(12),
+			},
+			initMaxHP:            129,
+			initOppMaxHP:         104,
+			maxHP:                141,
+			oppMaxHP:             116,
+			euphoricSourceAmount: 24,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := game.NewCharacter(euphoria.CharacterEuphoria)
+			opp := game.NewCharacter(tt.oppData)
+
+			c.SetMaxHP(tt.initMaxHP)
+			opp.SetMaxHP(tt.initOppMaxHP)
+
+			for _, e := range tt.effs {
+				c.AddEffect(e)
+			}
+
+			s := c.Skills()[0]
+
+			err := s.Use(opp, tt.gameCtx)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.maxHP, c.MaxHP(), "maximum HP")
+			assert.Equal(t, tt.oppMaxHP, opp.MaxHP(), "opponent's maximum HP")
+
+			assert.Equal(t, tt.euphoricSourceAmount, euphoricSourceAmount(c), "euphoric source amount")
+		})
+	}
+}
+
+func assertUltimateEarlyAmount(t *testing.T, opp *game.Character, amount int) {
+	t.Helper()
+
+	eff := opp.Effect(euphoria.EffectDescUltimateEarly)
+
+	if amount == 0 {
+		assert.Nil(t, eff)
+		return
+	}
+
+	require.NotNil(t, eff, "ultimate early effect")
+
+	e, ok := eff.(*euphoria.EffectUltimateEarly)
+	require.True(t, ok, "ultimate early effect type")
+
+	assert.Equal(t, amount, e.Amount(), "ultimate early amount")
+}
+
+func TestSkillExuberance_Use(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name                 string
+		oppData              game.CharacterData
+		effs                 []game.Effect
+		oppEffs              []game.Effect
+		gameCtx              game.Context
+		hp                   int
+		maxHP                int
+		oppMaxHP             int
+		euphoricSourceAmount int
+		ultimateEarlyAmount  int
+	}{
+		{
+			name: "UltimateNotUnlockedNoEuphoricSource",
+			oppData: game.CharacterData{
+				DefaultHP: 100,
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			gameCtx:              game.Context{TurnNum: 4},
+			hp:                   127,
+			maxHP:                127,
+			oppMaxHP:             110,
+			euphoricSourceAmount: 10,
+			ultimateEarlyAmount:  1,
+		},
+		{
+			name: "UltimateNotUnlockedHasEuphoricSource",
+			oppData: game.CharacterData{
+				DefaultHP: 100,
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			effs: []game.Effect{
+				euphoria.NewEffectEuphoricSource(12),
+			},
+			gameCtx:              game.Context{TurnNum: 4},
+			hp:                   127,
+			maxHP:                127,
+			oppMaxHP:             110,
+			euphoricSourceAmount: 22,
+			ultimateEarlyAmount:  1,
+		},
+		{
+			name: "UltimateNotUnlockedNoEuphoricSourceEarly",
+			oppData: game.CharacterData{
+				DefaultHP: 100,
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			oppEffs: []game.Effect{
+				euphoria.NewEffectUltimateEarly(),
+			},
+			hp:                   127,
+			maxHP:                127,
+			oppMaxHP:             110,
+			gameCtx:              game.Context{TurnNum: 4},
+			euphoricSourceAmount: 10,
+			ultimateEarlyAmount:  2,
+		},
+		{
+			name: "UltimateUnlockedNoEuphoricSource",
+			oppData: game.CharacterData{
+				DefaultHP: 100,
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			hp:                   137,
+			maxHP:                137,
+			oppMaxHP:             120,
+			gameCtx:              game.Context{TurnNum: 8},
+			euphoricSourceAmount: 20,
+		},
+		{
+			name: "UltimateJustBeforeUnlockedNoEuphoricSource",
+			oppData: game.CharacterData{
+				DefaultHP: 100,
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			gameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: true,
+			},
+			hp:                   127,
+			maxHP:                127,
+			oppMaxHP:             110,
+			euphoricSourceAmount: 10,
+			ultimateEarlyAmount:  1,
+		},
+		{
+			name: "UltimateJustAfterUnlockedNoEuphoricSource",
+			oppData: game.CharacterData{
+				DefaultHP: 100,
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			gameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: false,
+			},
+			hp:                   137,
+			maxHP:                137,
+			oppMaxHP:             120,
+			euphoricSourceAmount: 20,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := game.NewCharacter(euphoria.CharacterEuphoria)
+			opp := game.NewCharacter(tt.oppData)
+
+			for _, e := range tt.effs {
+				c.AddEffect(e)
+			}
+
+			for _, e := range tt.oppEffs {
+				opp.AddEffect(e)
+			}
+
+			s := c.Skills()[1]
+
+			err := s.Use(opp, tt.gameCtx)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.hp, c.HP(), "HP")
+			assert.Equal(t, tt.maxHP, c.MaxHP(), "maxiumum HP")
+			assert.Equal(t, tt.oppMaxHP, opp.MaxHP(), "opponent's maximum HP")
+			assert.Equal(t, tt.euphoricSourceAmount, euphoricSourceAmount(c), "euphoric source amount")
+			assertUltimateEarlyAmount(t, opp, tt.ultimateEarlyAmount)
+		})
+	}
+}
+
+func TestSkillPinkSphere_Use(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		oppData  game.CharacterData
+		gameCtx  game.Context
+		oppHP    int
+		maxHP    int
+		oppMaxHP int
+	}{
+		{
+			name: "Opponent1",
+			oppData: game.CharacterData{
+				DefaultHP: 113,
+			},
+			oppHP:    101,
+			maxHP:    129,
+			oppMaxHP: 125,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := game.NewCharacter(euphoria.CharacterEuphoria)
+			opp := game.NewCharacter(tt.oppData)
+
+			s := c.Skills()[2]
+
+			err := s.Use(opp, tt.gameCtx)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.oppHP, opp.HP(), "opponent's HP")
+			assert.Equal(t, tt.maxHP, c.MaxHP(), "maximum HP")
+			assert.Equal(t, tt.oppMaxHP, opp.MaxHP(), "opponent's maximum HP")
+		})
+	}
+}
+
+func TestSkillEuphoria_Use(t *testing.T) {
+	t.Parallel()
+
+	c := game.NewCharacter(euphoria.CharacterEuphoria)
+
+	data := game.CharacterData{}
+	opp := game.NewCharacter(data)
+
+	s := c.Skills()[3]
+
+	gameCtx := game.Context{TurnNum: 4}
+	err := s.Use(opp, gameCtx)
+	require.NoError(t, err)
+
+	eff := c.Effect(euphoria.EffectDescEuphoricHeal)
+	require.NotNil(t, eff, "ultimate heal effect")
+
+	_, ok := eff.(euphoria.EffectEuphoricHeal)
+	require.True(t, ok, "ultimate heal effect type")
+}
