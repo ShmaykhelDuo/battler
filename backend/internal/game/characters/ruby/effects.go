@@ -5,6 +5,7 @@ import "github.com/ShmaykhelDuo/battler/backend/internal/game"
 // EffectDescDoubleDamage is a description of [EffectDoubleDamage]
 var EffectDescDoubleDamage = game.EffectDescription{
 	Name: "Double Damage",
+	Type: game.EffectTypeBasic,
 }
 
 // Doubles the damage you deal.
@@ -24,6 +25,7 @@ func (e EffectDoubleDamage) ModifyDealtDamage(dmg int, colour game.Colour) int {
 // EffectDescCannotHeal is a description of [EffectCannotHeal]
 var EffectDescCannotHeal = game.EffectDescription{
 	Name: "Can't Heal",
+	Type: game.EffectTypeProhibiting,
 }
 
 // Prevents you from healing.

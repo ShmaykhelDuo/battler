@@ -4,10 +4,12 @@ import "github.com/ShmaykhelDuo/battler/backend/internal/game"
 
 var EffectDescGreenTokens = game.EffectDescription{
 	Name: "Green Tokens",
+	Type: game.EffectTypeNumeric,
 }
 
 var EffectDescBlackTokens = game.EffectDescription{
 	Name: "Black Tokens",
+	Type: game.EffectTypeNumeric,
 }
 
 // Tokens add damage to your Stab.
@@ -47,6 +49,7 @@ func (e *EffectTokens) Increase() {
 
 var EffectDescDamageReduced = game.EffectDescription{
 	Name: "Damage Reduced",
+	Type: game.EffectTypeBuff,
 }
 
 // Your opponent's next attack will deal this much less damage.
@@ -78,6 +81,7 @@ func (e *EffectDamageReduced) ModifyTakenDamage(dmg int, colour game.Colour) int
 
 var EffectDescDefenceReduced = game.EffectDescription{
 	Name: "Defence Reduced",
+	Type: game.EffectTypeDebuff,
 }
 
 type EffectDefenceReduced struct {
@@ -95,6 +99,7 @@ func (e EffectDefenceReduced) ModifyDefences(def map[game.Colour]int) {
 
 var EffectDescSpedUp = game.EffectDescription{
 	Name: "Sped Up",
+	Type: game.EffectTypeState,
 }
 
 // This turn, you can use two skills but not your ultimate.

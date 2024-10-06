@@ -5,6 +5,7 @@ import "github.com/ShmaykhelDuo/battler/backend/internal/game"
 // EffectDescUltimateSlow is a description of [EffectUltimateSlow]
 var EffectDescUltimateSlow = game.EffectDescription{
 	Name: "Ultimate Slow",
+	Type: game.EffectTypeDebuff,
 }
 
 // Your ultimate will unlock this many turns later than normal.

@@ -5,6 +5,7 @@ import "github.com/ShmaykhelDuo/battler/backend/internal/game"
 // EffectDescEuphoricSource is a description of [EffectEuphoricSource]
 var EffectDescEuphoricSource = game.EffectDescription{
 	Name: "Euphoric Source",
+	Type: game.EffectTypeNumeric,
 }
 
 // Euphoric Source gives your Pink Sphere additional damage as well as well as healing while in Euphoria.
@@ -40,6 +41,7 @@ func (e *EffectEuphoricSource) Decrease(amount int) {
 // EffectDescUltimateEarly is a description of [EffectUltimateEarly]
 var EffectDescUltimateEarly = game.EffectDescription{
 	Name: "Ultimate Early",
+	Type: game.EffectTypeBuff,
 }
 
 // Your ultimate will unlock this many turns earlier than normal.
@@ -78,6 +80,7 @@ func (e *EffectUltimateEarly) ModifySkillUnlockTurn(s *game.Skill, unlockTurn in
 
 var EffectDescEuphoricHeal = game.EffectDescription{
 	Name: "Euphoric Heal",
+	Type: game.EffectTypeState,
 }
 
 // You heal from Euphoric Source at the end of each turn, but Source gets rapidly depleted.

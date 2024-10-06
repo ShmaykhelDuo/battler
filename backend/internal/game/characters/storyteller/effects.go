@@ -5,6 +5,7 @@ import "github.com/ShmaykhelDuo/battler/backend/internal/game"
 // EffectDescCannotUse is a description of [EffectCannotUse]
 var EffectDescCannotUse = game.EffectDescription{
 	Name: "Can't use",
+	Type: game.EffectTypeProhibiting,
 }
 
 // You can't use skills of the same colour you used last.
@@ -35,6 +36,7 @@ func (e EffectCannotUse) IsSkillAvailable(s *game.Skill) bool {
 // EffectDescControlled is a description of [EffectControlled]
 var EffectDescControlled = game.EffectDescription{
 	Name: "Controlled",
+	Type: game.EffectTypeControl,
 }
 
 // This turn, your opponent chooses which skills you use.
