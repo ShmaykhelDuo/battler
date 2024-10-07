@@ -121,70 +121,6 @@ func (e descriptionEffect) Desc() game.EffectDescription {
 	return e.desc
 }
 
-func TestCharacter_Effect(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name string
-		effs []game.Effect
-		desc game.EffectDescription
-		eff  game.Effect
-	}{
-		{
-			name: "Empty",
-			desc: game.EffectDescription{Name: "TestName1"},
-			eff:  nil,
-		},
-		{
-			name: "Found",
-			effs: []game.Effect{
-				descriptionEffect{
-					desc: game.EffectDescription{Name: "TestName1"},
-				},
-				descriptionEffect{
-					desc: game.EffectDescription{Name: "TestName2"},
-				},
-				descriptionEffect{
-					desc: game.EffectDescription{Name: "TestName3"},
-				},
-			},
-			desc: game.EffectDescription{Name: "TestName2"},
-			eff: descriptionEffect{
-				desc: game.EffectDescription{Name: "TestName2"},
-			},
-		},
-		{
-			name: "NotFound",
-			effs: []game.Effect{
-				descriptionEffect{
-					desc: game.EffectDescription{Name: "TestName1"},
-				},
-				descriptionEffect{
-					desc: game.EffectDescription{Name: "TestName3"},
-				},
-			},
-			desc: game.EffectDescription{Name: "TestName2"},
-			eff:  nil,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			data := game.CharacterData{}
-			c := game.NewCharacter(data)
-
-			for _, e := range tt.effs {
-				c.AddEffect(e)
-			}
-
-			eff := c.Effect(tt.desc)
-			assert.Equal(t, tt.eff, eff)
-		})
-	}
-}
-
 func TestCharacter_LastUsedSkill(t *testing.T) {
 	t.Parallel()
 
@@ -631,4 +567,38 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 	assert.Same(t, c, eff.gotC, "character")
 	assert.Same(t, opp, eff.gotOpp, "opponent")
 	assert.Equal(t, gameCtx, eff.gotGameCtx, "game context")
+}
+
+type effectType1 struct {
+	descriptionEffect
+}
+type effectType2 struct {
+	descriptionEffect
+}
+type effectType3 struct {
+	descriptionEffect
+}
+
+func TestCharacterEffect(t *testing.T) {
+	t.Parallel()
+
+	c := game.NewCharacter(game.CharacterData{})
+
+	eff1 := &effectType1{}
+	eff2 := &effectType2{}
+
+	c.AddEffect(eff1)
+	c.AddEffect(eff2)
+
+	got1, ok1 := game.CharacterEffect[*effectType1](c)
+	assert.True(t, ok1, "ok 1")
+	assert.Same(t, eff1, got1, "same 1")
+
+	got2, ok2 := game.CharacterEffect[*effectType2](c)
+	assert.True(t, ok2, "ok 2")
+	assert.Same(t, eff2, got2, "same 2")
+
+	got3, ok3 := game.CharacterEffect[*effectType3](c)
+	assert.False(t, ok3, "ok 3")
+	assert.Zero(t, got3, "zero 3")
 }

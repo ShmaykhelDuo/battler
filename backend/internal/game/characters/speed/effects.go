@@ -7,43 +7,57 @@ var EffectDescGreenTokens = game.EffectDescription{
 	Type: game.EffectTypeNumeric,
 }
 
+type EffectGreenTokens struct {
+	*Tokens
+}
+
+func NewEffectGreenTokens(number int) EffectGreenTokens {
+	return EffectGreenTokens{
+		Tokens: &Tokens{
+			number: number,
+		},
+	}
+}
+
+// Desc returns the effect's description.
+func (e EffectGreenTokens) Desc() game.EffectDescription {
+	return EffectDescGreenTokens
+}
+
 var EffectDescBlackTokens = game.EffectDescription{
 	Name: "Black Tokens",
 	Type: game.EffectTypeNumeric,
 }
 
-// Tokens add damage to your Stab.
-type EffectTokens struct {
-	desc   game.EffectDescription
-	number int
+type EffectBlackTokens struct {
+	*Tokens
 }
 
-func NewEffectGreenTokens(number int) *EffectTokens {
-	return &EffectTokens{
-		desc:   EffectDescGreenTokens,
-		number: number,
-	}
-}
-
-func NewEffectBlackTokens(number int) *EffectTokens {
-	return &EffectTokens{
-		desc:   EffectDescBlackTokens,
-		number: number,
+func NewEffectBlackTokens(number int) EffectBlackTokens {
+	return EffectBlackTokens{
+		Tokens: &Tokens{
+			number: number,
+		},
 	}
 }
 
 // Desc returns the effect's description.
-func (e *EffectTokens) Desc() game.EffectDescription {
-	return e.desc
+func (e EffectBlackTokens) Desc() game.EffectDescription {
+	return EffectDescBlackTokens
+}
+
+// Tokens add damage to your Stab.
+type Tokens struct {
+	number int
 }
 
 // Number returns the number of tokens.
-func (e *EffectTokens) Number() int {
+func (e *Tokens) Number() int {
 	return e.number
 }
 
 // Increase increases the number of tokens by 1.
-func (e *EffectTokens) Increase() {
+func (e *Tokens) Increase() {
 	e.number++
 }
 

@@ -262,11 +262,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 			err := s.Use(opp, gameCtx)
 			require.NoError(t, err)
 
-			eff := opp.Effect(z89.EffectDescUltimateSlow)
-			require.NotNil(t, eff, "effect")
-
-			e, ok := eff.(*z89.EffectUltimateSlow)
-			require.True(t, ok, "effect type")
+			e, ok := game.CharacterEffect[*z89.EffectUltimateSlow](opp)
+			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.effAmount, e.Amount(), "amount")
 		})

@@ -67,5 +67,6 @@ var SkillExecute = game.SkillData{
 }
 
 func hasEffectCannotHeal(c *game.Character) bool {
-	return c.Effect(EffectDescCannotHeal) != nil
+	_, found := game.CharacterEffect[EffectCannotHeal](c)
+	return found
 }

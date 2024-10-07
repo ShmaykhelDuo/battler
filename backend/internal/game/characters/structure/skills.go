@@ -12,8 +12,7 @@ var SkillEShock = game.SkillData{
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
 		dmg := 5
 
-		eff := c.Effect(EffectDescIBoost)
-		boost, ok := eff.(*EffectIBoost)
+		boost, ok := game.CharacterEffect[*EffectIBoost](c)
 		if ok {
 			dmg += boost.Amount()
 		}
@@ -31,8 +30,7 @@ var SkillIBoost = game.SkillData{
 		Colour:     game.ColourViolet,
 	},
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		eff := c.Effect(EffectDescIBoost)
-		boost, ok := eff.(*EffectIBoost)
+		boost, ok := game.CharacterEffect[*EffectIBoost](c)
 		if !ok {
 			c.AddEffect(NewEffectIBoost(5))
 			return
@@ -41,8 +39,7 @@ var SkillIBoost = game.SkillData{
 		boost.Increase()
 	},
 	IsAvailable: func(c *game.Character, opp *game.Character, gameCtx game.Context) bool {
-		eff := c.Effect(EffectDescIBoost)
-		boost, ok := eff.(*EffectIBoost)
+		boost, ok := game.CharacterEffect[*EffectIBoost](c)
 		if !ok {
 			return true
 		}
@@ -63,8 +60,7 @@ var SkillSLayers = game.SkillData{
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
 		threshold := 5
 
-		eff := c.Effect(EffectDescIBoost)
-		boost, ok := eff.(*EffectIBoost)
+		boost, ok := game.CharacterEffect[*EffectIBoost](c)
 		if ok {
 			threshold += boost.Amount()
 		}

@@ -30,8 +30,7 @@ var SkillIndifference = game.SkillData{
 	Cooldown:   2,
 	UnlockTurn: 2,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		eff := opp.Effect(EffectDescUltimateSlow)
-		effSlow, ok := eff.(*EffectUltimateSlow)
+		effSlow, ok := game.CharacterEffect[*EffectUltimateSlow](opp)
 		if ok {
 			effSlow.Increase()
 			return

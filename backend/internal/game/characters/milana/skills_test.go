@@ -10,8 +10,7 @@ import (
 )
 
 func stolenAmount(c *game.Character) int {
-	eff := c.Effect(milana.EffectDescStolenHP)
-	stolenHP, ok := eff.(*milana.EffectStolenHP)
+	stolenHP, ok := game.CharacterEffect[*milana.EffectStolenHP](c)
 	if !ok {
 		return 0
 	}
@@ -175,11 +174,8 @@ func TestSkillMintMist_Use(t *testing.T) {
 	err := s.Use(opp, game.Context{})
 	require.NoError(t, err)
 
-	eff := c.Effect(milana.EffectDescMintMist)
-	require.NotNil(t, eff, "effect")
-
-	_, ok := eff.(milana.EffectMintMist)
-	require.True(t, ok, "effect type")
+	_, ok := game.CharacterEffect[milana.EffectMintMist](c)
+	require.True(t, ok, "effect")
 }
 
 func TestSkillPride_Use(t *testing.T) {

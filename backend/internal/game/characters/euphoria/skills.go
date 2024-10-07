@@ -77,8 +77,7 @@ func increaseMaxHP(c, opp *game.Character, amount int) {
 }
 
 func increaseEuphoricSource(c *game.Character, amount int) {
-	eff := c.Effect(EffectDescEuphoricSource)
-	source, ok := eff.(*EffectEuphoricSource)
+	source, ok := game.CharacterEffect[*EffectEuphoricSource](c)
 	if ok {
 		source.Increase(amount)
 		return
@@ -96,10 +95,9 @@ func isSkillUnlocked(gameCtx game.Context, s *game.Skill) bool {
 }
 
 func increaseUltimateEarly(opp *game.Character) {
-	eff := opp.Effect(EffectDescUltimateEarly)
-	source, ok := eff.(*EffectUltimateEarly)
+	eff, ok := game.CharacterEffect[*EffectUltimateEarly](opp)
 	if ok {
-		source.Increase()
+		eff.Increase()
 		return
 	}
 

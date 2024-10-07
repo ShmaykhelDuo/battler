@@ -23,11 +23,8 @@ func TestSkillDance_Use(t *testing.T) {
 	err := s.Use(opp, gameCtx)
 	require.NoError(t, err)
 
-	eff := c.Effect(ruby.EffectDescDoubleDamage)
-	require.NotNil(t, eff, "effect")
-
-	_, ok := eff.(ruby.EffectDoubleDamage)
-	require.True(t, ok, "effect type")
+	_, ok := game.CharacterEffect[ruby.EffectDoubleDamage](c)
+	require.True(t, ok, "effect")
 }
 
 func TestSkillRage_Use(t *testing.T) {
@@ -86,13 +83,8 @@ func TestSkillRage_Use(t *testing.T) {
 func assertEffectCannotHeal(t *testing.T, c *game.Character, name string) {
 	t.Helper()
 
-	eff := c.Effect(ruby.EffectDescCannotHeal)
-	if !assert.NotNil(t, eff, "%s's effect", name) {
-		return
-	}
-
-	_, ok := eff.(ruby.EffectCannotHeal)
-	assert.True(t, ok, "%s's effect type", name)
+	_, ok := game.CharacterEffect[ruby.EffectCannotHeal](c)
+	assert.True(t, ok, "%s's effect", name)
 }
 
 func TestSkillStop_Use(t *testing.T) {

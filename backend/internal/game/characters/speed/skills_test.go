@@ -9,14 +9,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func tokenNumber(c *game.Character, desc game.EffectDescription) int {
-	eff := c.Effect(desc)
-	source, ok := eff.(*speed.EffectTokens)
+func greenTokensNumber(c *game.Character) int {
+	tokens, ok := game.CharacterEffect[speed.EffectGreenTokens](c)
 	if !ok {
 		return 0
 	}
 
-	return source.Number()
+	return tokens.Number()
+}
+
+func blackTokensNumber(c *game.Character) int {
+	tokens, ok := game.CharacterEffect[speed.EffectBlackTokens](c)
+	if !ok {
+		return 0
+	}
+
+	return tokens.Number()
 }
 
 func runSkill(t *testing.T, skillIndex int, effs []game.Effect, gameCtx game.Context) (c, opp *game.Character) {
@@ -75,7 +83,7 @@ func testGainGreenToken(t *testing.T, skillIndex int) {
 
 				c, _ := runSkill(t, skillIndex, tt.effs, tt.gameCtx)
 
-				assert.Equal(t, tt.number, tokenNumber(c, speed.EffectDescGreenTokens), "tokens")
+				assert.Equal(t, tt.number, greenTokensNumber(c), "tokens")
 			})
 		}
 	})
@@ -112,11 +120,8 @@ func TestSkillRun_Use(t *testing.T) {
 
 				c, _ := runSkill(t, 0, tt.effs, tt.gameCtx)
 
-				eff := c.Effect(speed.EffectDescDamageReduced)
-				require.NotNil(t, eff, "effect")
-
-				red, ok := eff.(*speed.EffectDamageReduced)
-				require.True(t, ok, "effect type")
+				red, ok := game.CharacterEffect[*speed.EffectDamageReduced](c)
+				require.True(t, ok, "effect")
 
 				assert.Equal(t, tt.damageReductionAmount, red.Amount(), "reduction amount")
 			})
@@ -134,11 +139,8 @@ func TestSkillWeaken_Use(t *testing.T) {
 
 		_, opp := runSkill(t, 1, nil, game.Context{})
 
-		eff := opp.Effect(speed.EffectDescDefenceReduced)
-		require.NotNil(t, eff, "effect")
-
-		_, ok := eff.(speed.EffectDefenceReduced)
-		require.True(t, ok, "effect type")
+		_, ok := game.CharacterEffect[speed.EffectDefenceReduced](opp)
+		require.True(t, ok, "effect")
 	})
 
 	t.Run("GainBlackToken", func(t *testing.T) {
@@ -174,7 +176,7 @@ func TestSkillWeaken_Use(t *testing.T) {
 
 				c, _ := runSkill(t, 1, tt.effs, tt.gameCtx)
 
-				assert.Equal(t, tt.number, tokenNumber(c, speed.EffectDescBlackTokens), "tokens")
+				assert.Equal(t, tt.number, blackTokensNumber(c), "tokens")
 			})
 		}
 	})
@@ -188,11 +190,8 @@ func TestSkillSpeed_Use(t *testing.T) {
 
 		c, _ := runSkill(t, 2, nil, game.Context{})
 
-		eff := c.Effect(speed.EffectDescSpedUp)
-		require.NotNil(t, eff, "effect")
-
-		_, ok := eff.(speed.EffectSpedUp)
-		require.True(t, ok, "effect type")
+		_, ok := game.CharacterEffect[speed.EffectSpedUp](c)
+		require.True(t, ok, "effect")
 	})
 
 	testGainGreenToken(t, 2)

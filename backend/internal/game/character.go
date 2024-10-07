@@ -117,18 +117,6 @@ func (c *Character) Effects() []Effect {
 	return c.effects
 }
 
-// Effect returns an applied effect with matching description.
-// If no such effect is found, nil is returned.
-func (c *Character) Effect(desc EffectDescription) Effect {
-	for _, e := range c.effects {
-		if e.Desc() == desc {
-			return e
-		}
-	}
-
-	return nil
-}
-
 // Skills returns an array of skills provided by the character.
 func (c *Character) Skills() [SkillCount]*Skill {
 	return c.skills
@@ -230,4 +218,17 @@ func (c *Character) OnTurnEnd(opp *Character, gameCtx Context) {
 			h.OnTurnEnd(c, opp, gameCtx)
 		}
 	}
+}
+
+// Effect returns an applied effect with matching description and whether it is found.
+// If no such effect is found, zero value of type is returned and found if false.
+func CharacterEffect[T Effect](c *Character) (eff T, found bool) {
+	for _, e := range c.Effects() {
+		eff, ok := e.(T)
+		if ok {
+			return eff, true
+		}
+	}
+
+	return eff, false
 }

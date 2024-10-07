@@ -191,13 +191,10 @@ func TestSkillYourColour_Use(t *testing.T) {
 
 			assert.Equal(t, tt.hp, opp.HP(), "HP")
 
-			eff := opp.Effect(storyteller.EffectDescCannotUse)
-			require.NotNil(t, eff, "effect")
+			eff, ok := game.CharacterEffect[storyteller.EffectCannotUse](opp)
+			require.True(t, ok, "effect")
 
-			e, ok := eff.(storyteller.EffectCannotUse)
-			require.True(t, ok, "effect type")
-
-			assert.Equal(t, tt.colour, e.Colour(), "colour")
+			assert.Equal(t, tt.colour, eff.Colour(), "colour")
 		})
 	}
 }
@@ -315,9 +312,6 @@ func TestSkillMyStory_Use(t *testing.T) {
 	err := s.Use(opp, gameCtx)
 	require.NoError(t, err)
 
-	eff := opp.Effect(storyteller.EffectDescControlled)
-	require.NotNil(t, eff, "effect")
-
-	_, ok := eff.(storyteller.EffectControlled)
-	require.True(t, ok, "effect type")
+	_, ok := game.CharacterEffect[storyteller.EffectControlled](opp)
+	require.True(t, ok, "effect")
 }

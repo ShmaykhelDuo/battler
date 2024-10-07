@@ -14,8 +14,7 @@ var SkillRun = game.SkillData{
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
 		redAmount := 5
 
-		e := c.Effect(EffectDescDamageReduced)
-		red, ok := e.(*EffectDamageReduced)
+		red, ok := game.CharacterEffect[*EffectDamageReduced](c)
 		if ok {
 			red.Increase(redAmount)
 		} else {
@@ -76,25 +75,19 @@ var SkillStab = game.SkillData{
 	},
 }
 
-func tokens(c *game.Character, desc game.EffectDescription) *EffectTokens {
-	eff := c.Effect(desc)
-	source, _ := eff.(*EffectTokens)
-	return source
-}
-
 func greenTokensNumber(c *game.Character) int {
-	source := tokens(c, EffectDescGreenTokens)
-	if source == nil {
+	tokens, ok := game.CharacterEffect[EffectGreenTokens](c)
+	if !ok {
 		return 0
 	}
 
-	return source.Number()
+	return tokens.Number()
 }
 
 func increaseGreenTokens(c *game.Character) {
-	source := tokens(c, EffectDescGreenTokens)
-	if source != nil {
-		source.Increase()
+	tokens, ok := game.CharacterEffect[EffectGreenTokens](c)
+	if ok {
+		tokens.Increase()
 		return
 	}
 
@@ -102,18 +95,18 @@ func increaseGreenTokens(c *game.Character) {
 }
 
 func blackTokensNumber(c *game.Character) int {
-	source := tokens(c, EffectDescBlackTokens)
-	if source == nil {
+	tokens, ok := game.CharacterEffect[EffectBlackTokens](c)
+	if !ok {
 		return 0
 	}
 
-	return source.Number()
+	return tokens.Number()
 }
 
 func increaseBlackTokens(c *game.Character) {
-	source := tokens(c, EffectDescBlackTokens)
-	if source != nil {
-		source.Increase()
+	tokens, ok := game.CharacterEffect[EffectBlackTokens](c)
+	if ok {
+		tokens.Increase()
 		return
 	}
 

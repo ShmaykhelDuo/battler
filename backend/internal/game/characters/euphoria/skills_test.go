@@ -83,22 +83,13 @@ func TestSkillAmpleness_Use(t *testing.T) {
 	}
 }
 
-func assertUltimateEarlyAmount(t *testing.T, opp *game.Character, amount int) {
-	t.Helper()
-
-	eff := opp.Effect(euphoria.EffectDescUltimateEarly)
-
-	if amount == 0 {
-		assert.Nil(t, eff)
-		return
+func ultimateEarlyAmount(opp *game.Character) int {
+	eff, ok := game.CharacterEffect[*euphoria.EffectUltimateEarly](opp)
+	if !ok {
+		return 0
 	}
 
-	require.NotNil(t, eff, "ultimate early effect")
-
-	e, ok := eff.(*euphoria.EffectUltimateEarly)
-	require.True(t, ok, "ultimate early effect type")
-
-	assert.Equal(t, amount, e.Amount(), "ultimate early amount")
+	return eff.Amount()
 }
 
 func TestSkillExuberance_Use(t *testing.T) {
@@ -272,7 +263,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 			assert.Equal(t, tt.maxHP, c.MaxHP(), "maxiumum HP")
 			assert.Equal(t, tt.oppMaxHP, opp.MaxHP(), "opponent's maximum HP")
 			assert.Equal(t, tt.euphoricSourceAmount, euphoricSourceAmount(c), "euphoric source amount")
-			assertUltimateEarlyAmount(t, opp, tt.ultimateEarlyAmount)
+			assert.Equal(t, tt.ultimateEarlyAmount, ultimateEarlyAmount(opp), "ultimate early amount")
 		})
 	}
 }
@@ -332,9 +323,6 @@ func TestSkillEuphoria_Use(t *testing.T) {
 	err := s.Use(opp, gameCtx)
 	require.NoError(t, err)
 
-	eff := c.Effect(euphoria.EffectDescEuphoricHeal)
-	require.NotNil(t, eff, "ultimate heal effect")
-
-	_, ok := eff.(euphoria.EffectEuphoricHeal)
-	require.True(t, ok, "ultimate heal effect type")
+	_, ok := game.CharacterEffect[euphoria.EffectEuphoricHeal](c)
+	require.True(t, ok, "ultimate heal effect")
 }

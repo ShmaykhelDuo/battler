@@ -165,11 +165,8 @@ func TestSkillIBoost_Use(t *testing.T) {
 			err := s.Use(opp, game.Context{})
 			require.NoError(t, err)
 
-			eff := c.Effect(structure.EffectDescIBoost)
-			require.NotNil(t, eff, "effect")
-
-			boost, ok := eff.(*structure.EffectIBoost)
-			require.True(t, ok, "effect type")
+			boost, ok := game.CharacterEffect[*structure.EffectIBoost](c)
+			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.amount, boost.Amount())
 		})
@@ -226,11 +223,8 @@ func TestSkillSLayers_Use(t *testing.T) {
 			err := s.Use(opp, game.Context{})
 			require.NoError(t, err)
 
-			eff := c.Effect(structure.EffectDescSLayers)
-			require.NotNil(t, eff, "effect")
-
-			layers, ok := eff.(structure.EffectSLayers)
-			require.True(t, ok, "effect type")
+			layers, ok := game.CharacterEffect[structure.EffectSLayers](c)
+			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.threshold, layers.Threshold(), "threshold")
 		})
@@ -247,9 +241,6 @@ func TestSkillLastChance_Use(t *testing.T) {
 	err := s.Use(opp, game.Context{TurnNum: 7})
 	require.NoError(t, err)
 
-	eff := c.Effect(structure.EffectDescLastChance)
-	require.NotNil(t, eff, "effect")
-
-	_, ok := eff.(structure.EffectLastChance)
-	require.True(t, ok, "effect type")
+	_, ok := game.CharacterEffect[structure.EffectLastChance](c)
+	require.True(t, ok, "effect")
 }
