@@ -1,6 +1,9 @@
 package ruby
 
-import "github.com/ShmaykhelDuo/battler/backend/internal/game"
+import (
+	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/common"
+)
 
 // EffectDescDoubleDamage is a description of [EffectDoubleDamage]
 var EffectDescDoubleDamage = game.EffectDescription{
@@ -10,6 +13,13 @@ var EffectDescDoubleDamage = game.EffectDescription{
 
 // Doubles the damage you deal.
 type EffectDoubleDamage struct {
+	common.DurationExpirable
+}
+
+func NewEffectDoubleDamage(gameCtx game.Context) EffectDoubleDamage {
+	return EffectDoubleDamage{
+		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(2, false)),
+	}
 }
 
 // Desc returns the effect's description.
@@ -30,6 +40,20 @@ var EffectDescCannotHeal = game.EffectDescription{
 
 // Prevents you from healing.
 type EffectCannotHeal struct {
+	common.DurationExpirable
+}
+
+func NewEffectCannotHeal(gameCtx game.Context, isOpp bool) EffectCannotHeal {
+	var expCtx game.Context
+	if isOpp {
+		expCtx = gameCtx.AddTurns(0, true)
+	} else {
+		expCtx = gameCtx.AddTurns(1, false)
+	}
+
+	return EffectCannotHeal{
+		DurationExpirable: common.NewDurationExpirable(expCtx),
+	}
 }
 
 // Desc returns the effect's description.

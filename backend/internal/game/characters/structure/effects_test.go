@@ -69,7 +69,7 @@ func TestNewEffectSLayers(t *testing.T) {
 
 	threshold := 5
 
-	eff := structure.NewEffectSLayers(threshold)
+	eff := structure.NewEffectSLayers(game.Context{}, threshold)
 	assert.Equal(t, threshold, eff.Threshold())
 }
 
@@ -106,10 +106,82 @@ func TestEffectSLayers_ModifyTakenDamage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			eff := structure.NewEffectSLayers(tt.threshold)
+			eff := structure.NewEffectSLayers(game.Context{}, tt.threshold)
 
 			out := eff.ModifyTakenDamage(tt.dmg, game.ColourNone)
 			assert.Equal(t, tt.out, out)
+		})
+	}
+}
+
+func TestEffectLastChance_OnTurnEnd(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		prevDmg     int
+		initGameCtx game.Context
+		gameCtx     game.Context
+		hp          int
+	}{
+		{
+			name:    "SameTurn",
+			prevDmg: 36,
+			initGameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: true,
+			},
+			gameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: true,
+				IsTurnEnd:    true,
+			},
+			hp: 83,
+		},
+		{
+			name:    "OpponentsTurnGoingFirst",
+			prevDmg: 36,
+			initGameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: true,
+			},
+			gameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: false,
+				IsTurnEnd:    true,
+			},
+			hp: 119,
+		},
+		{
+			name:    "OpponentsTurnGoingSecond",
+			prevDmg: 36,
+			initGameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: false,
+			},
+			gameCtx: game.Context{
+				TurnNum:      8,
+				IsGoingFirst: true,
+				IsTurnEnd:    true,
+			},
+			hp: 119,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := game.NewCharacter(structure.CharacterStructure)
+			opp := game.NewCharacter(game.CharacterData{})
+
+			opp.Damage(c, tt.prevDmg, game.ColourNone)
+
+			eff := structure.NewEffectLastChance(tt.initGameCtx)
+
+			eff.OnTurnEnd(c, opp, tt.gameCtx)
+
+			assert.Equal(t, tt.hp, c.HP())
 		})
 	}
 }

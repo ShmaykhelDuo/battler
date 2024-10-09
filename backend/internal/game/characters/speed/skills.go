@@ -49,7 +49,7 @@ var SkillSpeed = game.SkillData{
 	Cooldown:   0,
 	UnlockTurn: 0,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(EffectSpedUp{})
+		c.AddEffect(NewEffectSpedUp(gameCtx))
 
 		if greenTokensNumber(c) < 5 {
 			increaseGreenTokens(c)
@@ -81,13 +81,13 @@ func greenTokensNumber(c *game.Character) int {
 		return 0
 	}
 
-	return tokens.Number()
+	return tokens.Amount()
 }
 
 func increaseGreenTokens(c *game.Character) {
 	tokens, ok := game.CharacterEffect[EffectGreenTokens](c)
 	if ok {
-		tokens.Increase()
+		tokens.Increase(1)
 		return
 	}
 
@@ -100,13 +100,13 @@ func blackTokensNumber(c *game.Character) int {
 		return 0
 	}
 
-	return tokens.Number()
+	return tokens.Amount()
 }
 
 func increaseBlackTokens(c *game.Character) {
 	tokens, ok := game.CharacterEffect[EffectBlackTokens](c)
 	if ok {
-		tokens.Increase()
+		tokens.Increase(1)
 		return
 	}
 

@@ -11,7 +11,7 @@ var SkillDance = game.SkillData{
 		Colour:     game.ColourYellow,
 	},
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(EffectDoubleDamage{})
+		c.AddEffect(NewEffectDoubleDamage(gameCtx))
 	},
 }
 
@@ -39,8 +39,8 @@ var SkillStop = game.SkillData{
 	},
 	Cooldown: 1,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(EffectCannotHeal{})
-		opp.AddEffect(EffectCannotHeal{})
+		c.AddEffect(NewEffectCannotHeal(gameCtx, false))
+		opp.AddEffect(NewEffectCannotHeal(gameCtx, true))
 	},
 }
 
@@ -53,16 +53,15 @@ var SkillExecute = game.SkillData{
 		Colour:     game.ColourRed,
 	},
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		opp.Kill()
-	},
-	IsAvailable: func(c *game.Character, opp *game.Character, gameCtx game.Context) bool {
 		threshold := 0.1
 
 		if hasEffectCannotHeal(c) {
 			threshold = 0.2
 		}
 
-		return float64(opp.HP()) < threshold*float64(opp.MaxHP())
+		if float64(opp.HP()) < threshold*float64(opp.MaxHP()) {
+			opp.Kill()
+		}
 	},
 }
 

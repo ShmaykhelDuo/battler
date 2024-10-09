@@ -1,6 +1,9 @@
 package storyteller
 
-import "github.com/ShmaykhelDuo/battler/backend/internal/game"
+import (
+	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/common"
+)
 
 // EffectDescCannotUse is a description of [EffectCannotUse]
 var EffectDescCannotUse = game.EffectDescription{
@@ -10,12 +13,16 @@ var EffectDescCannotUse = game.EffectDescription{
 
 // You can't use skills of the same colour you used last.
 type EffectCannotUse struct {
+	common.DurationExpirable
 	colour game.Colour
 }
 
 // NewEffectCannotUse returns a new [EffectCannotUse] of provided colour.
-func NewEffectCannotUse(colour game.Colour) EffectCannotUse {
-	return EffectCannotUse{colour: colour}
+func NewEffectCannotUse(gameCtx game.Context, colour game.Colour) EffectCannotUse {
+	return EffectCannotUse{
+		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+		colour:            colour,
+	}
 }
 
 // Desc returns the effect's description.
@@ -41,9 +48,21 @@ var EffectDescControlled = game.EffectDescription{
 
 // This turn, your opponent chooses which skills you use.
 type EffectControlled struct {
+	common.DurationExpirable
+}
+
+func NewEffectControlled(gameCtx game.Context) EffectControlled {
+	return EffectControlled{
+		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+	}
 }
 
 // Desc returns the effect's description.
 func (e EffectControlled) Desc() game.EffectDescription {
 	return EffectDescControlled
+}
+
+// HasTakenControl reports whether the opponent has taken control over the character.
+func (e EffectControlled) HasTakenControl() bool {
+	return true
 }

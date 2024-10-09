@@ -12,8 +12,9 @@ var SkillAmpleness = game.SkillData{
 	},
 	Cooldown: 1,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		increaseMaxHP(c, opp, 12)
-		increaseEuphoricSource(c, 12)
+		amount := 12
+		increaseMaxHP(c, opp, amount)
+		increaseEuphoricSource(c, amount)
 	},
 }
 
@@ -77,7 +78,7 @@ func increaseMaxHP(c, opp *game.Character, amount int) {
 }
 
 func increaseEuphoricSource(c *game.Character, amount int) {
-	source, ok := game.CharacterEffect[*EffectEuphoricSource](c)
+	source, ok := game.CharacterEffect[EffectEuphoricSource](c)
 	if ok {
 		source.Increase(amount)
 		return

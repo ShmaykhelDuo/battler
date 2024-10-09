@@ -10,7 +10,7 @@ import (
 )
 
 func stolenAmount(c *game.Character) int {
-	stolenHP, ok := game.CharacterEffect[*milana.EffectStolenHP](c)
+	stolenHP, ok := game.CharacterEffect[milana.EffectStolenHP](c)
 	if !ok {
 		return 0
 	}
@@ -106,34 +106,34 @@ func TestSkillComposure_Use(t *testing.T) {
 			name:    "EnoughStolenHP",
 			prevDmg: 34,
 			effs: []game.Effect{
-				milana.NewEffectStolenHP(31),
+				milana.NewEffectStolenHP(8),
 			},
 			hp:           100,
-			stolenAmount: 11,
+			stolenAmount: 2,
 		},
 		{
 			name:    "NotEnoughStolenHP",
 			prevDmg: 34,
 			effs: []game.Effect{
-				milana.NewEffectStolenHP(11),
+				milana.NewEffectStolenHP(5),
 			},
-			hp:           91,
+			hp:           85,
 			stolenAmount: 0,
 		},
 		{
 			name:    "FullHeal",
 			prevDmg: 15,
 			effs: []game.Effect{
-				milana.NewEffectStolenHP(31),
+				milana.NewEffectStolenHP(8),
 			},
 			hp:           114,
-			stolenAmount: 16,
+			stolenAmount: 2,
 		},
 		{
 			name:    "EnoughStolenHPWithMintMist",
 			prevDmg: 34,
 			effs: []game.Effect{
-				milana.NewEffectStolenHP(31),
+				milana.NewEffectStolenHP(11),
 				milana.EffectMintMist{},
 			},
 			hp:           110,
@@ -174,8 +174,10 @@ func TestSkillMintMist_Use(t *testing.T) {
 	err := s.Use(opp, game.Context{})
 	require.NoError(t, err)
 
-	_, ok := game.CharacterEffect[milana.EffectMintMist](c)
+	eff, ok := game.CharacterEffect[milana.EffectMintMist](c)
 	require.True(t, ok, "effect")
+
+	assert.Equal(t, 2, eff.TurnsLeft(game.Context{}.AddTurns(1, false)), "turns left")
 }
 
 func TestSkillPride_Use(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 )
 
 func euphoricSourceAmount(c *game.Character) int {
-	e, ok := game.CharacterEffect[*euphoria.EffectEuphoricSource](c)
+	e, ok := game.CharacterEffect[euphoria.EffectEuphoricSource](c)
 	if !ok {
 		return 0
 	}

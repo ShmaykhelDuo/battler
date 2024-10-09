@@ -31,7 +31,7 @@ var SkillYourColour = game.SkillData{
 	Cooldown: 1,
 	Use: func(c, opp *game.Character, gameCtx game.Context) {
 		colour := opp.LastUsedSkill().Desc().Colour
-		opp.AddEffect(NewEffectCannotUse(colour))
+		opp.AddEffect(NewEffectCannotUse(gameCtx, colour))
 		c.Damage(opp, 15, colour)
 	},
 	IsAvailable: func(c, opp *game.Character, gameCtx game.Context) bool {
@@ -70,6 +70,6 @@ var SkillMyStory = game.SkillData{
 	Cooldown:   1,
 	UnlockTurn: 7,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		opp.AddEffect(EffectControlled{})
+		opp.AddEffect(NewEffectControlled(gameCtx))
 	},
 }

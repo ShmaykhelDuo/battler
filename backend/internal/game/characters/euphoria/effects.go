@@ -1,6 +1,9 @@
 package euphoria
 
-import "github.com/ShmaykhelDuo/battler/backend/internal/game"
+import (
+	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/common"
+)
 
 // EffectDescEuphoricSource is a description of [EffectEuphoricSource]
 var EffectDescEuphoricSource = game.EffectDescription{
@@ -10,32 +13,19 @@ var EffectDescEuphoricSource = game.EffectDescription{
 
 // Euphoric Source gives your Pink Sphere additional damage as well as well as healing while in Euphoria.
 type EffectEuphoricSource struct {
-	amount int
+	*common.Collectible
 }
 
 // NewEffectEuphoricSource returns a new [EffectEuphoricSource] of provided amount.
-func NewEffectEuphoricSource(amount int) *EffectEuphoricSource {
-	return &EffectEuphoricSource{amount: amount}
+func NewEffectEuphoricSource(amount int) EffectEuphoricSource {
+	return EffectEuphoricSource{
+		Collectible: common.NewCollectible(amount),
+	}
 }
 
 // Desc returns the effect's description.
-func (e *EffectEuphoricSource) Desc() game.EffectDescription {
+func (e EffectEuphoricSource) Desc() game.EffectDescription {
 	return EffectDescEuphoricSource
-}
-
-// Amount returns the Euphoric Source's amount.
-func (e *EffectEuphoricSource) Amount() int {
-	return e.amount
-}
-
-// Increase increases the Euphoric Source's amount by specified amount.
-func (e *EffectEuphoricSource) Increase(amount int) {
-	e.amount += amount
-}
-
-// Decrease decreases the Euphoric Source's amount by specified amount.
-func (e *EffectEuphoricSource) Decrease(amount int) {
-	e.amount -= amount
 }
 
 // EffectDescUltimateEarly is a description of [EffectUltimateEarly]
@@ -94,7 +84,7 @@ func (e EffectEuphoricHeal) Desc() game.EffectDescription {
 
 // OnTurnEnd executes the end-of-turn action.
 func (e EffectEuphoricHeal) OnTurnEnd(c *game.Character, opp *game.Character, gameCtx game.Context) {
-	source, ok := game.CharacterEffect[*EffectEuphoricSource](c)
+	source, ok := game.CharacterEffect[EffectEuphoricSource](c)
 	if !ok {
 		return
 	}

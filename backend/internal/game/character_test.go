@@ -45,6 +45,8 @@ func TestNewCharacter(t *testing.T) {
 }
 
 type defenceModifierEffect struct {
+	colour game.Colour
+	delta  int
 }
 
 // Desc returns the effect's description.
@@ -54,7 +56,7 @@ func (e defenceModifierEffect) Desc() game.EffectDescription {
 
 // ModifyDefences returns the modified defences.
 func (e defenceModifierEffect) ModifyDefences(def map[game.Colour]int) {
-	def[game.ColourBlack] += 1
+	def[e.colour] += e.delta
 }
 
 func TestCharacter_Defences(t *testing.T) {
@@ -88,7 +90,10 @@ func TestCharacter_Defences(t *testing.T) {
 				},
 			},
 			effs: []game.Effect{
-				defenceModifierEffect{},
+				defenceModifierEffect{
+					colour: game.ColourBlack,
+					delta:  1,
+				},
 			},
 			defences: map[game.Colour]int{
 				game.ColourWhite: 1,
@@ -145,6 +150,113 @@ func TestCharacter_LastUsedSkill(t *testing.T) {
 		s.Use(opp, gameCtx)
 
 		assert.Same(t, s, c.LastUsedSkill(), "after skill #%d", i+1)
+	}
+}
+
+type controlEffect struct {
+	takenControl bool
+}
+
+// Desc returns the effect's description.
+func (e controlEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
+// HasTakenControl reports whether the opponent has taken control over the character.
+func (e controlEffect) HasTakenControl() bool {
+	return e.takenControl
+}
+
+func TestCharacter_IsControlledByOpp(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name              string
+		effs              []game.Effect
+		isControlledByOpp bool
+	}{
+		{
+			name:              "Basic",
+			isControlledByOpp: false,
+		},
+		{
+			name: "EffectTakenControl",
+			effs: []game.Effect{
+				controlEffect{takenControl: true},
+			},
+			isControlledByOpp: true,
+		},
+		{
+			name: "EffectNotTakenControl",
+			effs: []game.Effect{
+				controlEffect{takenControl: false},
+			},
+			isControlledByOpp: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := game.NewCharacter(game.CharacterData{})
+
+			for _, e := range tt.effs {
+				c.AddEffect(e)
+			}
+
+			assert.Equal(t, tt.isControlledByOpp, c.IsControlledByOpp())
+		})
+	}
+}
+
+type skillsPerTurnEffect struct {
+	number int
+}
+
+// Desc returns the effect's description.
+func (e skillsPerTurnEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
+// SkillsPerTurn returns a number of tines available for the character to use skills this turn.
+func (e skillsPerTurnEffect) SkillsPerTurn() int {
+	return e.number
+}
+
+func TestCharacter_SkillsPerTurn(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		effs          []game.Effect
+		skillsPerTurn int
+	}{
+		{
+			name:          "Basic",
+			skillsPerTurn: 1,
+		},
+		{
+			name: "Modified",
+			effs: []game.Effect{
+				skillsPerTurnEffect{number: 2},
+			},
+			skillsPerTurn: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := game.NewCharacter(game.CharacterData{})
+
+			for _, e := range tt.effs {
+				c.AddEffect(e)
+			}
+
+			assert.Equal(t, tt.skillsPerTurn, c.SkillsPerTurn())
+		})
 	}
 }
 
@@ -326,8 +438,8 @@ func TestCharacter_Damage(t *testing.T) {
 				DefaultHP: 100,
 			},
 			dmg:    120,
-			effDmg: 100,
-			hp:     0,
+			effDmg: 120,
+			hp:     -20,
 		},
 		{
 			name: "Negative",
@@ -363,6 +475,25 @@ func TestCharacter_Damage(t *testing.T) {
 			colour: game.ColourViolet,
 			effDmg: 43,
 			hp:     57,
+		},
+		{
+			name: "ModifiedDefence",
+			data: game.CharacterData{
+				DefaultHP: 100,
+				Defences: map[game.Colour]int{
+					game.ColourViolet: 2,
+				},
+			},
+			oppEffs: []game.Effect{
+				defenceModifierEffect{
+					colour: game.ColourViolet,
+					delta:  -1,
+				},
+			},
+			dmg:    40,
+			colour: game.ColourViolet,
+			effDmg: 39,
+			hp:     61,
 		},
 		{
 			name: "AttEffectModification",
@@ -551,22 +682,46 @@ func (e *turnEndHandlerEffect) OnTurnEnd(c, opp *game.Character, gameCtx game.Co
 func TestCharacter_OnTurnEnd(t *testing.T) {
 	t.Parallel()
 
-	data := game.CharacterData{}
-	c := game.NewCharacter(data)
-	opp := game.NewCharacter(data)
+	t.Run("EffectOnTurnEndExecutes", func(t *testing.T) {
+		t.Parallel()
 
-	eff := &turnEndHandlerEffect{}
-	c.AddEffect(eff)
+		data := game.CharacterData{}
+		c := game.NewCharacter(data)
+		opp := game.NewCharacter(data)
 
-	gameCtx := game.Context{
-		TurnNum: 4,
-	}
+		eff := &turnEndHandlerEffect{}
+		c.AddEffect(eff)
 
-	c.OnTurnEnd(opp, gameCtx)
+		gameCtx := game.Context{
+			TurnNum: 4,
+		}
 
-	assert.Same(t, c, eff.gotC, "character")
-	assert.Same(t, opp, eff.gotOpp, "opponent")
-	assert.Equal(t, gameCtx, eff.gotGameCtx, "game context")
+		c.OnTurnEnd(opp, gameCtx)
+
+		assert.Same(t, c, eff.gotC, "character")
+		assert.Same(t, opp, eff.gotOpp, "opponent")
+		assert.Equal(t, gameCtx, eff.gotGameCtx, "game context")
+	})
+
+	t.Run("RemovesExpiredEffects", func(t *testing.T) {
+		t.Parallel()
+
+		data := game.CharacterData{}
+		c := game.NewCharacter(data)
+		opp := game.NewCharacter(data)
+
+		eff := &expirableEffect{expired: true}
+		c.AddEffect(eff)
+
+		gameCtx := game.Context{
+			TurnNum: 4,
+		}
+
+		c.OnTurnEnd(opp, gameCtx)
+
+		_, found := game.CharacterEffect[*expirableEffect](c)
+		assert.False(t, found, "effect after expiry")
+	})
 }
 
 type effectType1 struct {

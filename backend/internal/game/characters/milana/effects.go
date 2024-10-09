@@ -1,6 +1,9 @@
 package milana
 
-import "github.com/ShmaykhelDuo/battler/backend/internal/game"
+import (
+	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/common"
+)
 
 var EffectDescStolenHP = game.EffectDescription{
 	Name: "Stolen HP",
@@ -8,28 +11,18 @@ var EffectDescStolenHP = game.EffectDescription{
 
 // Damage dealt by Royal Move. You can spend it on Composure heal or Pride damage.
 type EffectStolenHP struct {
-	amount int
+	*common.Collectible
 }
 
-func NewEffectStolenHP(amount int) *EffectStolenHP {
-	return &EffectStolenHP{amount: amount}
+func NewEffectStolenHP(amount int) EffectStolenHP {
+	return EffectStolenHP{
+		Collectible: common.NewCollectible(amount),
+	}
 }
 
 // Desc returns the effect's description.
-func (e *EffectStolenHP) Desc() game.EffectDescription {
+func (e EffectStolenHP) Desc() game.EffectDescription {
 	return EffectDescStolenHP
-}
-
-func (e *EffectStolenHP) Amount() int {
-	return e.amount
-}
-
-func (e *EffectStolenHP) Increase(amount int) {
-	e.amount += amount
-}
-
-func (e *EffectStolenHP) Decrease(amount int) {
-	e.amount -= amount
 }
 
 var EffectDescMintMist = game.EffectDescription{
@@ -38,6 +31,13 @@ var EffectDescMintMist = game.EffectDescription{
 
 // Your opponent can't use debuffs on you. Your Royal Move and Composure become stronger.
 type EffectMintMist struct {
+	common.DurationExpirable
+}
+
+func NewEffectMintMist(gameCtx game.Context) EffectMintMist {
+	return EffectMintMist{
+		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(2, false)),
+	}
 }
 
 // Desc returns the effect's description.

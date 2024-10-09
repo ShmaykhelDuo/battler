@@ -19,7 +19,7 @@ var SkillRoyalMove = game.SkillData{
 
 		stolen := c.Damage(opp, dmg, game.ColourGreen)
 
-		effStolen, ok := game.CharacterEffect[*EffectStolenHP](c)
+		effStolen, ok := game.CharacterEffect[EffectStolenHP](c)
 		if ok {
 			effStolen.Increase(stolen)
 		} else {
@@ -37,26 +37,29 @@ var SkillComposure = game.SkillData{
 		Colour:     game.ColourWhite,
 	},
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		effStolen, ok := game.CharacterEffect[*EffectStolenHP](c)
+		effStolen, ok := game.CharacterEffect[EffectStolenHP](c)
 		if !ok {
 			return
 		}
 
-		heal := effStolen.Amount()
+		stolen := effStolen.Amount()
 
-		maxHeal := 20
+		cost := 6
+		heal := 20
 
 		_, hasMintMist := game.CharacterEffect[EffectMintMist](c)
 		if hasMintMist {
-			maxHeal = 30
+			cost = 10
+			heal = 30
 		}
 
-		if heal > maxHeal {
-			heal = maxHeal
+		if stolen < cost {
+			cost = c.Heal(stolen)
+		} else {
+			c.Heal(heal)
 		}
 
-		heal = c.Heal(heal)
-		effStolen.Decrease(heal)
+		effStolen.Decrease(cost)
 	},
 }
 
@@ -72,7 +75,7 @@ var SkillMintMist = game.SkillData{
 	},
 	Cooldown: 2,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(EffectMintMist{})
+		c.AddEffect(NewEffectMintMist(gameCtx))
 	},
 }
 
@@ -86,7 +89,7 @@ var SkillPride = game.SkillData{
 	},
 	UnlockTurn: 8,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		effStolen, ok := game.CharacterEffect[*EffectStolenHP](c)
+		effStolen, ok := game.CharacterEffect[EffectStolenHP](c)
 		if !ok {
 			return
 		}

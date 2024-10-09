@@ -65,7 +65,7 @@ var SkillSLayers = game.SkillData{
 			threshold += boost.Amount()
 		}
 
-		c.AddEffect(NewEffectSLayers(threshold))
+		c.AddEffect(NewEffectSLayers(gameCtx, threshold))
 	},
 }
 
@@ -77,6 +77,6 @@ var SkillLastChance = game.SkillData{
 	Cooldown:   10,
 	UnlockTurn: 7,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(EffectLastChance{})
+		c.AddEffect(NewEffectLastChance(gameCtx))
 	},
 }

@@ -195,6 +195,7 @@ func TestSkillYourColour_Use(t *testing.T) {
 			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.colour, eff.Colour(), "colour")
+			assert.Equal(t, 1, eff.TurnsLeft(tt.gameCtx.AddTurns(0, true)), "turns left opponent")
 		})
 	}
 }
@@ -312,6 +313,8 @@ func TestSkillMyStory_Use(t *testing.T) {
 	err := s.Use(opp, gameCtx)
 	require.NoError(t, err)
 
-	_, ok := game.CharacterEffect[storyteller.EffectControlled](opp)
+	eff, ok := game.CharacterEffect[storyteller.EffectControlled](opp)
 	require.True(t, ok, "effect")
+
+	assert.Equal(t, 1, eff.TurnsLeft(gameCtx.AddTurns(0, true)), "turns left opponent")
 }

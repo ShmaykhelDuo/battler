@@ -1,6 +1,9 @@
 package speed
 
-import "github.com/ShmaykhelDuo/battler/backend/internal/game"
+import (
+	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/common"
+)
 
 var EffectDescGreenTokens = game.EffectDescription{
 	Name: "Green Tokens",
@@ -8,14 +11,12 @@ var EffectDescGreenTokens = game.EffectDescription{
 }
 
 type EffectGreenTokens struct {
-	*Tokens
+	*common.Collectible
 }
 
 func NewEffectGreenTokens(number int) EffectGreenTokens {
 	return EffectGreenTokens{
-		Tokens: &Tokens{
-			number: number,
-		},
+		Collectible: common.NewCollectible(number),
 	}
 }
 
@@ -30,35 +31,18 @@ var EffectDescBlackTokens = game.EffectDescription{
 }
 
 type EffectBlackTokens struct {
-	*Tokens
+	*common.Collectible
 }
 
 func NewEffectBlackTokens(number int) EffectBlackTokens {
 	return EffectBlackTokens{
-		Tokens: &Tokens{
-			number: number,
-		},
+		Collectible: common.NewCollectible(number),
 	}
 }
 
 // Desc returns the effect's description.
 func (e EffectBlackTokens) Desc() game.EffectDescription {
 	return EffectDescBlackTokens
-}
-
-// Tokens add damage to your Stab.
-type Tokens struct {
-	number int
-}
-
-// Number returns the number of tokens.
-func (e *Tokens) Number() int {
-	return e.number
-}
-
-// Increase increases the number of tokens by 1.
-func (e *Tokens) Increase() {
-	e.number++
 }
 
 var EffectDescDamageReduced = game.EffectDescription{
@@ -69,6 +53,7 @@ var EffectDescDamageReduced = game.EffectDescription{
 // Your opponent's next attack will deal this much less damage.
 type EffectDamageReduced struct {
 	amount int
+	used   bool
 }
 
 func NewEffectDamageReduced(amount int) *EffectDamageReduced {
@@ -90,7 +75,14 @@ func (e *EffectDamageReduced) Increase(amount int) {
 
 // ModifyTakenDamage returns the modified amount of damage based on provided amount of damage and damage colour.
 func (e *EffectDamageReduced) ModifyTakenDamage(dmg int, colour game.Colour) int {
+	e.used = true
+
 	return dmg - e.amount
+}
+
+// HasExpired reports whether the effect has expired.
+func (e *EffectDamageReduced) HasExpired(gameCtx game.Context) bool {
+	return e.used
 }
 
 var EffectDescDefenceReduced = game.EffectDescription{
@@ -118,11 +110,23 @@ var EffectDescSpedUp = game.EffectDescription{
 
 // This turn, you can use two skills but not your ultimate.
 type EffectSpedUp struct {
+	common.DurationExpirable
+}
+
+func NewEffectSpedUp(gameCtx game.Context) EffectSpedUp {
+	return EffectSpedUp{
+		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(1, false)),
+	}
 }
 
 // Desc returns the effect's description.
 func (e EffectSpedUp) Desc() game.EffectDescription {
 	return EffectDescSpedUp
+}
+
+// SkillsPerTurn returns a number of tines available for the character to use skills this turn.
+func (e EffectSpedUp) SkillsPerTurn() int {
+	return 2
 }
 
 // IsSkillAvailable reports whether the skill can be used.

@@ -343,47 +343,95 @@ func TestSkill_IsAvailable(t *testing.T) {
 	}
 }
 
+type expirableEffect struct {
+	expired bool
+}
+
+// Desc returns the effect's description.
+func (e *expirableEffect) Desc() game.EffectDescription {
+	return game.EffectDescription{}
+}
+
+// HasExpired reports whether the effect has expired.
+func (e *expirableEffect) HasExpired(gameCtx game.Context) bool {
+	return e.expired
+}
+
 func TestSkill_Use(t *testing.T) {
 	t.Parallel()
 
-	tests := skillAvailabilityTests
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+	t.Run("RunsWhenAvailable", func(t *testing.T) {
+		t.Parallel()
 
-			charData := game.CharacterData{}
-			c := game.NewCharacter(charData)
-			opp := game.NewCharacter((charData))
+		tests := skillAvailabilityTests
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
 
-			for _, e := range tt.effs {
-				c.AddEffect(e)
-			}
+				charData := game.CharacterData{}
+				c := game.NewCharacter(charData)
+				opp := game.NewCharacter((charData))
 
-			var gotC, gotOpp *game.Character
-			var gotGameCtx game.Context
-			data := tt.data
-			data.Use = func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-				gotC = c
-				gotOpp = opp
-				gotGameCtx = gameCtx
-			}
-			s := game.NewSkill(c, data)
+				for _, e := range tt.effs {
+					c.AddEffect(e)
+				}
 
-			if tt.wasUsed {
-				err := s.Use(opp, tt.prevUseCtx)
-				require.NoError(t, err)
-			}
+				var gotC, gotOpp *game.Character
+				var gotGameCtx game.Context
+				data := tt.data
+				data.Use = func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+					gotC = c
+					gotOpp = opp
+					gotGameCtx = gameCtx
+				}
+				s := game.NewSkill(c, data)
 
-			err := s.Use(opp, tt.gameCtx)
+				if tt.wasUsed {
+					err := s.Use(opp, tt.prevUseCtx)
+					require.NoError(t, err)
+				}
 
-			if tt.isAvailable {
-				require.NoError(t, err)
-				assert.Same(t, c, gotC, "character")
-				assert.Same(t, opp, gotOpp, "opponent")
-				assert.Equal(t, tt.gameCtx, gotGameCtx, "game context")
-			} else {
-				assert.ErrorIs(t, err, game.ErrSkillNotAvailable)
-			}
-		})
-	}
+				err := s.Use(opp, tt.gameCtx)
+
+				if tt.isAvailable {
+					require.NoError(t, err)
+					assert.Same(t, c, gotC, "character")
+					assert.Same(t, opp, gotOpp, "opponent")
+					assert.Equal(t, tt.gameCtx, gotGameCtx, "game context")
+				} else {
+					assert.ErrorIs(t, err, game.ErrSkillNotAvailable)
+				}
+			})
+		}
+	})
+
+	t.Run("RemovesExpiredEffects", func(t *testing.T) {
+		t.Parallel()
+
+		charData := game.CharacterData{}
+		c := game.NewCharacter(charData)
+		opp := game.NewCharacter((charData))
+
+		eff := &expirableEffect{}
+		c.AddEffect(eff)
+
+		oppEff := &expirableEffect{}
+		opp.AddEffect(oppEff)
+
+		data := game.SkillData{
+			Use: func(c, opp *game.Character, gameCtx game.Context) {
+				eff.expired = true
+				oppEff.expired = true
+			},
+		}
+		s := game.NewSkill(c, data)
+
+		s.Use(opp, game.Context{})
+
+		_, found := game.CharacterEffect[*expirableEffect](c)
+		assert.False(t, found, "effect after expiry")
+
+		_, oppFound := game.CharacterEffect[*expirableEffect](opp)
+		assert.False(t, oppFound, "opponent's effect after expiry")
+	})
 }

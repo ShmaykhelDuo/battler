@@ -1,6 +1,9 @@
 package game
 
-import "maps"
+import (
+	"maps"
+	"slices"
+)
 
 // CharacterDescription is a list of constant features of a character.
 type CharacterDescription struct {
@@ -23,6 +26,18 @@ type CharacterData struct {
 type DefenceModifier interface {
 	// ModifyDefences returns the modified defences.
 	ModifyDefences(def map[Colour]int)
+}
+
+// ControlHandler handles taking control of the character.
+type ControlHandler interface {
+	// HasTakenControl reports whether the opponent has taken control over the character.
+	HasTakenControl() bool
+}
+
+// SkillsPerTurnHandler handles changing number of skills per turn.
+type SkillsPerTurnHandler interface {
+	// SkillsPerTurn returns a number of tines available for the character to use skills this turn.
+	SkillsPerTurn() int
 }
 
 // EffectFilter filters effects allowed to be applied to a character.
@@ -53,6 +68,12 @@ type HealFilter interface {
 type TurnEndHandler interface {
 	// OnTurnEnd executes the end-of-turn action.
 	OnTurnEnd(c, opp *Character, gameCtx Context)
+}
+
+// Expirable represents an effect which can be expired.
+type Expirable interface {
+	// HasExpired reports whether the effect has expired.
+	HasExpired(gameCtx Context) bool
 }
 
 // Character is a representation of a character in a match.
@@ -114,7 +135,7 @@ func (c *Character) Defences() map[Colour]int {
 
 // Effects returns a slice of effects applied to the character.
 func (c *Character) Effects() []Effect {
-	return c.effects
+	return slices.Clone(c.effects)
 }
 
 // Skills returns an array of skills provided by the character.
@@ -125,6 +146,30 @@ func (c *Character) Skills() [SkillCount]*Skill {
 // LastUsedSkill returns the skill used last.
 func (c *Character) LastUsedSkill() *Skill {
 	return c.lastUsedSkill
+}
+
+// IsControlledByOpp reports whether the opponent is in control of the character.
+func (c *Character) IsControlledByOpp() bool {
+	for _, e := range c.effects {
+		control, ok := e.(ControlHandler)
+		if ok && control.HasTakenControl() {
+			return true
+		}
+	}
+
+	return false
+}
+
+// SkillsPerTurn return a number of times a skill can be used this turn.
+func (c *Character) SkillsPerTurn() int {
+	for _, e := range c.effects {
+		h, ok := e.(SkillsPerTurnHandler)
+		if ok {
+			return h.SkillsPerTurn()
+		}
+	}
+
+	return 1
 }
 
 // SetMaxHP sets the character's maximum HP.
@@ -168,14 +213,10 @@ func (c *Character) Damage(opp *Character, dmg int, colour Colour) int {
 		}
 	}
 
-	dmg -= opp.defences[colour]
+	dmg -= opp.Defences()[colour]
 
 	if dmg < 0 {
 		dmg = 0
-	}
-
-	if dmg > opp.hp {
-		dmg = opp.hp
 	}
 
 	opp.hp -= dmg
@@ -218,6 +259,15 @@ func (c *Character) OnTurnEnd(opp *Character, gameCtx Context) {
 			h.OnTurnEnd(c, opp, gameCtx)
 		}
 	}
+
+	c.removeExpiredEffects(gameCtx)
+}
+
+func (c *Character) removeExpiredEffects(gameCtx Context) {
+	c.effects = slices.DeleteFunc(c.effects, func(e Effect) bool {
+		exp, ok := e.(Expirable)
+		return ok && exp.HasExpired(gameCtx)
+	})
 }
 
 // Effect returns an applied effect with matching description and whether it is found.

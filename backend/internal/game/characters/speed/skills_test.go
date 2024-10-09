@@ -15,7 +15,7 @@ func greenTokensNumber(c *game.Character) int {
 		return 0
 	}
 
-	return tokens.Number()
+	return tokens.Amount()
 }
 
 func blackTokensNumber(c *game.Character) int {
@@ -24,7 +24,7 @@ func blackTokensNumber(c *game.Character) int {
 		return 0
 	}
 
-	return tokens.Number()
+	return tokens.Amount()
 }
 
 func runSkill(t *testing.T, skillIndex int, effs []game.Effect, gameCtx game.Context) (c, opp *game.Character) {
@@ -190,8 +190,10 @@ func TestSkillSpeed_Use(t *testing.T) {
 
 		c, _ := runSkill(t, 2, nil, game.Context{})
 
-		_, ok := game.CharacterEffect[speed.EffectSpedUp](c)
+		eff, ok := game.CharacterEffect[speed.EffectSpedUp](c)
 		require.True(t, ok, "effect")
+
+		assert.Equal(t, 1, eff.TurnsLeft(game.Context{}.AddTurns(1, false)), "turns left")
 	})
 
 	testGainGreenToken(t, 2)

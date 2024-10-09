@@ -227,6 +227,7 @@ func TestSkillSLayers_Use(t *testing.T) {
 			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.threshold, layers.Threshold(), "threshold")
+			assert.Equal(t, 1, layers.TurnsLeft(game.Context{}.AddTurns(0, true)), "turns left")
 		})
 	}
 }
@@ -237,10 +238,14 @@ func TestSkillLastChance_Use(t *testing.T) {
 	c := game.NewCharacter(structure.CharacterStructure)
 	opp := game.NewCharacter(game.CharacterData{})
 
+	gameCtx := game.Context{TurnNum: 7}
+
 	s := c.Skills()[3]
-	err := s.Use(opp, game.Context{TurnNum: 7})
+	err := s.Use(opp, gameCtx)
 	require.NoError(t, err)
 
-	_, ok := game.CharacterEffect[structure.EffectLastChance](c)
+	eff, ok := game.CharacterEffect[structure.EffectLastChance](c)
 	require.True(t, ok, "effect")
+
+	assert.Equal(t, 1, eff.TurnsLeft(gameCtx.AddTurns(0, true)), "turns left")
 }

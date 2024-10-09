@@ -64,143 +64,13 @@ func TestSkillScarcity(t *testing.T) {
 	}
 }
 
-func TestSkillIndifference_IsAvailable(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name        string
-		oppData     game.CharacterData
-		effs        []game.Effect
-		gameCtx     game.Context
-		isAvailable bool
-	}{
-		{
-			name: "Basic",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
-					3: {
-						Desc: game.SkillDescription{
-							IsUltimate: true,
-						},
-						UnlockTurn: 7,
-					},
-				},
-			},
-			gameCtx:     game.Context{TurnNum: 5},
-			isAvailable: true,
-		},
-		{
-			name: "AlreadyUnlocked1",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
-					3: {
-						Desc: game.SkillDescription{
-							IsUltimate: true,
-						},
-						UnlockTurn: 7,
-					},
-				},
-			},
-			gameCtx: game.Context{
-				TurnNum:      8,
-				IsGoingFirst: true,
-			},
-			isAvailable: false,
-		},
-		{
-			name: "AlreadyUnlocked2",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
-					3: {
-						Desc: game.SkillDescription{
-							IsUltimate: true,
-						},
-						UnlockTurn: 7,
-					},
-				},
-			},
-			gameCtx: game.Context{
-				TurnNum:      8,
-				IsGoingFirst: false,
-			},
-			isAvailable: false,
-		},
-		{
-			name: "JustBeforeUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
-					3: {
-						Desc: game.SkillDescription{
-							IsUltimate: true,
-						},
-						UnlockTurn: 7,
-					},
-				},
-			},
-			gameCtx: game.Context{
-				TurnNum:      7,
-				IsGoingFirst: true,
-			},
-			isAvailable: true,
-		},
-		{
-			name: "JustAfterUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
-					3: {
-						Desc: game.SkillDescription{
-							IsUltimate: true,
-						},
-						UnlockTurn: 7,
-					},
-				},
-			},
-			gameCtx: game.Context{
-				TurnNum:      7,
-				IsGoingFirst: false,
-			},
-			isAvailable: false,
-		},
-		{
-			name: "JustBeforeUnlockedWithEffect",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
-					3: {
-						Desc: game.SkillDescription{
-							IsUltimate: true,
-						},
-						UnlockTurn: 7,
-					},
-				},
-			},
-			effs: []game.Effect{
-				z89.NewEffectUltimateSlow(),
-			},
-			gameCtx: game.Context{
-				TurnNum:      8,
-				IsGoingFirst: true,
-			},
-			isAvailable: true,
-		},
+func ultimateSlowAmount(opp *game.Character) int {
+	e, ok := game.CharacterEffect[*z89.EffectUltimateSlow](opp)
+	if !ok {
+		return 0
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			c := game.NewCharacter(z89.CharacterZ89)
-			opp := game.NewCharacter(tt.oppData)
-
-			for _, e := range tt.effs {
-				opp.AddEffect(e)
-			}
-
-			s := c.Skills()[1]
-
-			isAvailable := s.IsAvailable(opp, tt.gameCtx)
-			assert.Equal(t, tt.isAvailable, isAvailable)
-		})
-	}
+	return e.Amount()
 }
 
 func TestSkillIndifference_Use(t *testing.T) {
@@ -210,10 +80,11 @@ func TestSkillIndifference_Use(t *testing.T) {
 		name      string
 		oppData   game.CharacterData
 		effs      []game.Effect
+		gameCtx   game.Context
 		effAmount int
 	}{
 		{
-			name: "NoEffect",
+			name: "NoEffectNotUnlocked",
 			oppData: game.CharacterData{
 				SkillData: [4]game.SkillData{
 					3: {
@@ -224,10 +95,62 @@ func TestSkillIndifference_Use(t *testing.T) {
 					},
 				},
 			},
+			gameCtx:   game.Context{TurnNum: 5},
 			effAmount: 1,
 		},
 		{
-			name: "Effect",
+			name: "NoEffectAlreadyUnlocked",
+			oppData: game.CharacterData{
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			gameCtx:   game.Context{TurnNum: 8},
+			effAmount: 0,
+		},
+		{
+			name: "NoEffectJustBeforeUnlocked",
+			oppData: game.CharacterData{
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			gameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: true,
+			},
+			effAmount: 1,
+		},
+		{
+			name: "NoEffectJustAfterUnlocked",
+			oppData: game.CharacterData{
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			gameCtx: game.Context{
+				TurnNum:      7,
+				IsGoingFirst: false,
+			},
+			effAmount: 0,
+		},
+		{
+			name: "WithEffectNotUnlocked",
 			oppData: game.CharacterData{
 				SkillData: [4]game.SkillData{
 					3: {
@@ -241,7 +164,68 @@ func TestSkillIndifference_Use(t *testing.T) {
 			effs: []game.Effect{
 				z89.NewEffectUltimateSlow(),
 			},
+			gameCtx:   game.Context{TurnNum: 5},
 			effAmount: 2,
+		},
+		{
+			name: "WithEffectUnlocked",
+			oppData: game.CharacterData{
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			effs: []game.Effect{
+				z89.NewEffectUltimateSlow(),
+			},
+			gameCtx:   game.Context{TurnNum: 9},
+			effAmount: 1,
+		},
+		{
+			name: "WithEffectJustBeforeUnlocked",
+			oppData: game.CharacterData{
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			effs: []game.Effect{
+				z89.NewEffectUltimateSlow(),
+			},
+			gameCtx: game.Context{
+				TurnNum:      8,
+				IsGoingFirst: true,
+			},
+			effAmount: 2,
+		},
+		{
+			name: "WithEffectJustAfterUnlocked",
+			oppData: game.CharacterData{
+				SkillData: [4]game.SkillData{
+					3: {
+						Desc: game.SkillDescription{
+							IsUltimate: true,
+						},
+						UnlockTurn: 7,
+					},
+				},
+			},
+			effs: []game.Effect{
+				z89.NewEffectUltimateSlow(),
+			},
+			gameCtx: game.Context{
+				TurnNum:      8,
+				IsGoingFirst: false,
+			},
+			effAmount: 1,
 		},
 	}
 
@@ -258,14 +242,10 @@ func TestSkillIndifference_Use(t *testing.T) {
 
 			s := c.Skills()[1]
 
-			gameCtx := game.Context{TurnNum: 5}
-			err := s.Use(opp, gameCtx)
+			err := s.Use(opp, tt.gameCtx)
 			require.NoError(t, err)
 
-			e, ok := game.CharacterEffect[*z89.EffectUltimateSlow](opp)
-			require.True(t, ok, "effect")
-
-			assert.Equal(t, tt.effAmount, e.Amount(), "amount")
+			assert.Equal(t, tt.effAmount, ultimateSlowAmount(opp), "ultimate slow amount")
 		})
 	}
 }

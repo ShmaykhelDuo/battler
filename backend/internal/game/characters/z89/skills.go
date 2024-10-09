@@ -30,20 +30,11 @@ var SkillIndifference = game.SkillData{
 	Cooldown:   2,
 	UnlockTurn: 2,
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		effSlow, ok := game.CharacterEffect[*EffectUltimateSlow](opp)
-		if ok {
-			effSlow.Increase()
+		if hasOpponentUltimateUnlocked(opp, gameCtx) {
 			return
 		}
 
-		opp.AddEffect(NewEffectUltimateSlow())
-	},
-	IsAvailable: func(c *game.Character, opp *game.Character, gameCtx game.Context) bool {
-		if gameCtx.TurnNum == opp.Skills()[3].UnlockTurn() {
-			return gameCtx.IsGoingFirst
-		}
-
-		return gameCtx.TurnNum < opp.Skills()[3].UnlockTurn()
+		increaseUltimateSlow(opp)
 	},
 }
 
@@ -74,4 +65,22 @@ var SkillDespondency = game.SkillData{
 		dmg := 40 - (opp.MaxHP() - 70)
 		c.Damage(opp, dmg, game.ColourBlue)
 	},
+}
+
+func hasOpponentUltimateUnlocked(opp *game.Character, gameCtx game.Context) bool {
+	unlockCtx := game.Context{
+		TurnNum:      opp.Skills()[3].UnlockTurn(),
+		IsGoingFirst: true,
+	}
+	return gameCtx.IsAfter(unlockCtx)
+}
+
+func increaseUltimateSlow(opp *game.Character) {
+	effSlow, ok := game.CharacterEffect[*EffectUltimateSlow](opp)
+	if ok {
+		effSlow.Increase()
+		return
+	}
+
+	opp.AddEffect(NewEffectUltimateSlow())
 }

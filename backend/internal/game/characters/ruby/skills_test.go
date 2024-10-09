@@ -23,8 +23,10 @@ func TestSkillDance_Use(t *testing.T) {
 	err := s.Use(opp, gameCtx)
 	require.NoError(t, err)
 
-	_, ok := game.CharacterEffect[ruby.EffectDoubleDamage](c)
+	eff, ok := game.CharacterEffect[ruby.EffectDoubleDamage](c)
 	require.True(t, ok, "effect")
+
+	assert.Equal(t, 2, eff.TurnsLeft(gameCtx.AddTurns(1, false)), "turns left next turn")
 }
 
 func TestSkillRage_Use(t *testing.T) {
@@ -80,11 +82,20 @@ func TestSkillRage_Use(t *testing.T) {
 	}
 }
 
-func assertEffectCannotHeal(t *testing.T, c *game.Character, name string) {
+func assertEffectCannotHeal(t *testing.T, c *game.Character, gameCtx game.Context, isOpp bool, name string) {
 	t.Helper()
 
-	_, ok := game.CharacterEffect[ruby.EffectCannotHeal](c)
-	assert.True(t, ok, "%s's effect", name)
+	eff, ok := game.CharacterEffect[ruby.EffectCannotHeal](c)
+	if !assert.True(t, ok, "%s's effect", name) {
+		return
+	}
+
+	checkCtx := gameCtx.AddTurns(1, false)
+	if isOpp {
+		checkCtx = gameCtx.AddTurns(0, true)
+	}
+
+	assert.Equal(t, 1, eff.TurnsLeft(checkCtx), "%s's effect turns left", name)
 }
 
 func TestSkillStop_Use(t *testing.T) {
@@ -101,80 +112,8 @@ func TestSkillStop_Use(t *testing.T) {
 	err := s.Use(opp, gameCtx)
 	require.NoError(t, err)
 
-	assertEffectCannotHeal(t, c, "character")
-	assertEffectCannotHeal(t, opp, "opponent")
-}
-
-func TestSkillExecute_IsAvailable(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name        string
-		oppData     game.CharacterData
-		prevDmg     int
-		effs        []game.Effect
-		gameCtx     game.Context
-		isAvailable bool
-	}{
-		{
-			name: "AboveThreshold",
-			oppData: game.CharacterData{
-				DefaultHP: 111,
-			},
-			prevDmg:     99,
-			isAvailable: false,
-		},
-		{
-			name: "BelowThreshold",
-			oppData: game.CharacterData{
-				DefaultHP: 111,
-			},
-			prevDmg:     100,
-			isAvailable: true,
-		},
-		{
-			name: "AboveThresholdWithCannotHeal",
-			oppData: game.CharacterData{
-				DefaultHP: 111,
-			},
-			effs: []game.Effect{
-				ruby.EffectCannotHeal{},
-			},
-			prevDmg:     88,
-			isAvailable: false,
-		},
-		{
-			name: "BelowThresholdWithCannotHeal",
-			oppData: game.CharacterData{
-				DefaultHP: 111,
-			},
-			effs: []game.Effect{
-				ruby.EffectCannotHeal{},
-			},
-			prevDmg:     89,
-			isAvailable: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			c := game.NewCharacter(ruby.CharacterRuby)
-			opp := game.NewCharacter(tt.oppData)
-
-			c.Damage(opp, tt.prevDmg, game.ColourNone)
-
-			for _, eff := range tt.effs {
-				c.AddEffect(eff)
-			}
-
-			s := c.Skills()[3]
-
-			isAvailable := s.IsAvailable(opp, tt.gameCtx)
-			assert.Equal(t, tt.isAvailable, isAvailable)
-		})
-	}
+	assertEffectCannotHeal(t, c, gameCtx, false, "character")
+	assertEffectCannotHeal(t, opp, gameCtx, true, "opponent")
 }
 
 func TestSkillExecute_Use(t *testing.T) {
@@ -186,13 +125,34 @@ func TestSkillExecute_Use(t *testing.T) {
 		prevDmg int
 		effs    []game.Effect
 		gameCtx game.Context
+		hp      int
 	}{
+		{
+			name: "AboveThreshold",
+			oppData: game.CharacterData{
+				DefaultHP: 111,
+			},
+			prevDmg: 99,
+			hp:      12,
+		},
 		{
 			name: "BelowThreshold",
 			oppData: game.CharacterData{
 				DefaultHP: 111,
 			},
 			prevDmg: 100,
+			hp:      0,
+		},
+		{
+			name: "AboveThresholdWithCannotHeal",
+			oppData: game.CharacterData{
+				DefaultHP: 111,
+			},
+			effs: []game.Effect{
+				ruby.EffectCannotHeal{},
+			},
+			prevDmg: 88,
+			hp:      23,
 		},
 		{
 			name: "BelowThresholdWithCannotHeal",
@@ -203,6 +163,7 @@ func TestSkillExecute_Use(t *testing.T) {
 				ruby.EffectCannotHeal{},
 			},
 			prevDmg: 89,
+			hp:      0,
 		},
 	}
 
@@ -224,7 +185,7 @@ func TestSkillExecute_Use(t *testing.T) {
 			err := s.Use(opp, tt.gameCtx)
 			require.NoError(t, err)
 
-			assert.Equal(t, 0, opp.HP(), "opponent's HP")
+			assert.Equal(t, tt.hp, opp.HP(), "opponent's HP")
 		})
 	}
 }

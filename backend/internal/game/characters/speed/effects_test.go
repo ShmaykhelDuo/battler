@@ -34,7 +34,7 @@ func TestNewEffectGreenTokens(t *testing.T) {
 			eff := speed.NewEffectGreenTokens(tt.number)
 
 			assert.Equal(t, speed.EffectDescGreenTokens, eff.Desc(), "description")
-			assert.Equal(t, tt.number, eff.Number(), "number")
+			assert.Equal(t, tt.number, eff.Amount(), "number")
 		})
 	}
 }
@@ -63,40 +63,7 @@ func TestNewEffectBlackTokens(t *testing.T) {
 			eff := speed.NewEffectBlackTokens(tt.number)
 
 			assert.Equal(t, speed.EffectDescBlackTokens, eff.Desc(), "description")
-			assert.Equal(t, tt.number, eff.Number(), "number")
-		})
-	}
-}
-
-func TestEffectTokens_Increase(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name       string
-		initNumber int
-		number     int
-	}{
-		{
-			name:       "Number1",
-			initNumber: 1,
-			number:     2,
-		},
-		{
-			name:       "Number2",
-			initNumber: 25,
-			number:     26,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			eff := speed.NewEffectGreenTokens(tt.initNumber)
-
-			eff.Increase()
-
-			assert.Equal(t, tt.number, eff.Number())
+			assert.Equal(t, tt.number, eff.Amount(), "number")
 		})
 	}
 }
@@ -199,6 +166,26 @@ func TestEffectDamageReduced_ModifyTakenDamage(t *testing.T) {
 	}
 }
 
+func TestEffectDamageReduced_HasExpired(t *testing.T) {
+	t.Parallel()
+
+	t.Run("NotExpiredByDefault", func(t *testing.T) {
+		t.Parallel()
+
+		eff := speed.NewEffectDamageReduced(5)
+		assert.False(t, eff.HasExpired(game.Context{}))
+	})
+
+	t.Run("ExpiredAfterAttack", func(t *testing.T) {
+		t.Parallel()
+
+		eff := speed.NewEffectDamageReduced(5)
+		eff.ModifyTakenDamage(25, game.ColourNone)
+
+		assert.True(t, eff.HasExpired(game.Context{}))
+	})
+}
+
 func TestEffectDefenceReduced_ModifyDefences(t *testing.T) {
 	t.Parallel()
 
@@ -238,6 +225,14 @@ func TestEffectDefenceReduced_ModifyDefences(t *testing.T) {
 			assert.Equal(t, tt.out, res)
 		})
 	}
+}
+
+func TestEffectSpedUp_SkillsPerTurn(t *testing.T) {
+	t.Parallel()
+
+	eff := speed.EffectSpedUp{}
+
+	assert.Equal(t, 2, eff.SkillsPerTurn())
 }
 
 func TestEffectSpedUp_IsSkillAvailable(t *testing.T) {

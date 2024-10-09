@@ -129,6 +129,9 @@ func (s *Skill) Use(opp *Character, gameCtx Context) error {
 
 	s.useFunc(s.c, opp, gameCtx)
 
+	s.c.removeExpiredEffects(gameCtx)
+	opp.removeExpiredEffects(gameCtx)
+
 	s.prevUsedTurn = gameCtx.TurnNum
 	s.c.lastUsedSkill = s
 
