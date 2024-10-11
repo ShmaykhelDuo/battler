@@ -28,6 +28,8 @@ func Turn(p, oppP Player, c, opp *game.Character, gameCtx game.Context) {
 		c.Skills()[i].Use(opp, gameCtx)
 	}
 
-	c.OnTurnEnd(opp, gameCtx)
-	opp.OnTurnEnd(opp, gameCtx)
+	endCtx := gameCtx
+	endCtx.IsTurnEnd = true
+	c.OnTurnEnd(opp, endCtx)
+	opp.OnTurnEnd(opp, endCtx)
 }
