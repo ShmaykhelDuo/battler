@@ -10,7 +10,10 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 		opp.OnTurnEnd(c, endCtx)
 
 		nextCtx := gameCtx.AddTurns(0, true)
-		return MiniMax(opp, c, nextCtx, opp.SkillsPerTurn(), depth-1, !asOpp)
+		if asOpp {
+			depth -= 1
+		}
+		return MiniMax(opp, c, nextCtx, opp.SkillsPerTurn(), depth, !asOpp)
 	}
 
 	if depth == 0 || hasGameEnded(c, opp, gameCtx) {
@@ -36,7 +39,7 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 		clonedS := clonedC.Skills()[i]
 		clonedS.Use(clonedOpp, gameCtx)
 
-		skillScore, skillStrategy := MiniMax(clonedOpp, clonedC, gameCtx, skillsLeft-1, depth, asOpp)
+		skillScore, skillStrategy := MiniMax(clonedC, clonedOpp, gameCtx, skillsLeft-1, depth, asOpp)
 
 		if (worst && skillScore < score) || (!worst && skillScore > score) {
 			score = skillScore
