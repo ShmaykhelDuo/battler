@@ -65,7 +65,7 @@ var SkillMyStory = game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "My Story",
 		IsUltimate: true,
-		Colour:     0,
+		Colour:     game.ColourBlue,
 	},
 	Cooldown:   1,
 	UnlockTurn: 7,
