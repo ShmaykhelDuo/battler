@@ -25,6 +25,9 @@ var SkillRun = game.SkillData{
 			increaseGreenTokens(c)
 		}
 	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		return greenTokensNumber(c) < 5
+	},
 }
 
 // Reduce your opponent's defense to Green by 1. Gain a Black Token.
@@ -41,6 +44,9 @@ var SkillWeaken = game.SkillData{
 			increaseBlackTokens(c)
 		}
 	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		return blackTokensNumber(c) < 5
+	},
 }
 
 // Next turn, you'll use two skills but not your ultimate. Gain a Green Token.
@@ -54,6 +60,14 @@ var SkillSpeed = game.SkillData{
 		if greenTokensNumber(c) < 5 {
 			increaseGreenTokens(c)
 		}
+	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		eff, ok := game.CharacterEffect[EffectSpedUp](c)
+		if ok && eff.TurnsLeft(gameCtx) > 1 {
+			return false
+		}
+
+		return greenTokensNumber(c) < 5 || blackTokensNumber(c) < 5
 	},
 }
 
@@ -72,6 +86,9 @@ var SkillStab = game.SkillData{
 
 		black := blackTokensNumber(c)
 		c.Damage(opp, black*mul, game.ColourBlack)
+	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		return greenTokensNumber(c) > 0 || blackTokensNumber(c) > 0
 	},
 }
 

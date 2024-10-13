@@ -11,11 +11,12 @@ type SkillDescription struct {
 
 // SkillData is a list of features of a skill.
 type SkillData struct {
-	Desc        SkillDescription                              // skill's description
-	Cooldown    int                                           // skill's cooldown, 0 if absent
-	UnlockTurn  int                                           // the turn number when skill is to be unlocked, 0 if always unlocked
-	Use         func(c, opp *Character, gameCtx Context)      // action to be executed on use of skill
-	IsAvailable func(c, opp *Character, gameCtx Context) bool // optional filter, reports whether the skill is available
+	Desc          SkillDescription                              // skill's description
+	Cooldown      int                                           // skill's cooldown, 0 if absent
+	UnlockTurn    int                                           // the turn number when skill is to be unlocked, 0 if always unlocked
+	Use           func(c, opp *Character, gameCtx Context)      // action to be executed on use of skill
+	IsAvailable   func(c, opp *Character, gameCtx Context) bool // optional filter, reports whether the skill is available
+	IsAppropriate func(c, opp *Character, gameCtx Context) bool
 }
 
 // SkillAvailabilityFilter filters skills to be used by a character.
@@ -35,24 +36,26 @@ var ErrSkillNotAvailable = errors.New("skill is not available")
 
 // Skill is a representation of a skill of a character in a match.
 type Skill struct {
-	desc          SkillDescription
-	cooldown      int
-	unlockTurn    int
-	prevUsedTurn  int
-	useFunc       func(c, opp *Character, gameCtx Context)
-	availableFunc func(c, opp *Character, gameCtx Context) bool
-	c             *Character
+	desc            SkillDescription
+	cooldown        int
+	unlockTurn      int
+	prevUsedTurn    int
+	useFunc         func(c, opp *Character, gameCtx Context)
+	availableFunc   func(c, opp *Character, gameCtx Context) bool
+	appropriateFunc func(c, opp *Character, gameCtx Context) bool
+	c               *Character
 }
 
 // NewSkill returns a new skill composed using provided character and data.
 func NewSkill(c *Character, data SkillData) *Skill {
 	return &Skill{
-		desc:          data.Desc,
-		cooldown:      data.Cooldown,
-		unlockTurn:    data.UnlockTurn,
-		useFunc:       data.Use,
-		availableFunc: data.IsAvailable,
-		c:             c,
+		desc:            data.Desc,
+		cooldown:        data.Cooldown,
+		unlockTurn:      data.UnlockTurn,
+		useFunc:         data.Use,
+		availableFunc:   data.IsAvailable,
+		appropriateFunc: data.IsAppropriate,
+		c:               c,
 	}
 }
 
@@ -136,4 +139,12 @@ func (s *Skill) Use(opp *Character, gameCtx Context) error {
 	s.c.lastUsedSkill = s
 
 	return nil
+}
+
+func (s *Skill) IsAppropriate(opp *Character, gameCtx Context) bool {
+	if !s.IsAvailable(opp, gameCtx) {
+		return false
+	}
+
+	return s.appropriateFunc == nil || s.appropriateFunc(s.c, opp, gameCtx)
 }

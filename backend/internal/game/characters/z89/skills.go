@@ -36,6 +36,9 @@ var SkillIndifference = game.SkillData{
 
 		increaseUltimateSlow(opp)
 	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		return !hasOpponentUltimateUnlocked(opp, gameCtx)
+	},
 }
 
 // Deal 15 - (opponent's max HP - opponent's current HP) green damage.

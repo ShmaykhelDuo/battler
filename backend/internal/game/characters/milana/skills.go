@@ -61,6 +61,10 @@ var SkillComposure = game.SkillData{
 
 		effStolen.Decrease(cost)
 	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		_, ok := game.CharacterEffect[EffectStolenHP](c)
+		return ok
+	},
 }
 
 // You become invisible, your opponent can't debuff you.
@@ -97,5 +101,9 @@ var SkillPride = game.SkillData{
 		dmg := effStolen.Amount()
 		c.Damage(opp, dmg, game.ColourCyan)
 		effStolen.Decrease(dmg)
+	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		_, ok := game.CharacterEffect[EffectStolenHP](c)
+		return ok
 	},
 }

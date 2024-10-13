@@ -53,19 +53,26 @@ var SkillExecute = game.SkillData{
 		Colour:     game.ColourRed,
 	},
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		threshold := 0.1
-
-		if hasEffectCannotHeal(c) {
-			threshold = 0.2
-		}
-
-		if float64(opp.HP()) < threshold*float64(opp.MaxHP()) {
+		if isBelowThreshold(c, opp) {
 			opp.Kill()
 		}
+	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		return isBelowThreshold(c, opp)
 	},
 }
 
 func hasEffectCannotHeal(c *game.Character) bool {
 	_, found := game.CharacterEffect[EffectCannotHeal](c)
 	return found
+}
+
+func isBelowThreshold(c, opp *game.Character) bool {
+	threshold := 0.1
+
+	if hasEffectCannotHeal(c) {
+		threshold = 0.2
+	}
+
+	return float64(opp.HP()) < threshold*float64(opp.MaxHP())
 }

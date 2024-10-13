@@ -12,6 +12,20 @@ type Context struct {
 	IsTurnEnd    bool // whether it is the end of turn
 }
 
+func TurnCtx(turnNum int) Context {
+	return Context{TurnNum: turnNum}
+}
+
+func (c Context) WithGoingFirst(isGoingFirst bool) Context {
+	c.IsGoingFirst = isGoingFirst
+	return c
+}
+
+func (c Context) WithTurnEnd() Context {
+	c.IsTurnEnd = true
+	return c
+}
+
 // IsAfter reports whether the current context is indicating later game time than provided context.
 func (c Context) IsAfter(other Context) bool {
 	if c.TurnNum != other.TurnNum {

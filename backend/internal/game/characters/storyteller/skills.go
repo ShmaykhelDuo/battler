@@ -48,14 +48,22 @@ var SkillYourDream = game.SkillData{
 		Colour:     game.ColourViolet,
 	},
 	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		num := opp.Desc().Number
-		if num > 83 {
-			num = 83
-		}
-
-		heal := int(math.Ceil(float64(c.MaxHP()-num) / float64(gameCtx.TurnNum)))
+		heal := yourDreamHeal(c, opp, gameCtx)
 		c.Heal(heal)
 	},
+	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+		heal := yourDreamHeal(c, opp, gameCtx)
+		return !(c.CanHeal(heal) || c.HP() >= c.MaxHP())
+	},
+}
+
+func yourDreamHeal(c *game.Character, opp *game.Character, gameCtx game.Context) int {
+	num := opp.Desc().Number
+	if num > 83 {
+		num = 83
+	}
+
+	return int(math.Ceil(float64(c.MaxHP()-num) / float64(gameCtx.TurnNum)))
 }
 
 // Next turn, you decide which skills your opponent uses.

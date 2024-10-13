@@ -228,15 +228,23 @@ func (c *Character) Kill() {
 	c.hp = 0
 }
 
+func (c *Character) CanHeal(heal int) bool {
+	for _, e := range c.effects {
+		filter, ok := e.(HealFilter)
+		if ok && !filter.IsHealAllowed(heal) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // Heal increases the character's HP.
 // It returns the actual amount of healing applied to the character.
 // Healing can be blocked by any of the effects applied to the character.
 func (c *Character) Heal(heal int) int {
-	for _, e := range c.effects {
-		filter, ok := e.(HealFilter)
-		if ok && !filter.IsHealAllowed(heal) {
-			return 0
-		}
+	if !c.CanHeal(heal) {
+		return 0
 	}
 
 	if heal < 0 {

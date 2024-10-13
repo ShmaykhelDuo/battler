@@ -1,8 +1,19 @@
-package minimax
+package main
 
-import "github.com/ShmaykhelDuo/battler/backend/internal/game"
+import (
+	"fmt"
+	"slices"
 
-func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth int, asOpp bool) (score int, strategy []int) {
+	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+)
+
+type Out struct {
+	PrevMoves []int
+	Strategy  []int
+	First     bool
+}
+
+func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth int, asOpp bool, prevMoves []int, out chan<- Out) (score int, strategy []int) {
 	// c - кому делаем хорошо
 	// opp - кому делаем плохо
 	// asOpp - если сейчас ход противника
@@ -17,7 +28,7 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 		if asOpp {
 			depth -= 1
 		}
-		return MiniMax(c, opp, nextCtx, opp.SkillsPerTurn(), depth, !asOpp)
+		return MiniMax(c, opp, nextCtx, opp.SkillsPerTurn(), depth, !asOpp, prevMoves, out)
 	}
 
 	if depth == 0 || hasGameEnded(c, opp, gameCtx) {
@@ -42,7 +53,6 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 		playC = c
 		playOpp = opp
 	}
-
 	appropriate := make([]bool, 4)
 	for i, s := range playC.Skills() {
 		appropriate[i] = s.IsAppropriate(playOpp, gameCtx)
@@ -50,10 +60,12 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 	filterAppropriate := appropriate[0] || appropriate[1] || appropriate[2] || appropriate[3]
 
 	for i, s := range playC.Skills() {
+		if depth > 7 {
+			fmt.Printf("depth:%d, i:%d\n", depth, i)
+		}
 		if !s.IsAvailable(playOpp, gameCtx) {
 			continue
 		}
-
 		if filterAppropriate && !c.IsControlledByOpp() && !s.IsAppropriate(playOpp, gameCtx) {
 			continue
 		}
@@ -72,7 +84,17 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 		clonedS := clonedPlayC.Skills()[i]
 		clonedS.Use(clonedPlayOpp, gameCtx)
 
-		skillScore, skillStrategy := MiniMax(clonedC, clonedOpp, gameCtx, skillsLeft-1, depth, asOpp)
+		moves := slices.Clone(prevMoves)
+		moves = append(moves, i)
+		skillScore, skillStrategy := MiniMax(clonedC, clonedOpp, gameCtx, skillsLeft-1, depth, asOpp, moves, out)
+		if !asOpp && len(skillStrategy) > 0 {
+			o := Out{
+				PrevMoves: prevMoves,
+				Strategy:  skillStrategy,
+				First:     gameCtx.IsGoingFirst,
+			}
+			out <- o
+		}
 
 		if (worst && skillScore < score) || (!worst && skillScore > score) {
 			score = skillScore

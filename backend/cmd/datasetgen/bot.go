@@ -1,9 +1,11 @@
-package minimax
+package main
 
 import (
 	"errors"
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/bot/minimax"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/bot/ml"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/match"
 )
 
@@ -11,10 +13,11 @@ type Bot struct {
 	depth     int
 	cached    []int
 	lastState match.GameState
+	dataOut   chan<- []int
 }
 
-func NewBot(depth int) *Bot {
-	return &Bot{depth: depth}
+func NewBot(depth int, dataOut chan<- []int) *Bot {
+	return &Bot{depth: depth, dataOut: dataOut}
 }
 
 func (b *Bot) SendState(state match.GameState) error {
@@ -26,7 +29,7 @@ func (b *Bot) SendState(state match.GameState) error {
 	b.lastState = state
 
 	if len(b.cached) > 0 {
-		// fmt.Printf("OppHasCache: %v\n", b.cached)
+		// fmt.Printf("SelfHasCache: %v\n", b.cached)
 		return nil
 	}
 
@@ -36,16 +39,11 @@ func (b *Bot) SendState(state match.GameState) error {
 	if state.AsOpp {
 		skills = clonedOpp.SkillsPerTurn()
 	}
-	_, strategy := MiniMax(clonedC, clonedOpp, state.Context, skills, b.depth, state.AsOpp)
-	// if len(strategy) < skills {
-	// 	fmt.Printf("WTF?? %#v\n%#v\n%#v\n", *state.Character, *state.Opponent, state.Context)
-	// 	for i, s := range clonedC.Skills() {
-	// 		log.Printf("Skill #%d: %v", i, s.IsAvailable(b.lastState.Opponent, b.lastState.Context))
-	// 	}
-	// 	MiniMax(clonedC, clonedOpp, state.Context, skills, b.depth, state.AsOpp)
-	// }
-	// fmt.Printf("Opp Strategy: %v, skills: %d\n", strategy, skills)
+	_, strategy := minimax.MiniMax(clonedC, clonedOpp, state.Context, skills, b.depth, state.AsOpp)
+	// fmt.Printf("Self Strategy: %v, skills: %d\n", strategy, skills)
+	b.dataOut <- append(ml.NewState(state).ToSlice(), strategy[0])
 	b.cached = strategy[:skills]
+	// fmt.Printf("%v", b.cached)
 	// log.Printf("Got Strat: %v\n", b.cached)
 	return nil
 }

@@ -232,12 +232,17 @@ type State struct {
 }
 
 func NewState(in match.GameState) State {
-	return State{
-		Char:       NewCharState(in.Character, in.Opponent, in.Context),
-		Opp:        NewCharState(in.Opponent, in.Character, in.Context),
-		TurnNum:    in.Context.TurnNum,
-		GoingFirst: in.Context.TurnNum,
+	s := State{
+		Char:    NewCharState(in.Character, in.Opponent, in.Context),
+		Opp:     NewCharState(in.Opponent, in.Character, in.Context),
+		TurnNum: in.Context.TurnNum,
 	}
+
+	if in.Context.IsGoingFirst {
+		s.GoingFirst = 1
+	}
+
+	return s
 }
 
 func (s State) ToSlice() (res []int) {
