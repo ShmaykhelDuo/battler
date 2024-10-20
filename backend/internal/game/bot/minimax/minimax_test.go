@@ -6,6 +6,7 @@ import (
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/bot/minimax"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/characters/ruby"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/characters/storyteller"
 	"github.com/stretchr/testify/assert"
@@ -57,6 +58,30 @@ func TestMiniMax(t *testing.T) {
 			assert.Equal(t, tt.strategy, strategy)
 		})
 	}
+}
+
+func TestMiniMax2(t *testing.T) {
+	c := game.NewCharacter(ruby.CharacterRuby)
+	opp := game.NewCharacter(milana.CharacterMilana)
+
+	opp.Skills()[0].Use(c, game.Context{
+		TurnNum:      1,
+		IsGoingFirst: true,
+	})
+	c.Skills()[0].Use(opp, game.Context{
+		TurnNum:      1,
+		IsGoingFirst: false,
+	})
+	opp.Skills()[2].Use(c, game.Context{
+		TurnNum:      2,
+		IsGoingFirst: true,
+	})
+
+	gameCtx := game.Context{
+		TurnNum:      2,
+		IsGoingFirst: false,
+	}
+	minimax.MiniMax(c, opp, gameCtx, 1, 8, false)
 }
 
 func runMiniMax(b *testing.B, depth int) {

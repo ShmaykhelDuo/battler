@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"slices"
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"golang.org/x/sync/errgroup"
 )
 
 type Out struct {
@@ -13,22 +14,18 @@ type Out struct {
 	First     bool
 }
 
-func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth int, asOpp bool, prevMoves []int, out chan<- Out) (score int, strategy []int) {
+func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth int, asOpp bool, prevMoves []int) (score int, strategy []int, res []Out, err error) {
 	// c - кому делаем хорошо
 	// opp - кому делаем плохо
 	// asOpp - если сейчас ход противника
 
-	if skillsLeft == 0 {
-		endCtx := gameCtx
-		endCtx.IsTurnEnd = true
-		c.OnTurnEnd(opp, endCtx)
-		opp.OnTurnEnd(c, endCtx)
+	err = ctx.Err()
+	if err != nil {
+		return
+	}
 
-		nextCtx := gameCtx.AddTurns(0, true)
-		if asOpp {
-			depth -= 1
-		}
-		return MiniMax(c, opp, nextCtx, opp.SkillsPerTurn(), depth, !asOpp, prevMoves, out)
+	if skillsLeft == 0 {
+		return miniMaxEndOfTurn(ctx, c, opp, gameCtx, depth, asOpp, prevMoves)
 	}
 
 	if depth == 0 || hasGameEnded(c, opp, gameCtx) {
@@ -59,14 +56,24 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 	}
 	filterAppropriate := appropriate[0] || appropriate[1] || appropriate[2] || appropriate[3]
 
+	eg, egCtx := errgroup.WithContext(ctx)
+
+	skillScores := make([]int, 4)
+	skillStrategies := make([][]int, 4)
+	results := make([][]Out, 4)
+
 	for i, s := range playC.Skills() {
-		if depth > 7 {
-			fmt.Printf("depth:%d, i:%d\n", depth, i)
+		err = ctx.Err()
+		if err != nil {
+			return
 		}
+
+		skillScores[i] = score
+
 		if !s.IsAvailable(playOpp, gameCtx) {
 			continue
 		}
-		if filterAppropriate && !c.IsControlledByOpp() && !s.IsAppropriate(playOpp, gameCtx) {
+		if filterAppropriate && !worst && !appropriate[i] {
 			continue
 		}
 
@@ -86,24 +93,65 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 
 		moves := slices.Clone(prevMoves)
 		moves = append(moves, i)
-		skillScore, skillStrategy := MiniMax(clonedC, clonedOpp, gameCtx, skillsLeft-1, depth, asOpp, moves, out)
 
-		if (worst && skillScore < score) || (!worst && skillScore > score) {
-			score = skillScore
-			strategy = append([]int{i}, skillStrategy...)
+		f := func() error {
+			var err error
+			skillScores[i], skillStrategies[i], results[i], err = MiniMax(egCtx, clonedC, clonedOpp, gameCtx, skillsLeft-1, depth, asOpp, moves)
+			return err
+		}
+
+		if depth > 4 && depth < 8 {
+			eg.Go(f)
+		} else {
+			err = f()
+			if err != nil {
+				return
+			}
 		}
 	}
 
-	if !asOpp {
+	err = eg.Wait()
+	if err != nil {
+		return
+	}
+
+	for i := range 4 {
+		if (worst && skillScores[i] < score) || (!worst && skillScores[i] > score) {
+			score = skillScores[i]
+			strategy = append([]int{i}, skillStrategies[i]...)
+			if !worst {
+				res = results[i]
+			}
+		}
+
+		if worst {
+			res = append(res, results[i]...)
+		}
+	}
+
+	if !worst {
 		o := Out{
 			PrevMoves: prevMoves,
 			Strategy:  strategy,
 			First:     gameCtx.IsGoingFirst,
 		}
-		out <- o
+		res = append(res, o)
 	}
 
 	return
+}
+
+func miniMaxEndOfTurn(ctx context.Context, c, opp *game.Character, gameCtx game.Context, depth int, asOpp bool, prevMoves []int) (score int, strategy []int, res []Out, err error) {
+	endCtx := gameCtx
+	endCtx.IsTurnEnd = true
+	c.OnTurnEnd(opp, endCtx)
+	opp.OnTurnEnd(c, endCtx)
+
+	nextCtx := gameCtx.AddTurns(0, true)
+	if asOpp {
+		depth -= 1
+	}
+	return MiniMax(ctx, c, opp, nextCtx, opp.SkillsPerTurn(), depth, !asOpp, prevMoves)
 }
 
 func hasGameEnded(c, opp *game.Character, gameCtx game.Context) bool {

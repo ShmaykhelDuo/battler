@@ -35,12 +35,21 @@ func main() {
 
 	go func() {
 		n := 0
+		cache := make(map[string]struct{})
 		for {
 			rec, ok := <-c
 			if !ok {
 				w.Flush()
 				break
 			}
+
+			str := fmt.Sprintf("%#v", rec)
+			if _, ok := cache[str]; ok {
+				panic(str)
+			} else {
+				cache[str] = struct{}{}
+			}
+
 			n++
 			if n%1000000 == 0 {
 				fmt.Printf("%v\n", n)
@@ -86,7 +95,7 @@ func main() {
 		IsGoingFirst: true,
 	}
 
-	MiniMax(c1, c2, gameCtx, 1, 8, false, nil, c)
+	MiniMax(c1, c2, gameCtx, 1, 9, false, nil, c)
 
 	c1 = game.NewCharacter(ruby.CharacterRuby)
 	c2 = game.NewCharacter(milana.CharacterMilana)
@@ -95,7 +104,7 @@ func main() {
 		IsGoingFirst: true,
 	}
 
-	MiniMax(c1, c2, gameCtx, 1, 8, true, nil, c)
+	MiniMax(c1, c2, gameCtx, 1, 9, true, nil, c)
 
 	close(c)
 	<-done

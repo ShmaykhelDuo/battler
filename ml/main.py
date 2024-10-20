@@ -8,7 +8,7 @@ device = torch.device(
     "cpu"
 )
 
-module = torch.jit.load("ml/model-Ruby-vs-Milana-2.pt").to(device)
+module = torch.jit.load("ml/model-Ruby-vs-Milana-strats.pt").to(device)
 
 class Handler(socketserver.BaseRequestHandler):
 

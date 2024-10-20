@@ -6,17 +6,21 @@ import (
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/bot/minimax"
-	"github.com/ShmaykhelDuo/battler/backend/internal/game/bot/ml2"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/characters/ruby"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/match"
 )
 
 func main() {
-	bot1, err := ml2.NewBot()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// path := flag.String("path", "", "model path")
+	// flag.Parse()
+
+	// model, err := moveml.LoadModel(*path)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// bot1 := moveml.NewBot(model)
+	bot1 := minimax.NewBot(8)
 	bot2 := minimax.NewBot(8)
 
 	// c1, c2 := getRandomPair()
