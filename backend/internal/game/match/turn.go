@@ -6,7 +6,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
 )
 
-func Turn(p, oppP Player, c, opp *game.Character, gameCtx game.Context, skillLog *SkillLog) (end bool, err error) {
+func Turn(p, oppP Player, c, opp *game.Character, turnState game.TurnState, skillLog *SkillLog) (end bool, err error) {
 	controlPlayer := p
 	observePlayer := oppP
 	controlCharacter := c
@@ -22,11 +22,11 @@ func Turn(p, oppP Player, c, opp *game.Character, gameCtx game.Context, skillLog
 
 	skills := c.SkillsPerTurn()
 	for range skills {
-		err = sendState(controlPlayer, controlCharacter, observeCharacter, gameCtx, skillLog, true, asOpp)
+		err = sendState(controlPlayer, controlCharacter, observeCharacter, turnState, skillLog, true, asOpp)
 		if err != nil {
 			return true, err
 		}
-		err = sendState(observePlayer, observeCharacter, controlCharacter, gameCtx, skillLog, false, asOpp)
+		err = sendState(observePlayer, observeCharacter, controlCharacter, turnState, skillLog, false, asOpp)
 		if err != nil {
 			return true, err
 		}
@@ -39,7 +39,7 @@ func Turn(p, oppP Player, c, opp *game.Character, gameCtx game.Context, skillLog
 
 			log.Printf("Player %s has selected skill %d\n", c.Desc().Name, i)
 
-			err = c.Skills()[i].Use(opp, gameCtx)
+			err = c.Skills()[i].Use(opp, turnState)
 			if err == nil {
 				skillLog.Add(c, i)
 				break
@@ -56,9 +56,9 @@ func Turn(p, oppP Player, c, opp *game.Character, gameCtx game.Context, skillLog
 		}
 	}
 
-	endCtx := gameCtx.WithTurnEnd()
-	c.OnTurnEnd(opp, endCtx)
-	opp.OnTurnEnd(opp, endCtx)
+	endState := turnState.WithTurnEnd()
+	c.OnTurnEnd(opp, endState)
+	opp.OnTurnEnd(opp, endState)
 	return isEnd(c, opp), nil
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 func stolenAmount(c *game.Character) int {
-	stolenHP, ok := game.CharacterEffect[milana.EffectStolenHP](c)
+	stolenHP, ok := game.CharacterEffect[milana.EffectStolenHP](c, milana.EffectDescStolenHP)
 	if !ok {
 		return 0
 	}
@@ -25,7 +25,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 		name         string
 		oppData      game.CharacterData
 		effs         []game.Effect
-		gameCtx      game.Context
+		turnState    game.TurnState
 		hp           int
 		stolenAmount int
 	}{
@@ -83,7 +83,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 
 			s := c.Skills()[0]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "opponent's HP")
@@ -155,7 +155,7 @@ func TestSkillComposure_Use(t *testing.T) {
 			}
 
 			s := c.Skills()[1]
-			err := s.Use(opp, game.Context{})
+			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, c.HP(), "HP")
@@ -171,13 +171,13 @@ func TestSkillMintMist_Use(t *testing.T) {
 	opp := game.NewCharacter(game.CharacterData{})
 
 	s := c.Skills()[2]
-	err := s.Use(opp, game.Context{})
+	err := s.Use(opp, game.TurnState{})
 	require.NoError(t, err)
 
-	eff, ok := game.CharacterEffect[milana.EffectMintMist](c)
+	eff, ok := game.CharacterEffect[milana.EffectMintMist](c, milana.EffectDescMintMist)
 	require.True(t, ok, "effect")
 
-	assert.Equal(t, 2, eff.TurnsLeft(game.Context{}.AddTurns(1, false)), "turns left")
+	assert.Equal(t, 2, eff.TurnsLeft(game.TurnState{}.AddTurns(1, false)), "turns left")
 }
 
 func TestSkillPride_Use(t *testing.T) {
@@ -230,7 +230,7 @@ func TestSkillPride_Use(t *testing.T) {
 
 			s := c.Skills()[3]
 
-			err := s.Use(opp, game.Context{TurnNum: 8})
+			err := s.Use(opp, game.TurnState{TurnNum: 8})
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "opponent's HP")

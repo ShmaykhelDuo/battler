@@ -43,7 +43,7 @@ func TestEffectCannotUse_IsSkillAvailable(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			e := storyteller.NewEffectCannotUse(game.Context{}, tt.colour)
+			e := storyteller.NewEffectCannotUse(game.TurnState{}, tt.colour)
 
 			data := game.CharacterData{}
 			c := game.NewCharacter(data)
@@ -59,18 +59,18 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name        string
-		initGameCtx game.Context
-		gameCtx     game.Context
-		hasExpired  bool
+		name          string
+		initturnState game.TurnState
+		turnState     game.TurnState
+		hasExpired    bool
 	}{
 		{
 			name: "ImmediatelyAfterWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
@@ -78,11 +78,11 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterTurnEndWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -91,11 +91,11 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		},
 		{
 			name: "OpponentTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
@@ -103,11 +103,11 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		},
 		{
 			name: "AfterOpponentTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 				IsTurnEnd:    true,
@@ -116,11 +116,11 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
@@ -128,11 +128,11 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterTurnEndWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 				IsTurnEnd:    true,
@@ -141,11 +141,11 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		},
 		{
 			name: "OpponentTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -153,11 +153,11 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		},
 		{
 			name: "AfterOpponentTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -170,9 +170,9 @@ func TestEffectCannotUse_HasExpired(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			eff := storyteller.NewEffectCannotUse(tt.initGameCtx, game.ColourNone)
+			eff := storyteller.NewEffectCannotUse(tt.initturnState, game.ColourNone)
 
-			hasExpired := eff.HasExpired(tt.gameCtx)
+			hasExpired := eff.HasExpired(tt.turnState)
 			assert.Equal(t, tt.hasExpired, hasExpired)
 		})
 	}
@@ -190,18 +190,18 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name        string
-		initGameCtx game.Context
-		gameCtx     game.Context
-		hasExpired  bool
+		name          string
+		initturnState game.TurnState
+		turnState     game.TurnState
+		hasExpired    bool
 	}{
 		{
 			name: "ImmediatelyAfterWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
@@ -209,11 +209,11 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterTurnEndWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -222,11 +222,11 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		},
 		{
 			name: "OpponentTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
@@ -234,11 +234,11 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		},
 		{
 			name: "AfterOpponentTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 				IsTurnEnd:    true,
@@ -247,11 +247,11 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
@@ -259,11 +259,11 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterTurnEndWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 				IsTurnEnd:    true,
@@ -272,11 +272,11 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		},
 		{
 			name: "OpponentTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -284,11 +284,11 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		},
 		{
 			name: "AfterOpponentTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -301,9 +301,9 @@ func TestEffectControlled_HasExpired(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			eff := storyteller.NewEffectControlled(tt.initGameCtx)
+			eff := storyteller.NewEffectControlled(tt.initturnState)
 
-			hasExpired := eff.HasExpired(tt.gameCtx)
+			hasExpired := eff.HasExpired(tt.turnState)
 			assert.Equal(t, tt.hasExpired, hasExpired)
 		})
 	}

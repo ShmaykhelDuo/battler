@@ -14,7 +14,7 @@ type State struct {
 
 func NewState(state match.GameState) State {
 	s := State{
-		First: state.Context.IsGoingFirst,
+		First: state.TurnState.IsGoingFirst,
 	}
 
 	ourAdd := 0

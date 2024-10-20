@@ -173,7 +173,7 @@ func TestEffectDamageReduced_HasExpired(t *testing.T) {
 		t.Parallel()
 
 		eff := speed.NewEffectDamageReduced(5)
-		assert.False(t, eff.HasExpired(game.Context{}))
+		assert.False(t, eff.HasExpired(game.TurnState{}))
 	})
 
 	t.Run("ExpiredAfterAttack", func(t *testing.T) {
@@ -182,7 +182,7 @@ func TestEffectDamageReduced_HasExpired(t *testing.T) {
 		eff := speed.NewEffectDamageReduced(5)
 		eff.ModifyTakenDamage(25, game.ColourNone)
 
-		assert.True(t, eff.HasExpired(game.Context{}))
+		assert.True(t, eff.HasExpired(game.TurnState{}))
 	})
 }
 

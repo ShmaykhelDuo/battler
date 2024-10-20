@@ -14,7 +14,7 @@ type Out struct {
 	First     bool
 }
 
-func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth int, asOpp bool, prevMoves []int) (score int, strategy []int, res []Out, err error) {
+func MiniMax(ctx context.Context, c, opp *game.Character, turnState game.TurnState, skillsLeft int, depth int, asOpp bool, prevMoves []int) (score int, strategy []int, res []Out, err error) {
 	// c - кому делаем хорошо
 	// opp - кому делаем плохо
 	// asOpp - если сейчас ход противника
@@ -25,10 +25,10 @@ func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, 
 	}
 
 	if skillsLeft == 0 {
-		return miniMaxEndOfTurn(ctx, c, opp, gameCtx, depth, asOpp, prevMoves)
+		return miniMaxEndOfTurn(ctx, c, opp, turnState, depth, asOpp, prevMoves)
 	}
 
-	if depth == 0 || hasGameEnded(c, opp, gameCtx) {
+	if depth == 0 || hasGameEnded(c, opp, turnState) {
 		score = c.HP() - opp.HP()
 		return
 	}
@@ -52,7 +52,7 @@ func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, 
 	}
 	appropriate := make([]bool, 4)
 	for i, s := range playC.Skills() {
-		appropriate[i] = s.IsAppropriate(playOpp, gameCtx)
+		appropriate[i] = s.IsAppropriate(playOpp, turnState)
 	}
 	filterAppropriate := appropriate[0] || appropriate[1] || appropriate[2] || appropriate[3]
 
@@ -70,7 +70,7 @@ func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, 
 
 		skillScores[i] = score
 
-		if !s.IsAvailable(playOpp, gameCtx) {
+		if !s.IsAvailable(playOpp, turnState) {
 			continue
 		}
 		if filterAppropriate && !worst && !appropriate[i] {
@@ -89,14 +89,14 @@ func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, 
 		}
 
 		clonedS := clonedPlayC.Skills()[i]
-		clonedS.Use(clonedPlayOpp, gameCtx)
+		clonedS.Use(clonedPlayOpp, turnState)
 
 		moves := slices.Clone(prevMoves)
 		moves = append(moves, i)
 
 		f := func() error {
 			var err error
-			skillScores[i], skillStrategies[i], results[i], err = MiniMax(egCtx, clonedC, clonedOpp, gameCtx, skillsLeft-1, depth, asOpp, moves)
+			skillScores[i], skillStrategies[i], results[i], err = MiniMax(egCtx, clonedC, clonedOpp, turnState, skillsLeft-1, depth, asOpp, moves)
 			return err
 		}
 
@@ -133,7 +133,7 @@ func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, 
 		o := Out{
 			PrevMoves: prevMoves,
 			Strategy:  strategy,
-			First:     gameCtx.IsGoingFirst,
+			First:     turnState.IsGoingFirst,
 		}
 		res = append(res, o)
 	}
@@ -141,19 +141,19 @@ func MiniMax(ctx context.Context, c, opp *game.Character, gameCtx game.Context, 
 	return
 }
 
-func miniMaxEndOfTurn(ctx context.Context, c, opp *game.Character, gameCtx game.Context, depth int, asOpp bool, prevMoves []int) (score int, strategy []int, res []Out, err error) {
-	endCtx := gameCtx
+func miniMaxEndOfTurn(ctx context.Context, c, opp *game.Character, turnState game.TurnState, depth int, asOpp bool, prevMoves []int) (score int, strategy []int, res []Out, err error) {
+	endCtx := turnState
 	endCtx.IsTurnEnd = true
 	c.OnTurnEnd(opp, endCtx)
 	opp.OnTurnEnd(c, endCtx)
 
-	nextCtx := gameCtx.AddTurns(0, true)
+	nextCtx := turnState.AddTurns(0, true)
 	if asOpp {
 		depth -= 1
 	}
 	return MiniMax(ctx, c, opp, nextCtx, opp.SkillsPerTurn(), depth, !asOpp, prevMoves)
 }
 
-func hasGameEnded(c, opp *game.Character, gameCtx game.Context) bool {
-	return gameCtx.TurnNum > game.MaxTurnNumber || c.HP() <= 0 || opp.HP() <= 0
+func hasGameEnded(c, opp *game.Character, turnState game.TurnState) bool {
+	return turnState.TurnNum > game.MaxTurnNumber || c.HP() <= 0 || opp.HP() <= 0
 }

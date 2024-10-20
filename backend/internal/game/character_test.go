@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/gametest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -131,10 +132,10 @@ func TestCharacter_LastUsedSkill(t *testing.T) {
 
 	data := game.CharacterData{
 		SkillData: [4]game.SkillData{
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
 		},
 	}
 	c := game.NewCharacter(data)
@@ -143,11 +144,11 @@ func TestCharacter_LastUsedSkill(t *testing.T) {
 	assert.Nil(t, c.LastUsedSkill(), "before any skills used")
 
 	for i, s := range c.Skills() {
-		gameCtx := game.Context{
+		turnState := game.TurnState{
 			TurnNum: i + 1,
 		}
 
-		s.Use(opp, gameCtx)
+		s.Use(opp, turnState)
 
 		assert.Same(t, s, c.LastUsedSkill(), "after skill #%d", i+1)
 	}
@@ -664,7 +665,7 @@ func TestCharacter_Heal(t *testing.T) {
 
 type turnEndHandlerEffect struct {
 	gotC, gotOpp *game.Character
-	gotGameCtx   game.Context
+	gotturnState game.TurnState
 }
 
 // Desc returns the effect's description.
@@ -673,10 +674,10 @@ func (e *turnEndHandlerEffect) Desc() game.EffectDescription {
 }
 
 // OnTurnEnd executes the end-of-turn action.
-func (e *turnEndHandlerEffect) OnTurnEnd(c, opp *game.Character, gameCtx game.Context) {
+func (e *turnEndHandlerEffect) OnTurnEnd(c, opp *game.Character, turnState game.TurnState) {
 	e.gotC = c
 	e.gotOpp = opp
-	e.gotGameCtx = gameCtx
+	e.gotturnState = turnState
 }
 
 func TestCharacter_OnTurnEnd(t *testing.T) {
@@ -692,15 +693,15 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 		eff := &turnEndHandlerEffect{}
 		c.AddEffect(eff)
 
-		gameCtx := game.Context{
+		turnState := game.TurnState{
 			TurnNum: 4,
 		}
 
-		c.OnTurnEnd(opp, gameCtx)
+		c.OnTurnEnd(opp, turnState)
 
 		assert.Same(t, c, eff.gotC, "character")
 		assert.Same(t, opp, eff.gotOpp, "opponent")
-		assert.Equal(t, gameCtx, eff.gotGameCtx, "game context")
+		assert.Equal(t, turnState, eff.gotturnState, "game context")
 	})
 
 	t.Run("RemovesExpiredEffects", func(t *testing.T) {
@@ -710,28 +711,54 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 		c := game.NewCharacter(data)
 		opp := game.NewCharacter(data)
 
-		eff := &expirableEffect{expired: true}
+		eff := gametest.NewEffectExpirable(true)
 		c.AddEffect(eff)
 
-		gameCtx := game.Context{
+		turnState := game.TurnState{
 			TurnNum: 4,
 		}
 
-		c.OnTurnEnd(opp, gameCtx)
+		c.OnTurnEnd(opp, turnState)
 
-		_, found := game.CharacterEffect[*expirableEffect](c)
+		_, found := game.CharacterEffect[*gametest.EffectExpirable](c, gametest.EffectDescExpirable)
 		assert.False(t, found, "effect after expiry")
 	})
 }
 
+var desc1 = game.EffectDescription{
+	Name: "1",
+}
+
 type effectType1 struct {
-	descriptionEffect
 }
+
+// Desc returns the effect's description.
+func (e effectType1) Desc() game.EffectDescription {
+	return desc1
+}
+
+var desc2 = game.EffectDescription{
+	Name: "2",
+}
+
 type effectType2 struct {
-	descriptionEffect
 }
+
+// Desc returns the effect's description.
+func (e effectType2) Desc() game.EffectDescription {
+	return desc2
+}
+
+var desc3 = game.EffectDescription{
+	Name: "3",
+}
+
 type effectType3 struct {
-	descriptionEffect
+}
+
+// Desc returns the effect's description.
+func (e effectType3) Desc() game.EffectDescription {
+	return desc3
 }
 
 func TestCharacterEffect(t *testing.T) {
@@ -745,15 +772,15 @@ func TestCharacterEffect(t *testing.T) {
 	c.AddEffect(eff1)
 	c.AddEffect(eff2)
 
-	got1, ok1 := game.CharacterEffect[*effectType1](c)
+	got1, ok1 := game.CharacterEffect[*effectType1](c, desc1)
 	assert.True(t, ok1, "ok 1")
 	assert.Same(t, eff1, got1, "same 1")
 
-	got2, ok2 := game.CharacterEffect[*effectType2](c)
+	got2, ok2 := game.CharacterEffect[*effectType2](c, desc2)
 	assert.True(t, ok2, "ok 2")
 	assert.Same(t, eff2, got2, "same 2")
 
-	got3, ok3 := game.CharacterEffect[*effectType3](c)
+	got3, ok3 := game.CharacterEffect[*effectType3](c, desc3)
 	assert.False(t, ok3, "ok 3")
 	assert.Zero(t, got3, "zero 3")
 }

@@ -39,7 +39,7 @@ func (b *Bot) SendState(state match.GameState) error {
 	if state.AsOpp {
 		skills = clonedOpp.SkillsPerTurn()
 	}
-	_, strategy := minimax.MiniMax(clonedC, clonedOpp, state.Context, skills, b.depth, state.AsOpp)
+	_, strategy := minimax.MiniMax(clonedC, clonedOpp, state.TurnState, skills, b.depth, state.AsOpp)
 	// fmt.Printf("Self Strategy: %v, skills: %d\n", strategy, skills)
 	b.dataOut <- append(ml.NewState(state).ToSlice(), strategy[0])
 	b.cached = strategy[:skills]

@@ -135,14 +135,14 @@ type SkillStateV2 struct {
 	IsAvailable int
 }
 
-func NewSkillStateV2(s *game.Skill, opp *game.Character, gameCtx game.Context) SkillStateV2 {
+func NewSkillStateV2(s *game.Skill, opp *game.Character, turnState game.TurnState) SkillStateV2 {
 	res := SkillStateV2{
 		Colour:     NewColourStateV2(s.Desc().Colour),
 		Cooldown:   s.Cooldown(),
 		UnlockTurn: s.UnlockTurn(),
 	}
 
-	if s.IsAvailable(opp, gameCtx) {
+	if s.IsAvailable(opp, turnState) {
 		res.IsAvailable = 1
 	}
 
@@ -180,7 +180,7 @@ type EffectsStateV2 struct {
 	StructureLastChance          int
 }
 
-func NewEffectsStateV2(c *game.Character, gameCtx game.Context) EffectsStateV2 {
+func NewEffectsStateV2(c *game.Character, turnState game.TurnState) EffectsStateV2 {
 	res := EffectsStateV2{}
 
 	for _, e := range c.Effects() {
@@ -198,9 +198,9 @@ func NewEffectsStateV2(c *game.Character, gameCtx game.Context) EffectsStateV2 {
 		case euphoria.EffectEuphoricHeal:
 			res.EuphoriaEuphoricHeal = 1
 		case ruby.EffectDoubleDamage:
-			res.RubyDoubleDamageTurnsLeft = eff.TurnsLeft(gameCtx)
+			res.RubyDoubleDamageTurnsLeft = eff.TurnsLeft(turnState)
 		case ruby.EffectCannotHeal:
-			res.RubyCannotHealTurnsLeft = eff.TurnsLeft(gameCtx)
+			res.RubyCannotHealTurnsLeft = eff.TurnsLeft(turnState)
 		case speed.EffectGreenTokens:
 			res.SpeedGreenTokensNumber = eff.Amount()
 		case speed.EffectBlackTokens:
@@ -210,7 +210,7 @@ func NewEffectsStateV2(c *game.Character, gameCtx game.Context) EffectsStateV2 {
 		case milana.EffectStolenHP:
 			res.MilanaStolenHPAmount = eff.Amount()
 		case milana.EffectMintMist:
-			res.MilanaMintMistTurnsLeft = eff.TurnsLeft(gameCtx)
+			res.MilanaMintMistTurnsLeft = eff.TurnsLeft(turnState)
 		case *structure.EffectIBoost:
 			res.StructureIBoostAmount = eff.Amount()
 		case structure.EffectSLayers:
@@ -304,20 +304,20 @@ type CharStateV2 struct {
 	Effects       EffectsStateV2
 }
 
-func NewCharStateV2(c *game.Character, opp *game.Character, gameCtx game.Context) CharStateV2 {
+func NewCharStateV2(c *game.Character, opp *game.Character, turnState game.TurnState) CharStateV2 {
 	res := CharStateV2{
 		Number:   c.Desc().Number,
 		Girl:     NewGirlStateV2(c),
 		HP:       c.HP(),
 		MaxHP:    c.MaxHP(),
 		Defences: NewDefenceStateV2(c.Defences()),
-		Effects:  NewEffectsStateV2(c, gameCtx),
+		Effects:  NewEffectsStateV2(c, turnState),
 	}
 
 	s := c.Skills()
 
 	for i := range 4 {
-		res.Skills[i] = NewSkillStateV2(s[i], opp, gameCtx)
+		res.Skills[i] = NewSkillStateV2(s[i], opp, turnState)
 	}
 
 	res.LastUsedSkill = slices.Index(s[:], c.LastUsedSkill())
@@ -347,12 +347,12 @@ type StateV2 struct {
 
 func NewStateV2(in match.GameState) StateV2 {
 	s := StateV2{
-		Char:    NewCharStateV2(in.Character, in.Opponent, in.Context),
-		Opp:     NewCharStateV2(in.Opponent, in.Character, in.Context),
-		TurnNum: in.Context.TurnNum,
+		Char:    NewCharStateV2(in.Character, in.Opponent, in.TurnState),
+		Opp:     NewCharStateV2(in.Opponent, in.Character, in.TurnState),
+		TurnNum: in.TurnState.TurnNum,
 	}
 
-	if in.Context.IsGoingFirst {
+	if in.TurnState.IsGoingFirst {
 		s.GoingFirst = 1
 	}
 

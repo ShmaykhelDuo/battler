@@ -15,7 +15,7 @@ func BenchmarkMiniMaxBot(b *testing.B) {
 	state := match.GameState{
 		Character:  game.NewCharacter(storyteller.CharacterStoryteller),
 		Opponent:   game.NewCharacter(speed.CharacterSpeed),
-		Context:    game.TurnCtx(1),
+		TurnState:  game.TurnCtx(1),
 		PlayerTurn: true,
 	}
 

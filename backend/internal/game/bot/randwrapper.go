@@ -10,7 +10,7 @@ import (
 type RandomWrapperBot struct {
 	bot       match.Player
 	p         float64
-	lastCtx   game.Context
+	lastCtx   game.TurnState
 	isRand    bool
 	available []int
 }
@@ -23,9 +23,9 @@ func NewRandomWrapperBot(bot match.Player, p float64) *RandomWrapperBot {
 }
 
 func (b *RandomWrapperBot) SendState(state match.GameState) error {
-	if state.Context != b.lastCtx {
+	if state.TurnState != b.lastCtx {
 		b.isRand = rand.Float64() < b.p
-		b.lastCtx = state.Context
+		b.lastCtx = state.TurnState
 	}
 
 	if !b.isRand {
@@ -35,7 +35,7 @@ func (b *RandomWrapperBot) SendState(state match.GameState) error {
 	var available []int
 
 	for i, s := range state.Character.Skills() {
-		if s.IsAvailable(state.Opponent, state.Context) {
+		if s.IsAvailable(state.Opponent, state.TurnState) {
 			available = append(available, i)
 		}
 	}

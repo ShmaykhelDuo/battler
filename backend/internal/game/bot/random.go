@@ -14,7 +14,7 @@ func (b *RandomBot) SendState(state match.GameState) error {
 	var available []int
 
 	for i, s := range state.Character.Skills() {
-		if s.IsAvailable(state.Opponent, state.Context) {
+		if s.IsAvailable(state.Opponent, state.TurnState) {
 			available = append(available, i)
 		}
 	}

@@ -28,6 +28,6 @@ func (c *Collectible) Decrease(amount int) {
 }
 
 // HasExpired reports whether the effect has expired.
-func (c *Collectible) HasExpired(gameCtx game.Context) bool {
+func (c *Collectible) HasExpired(turnState game.TurnState) bool {
 	return c.amount == 0
 }

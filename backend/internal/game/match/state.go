@@ -30,7 +30,7 @@ func (l *SkillLog) Items() []SkillLogItem {
 type GameState struct {
 	Character  *game.Character
 	Opponent   *game.Character
-	Context    game.Context
+	TurnState  game.TurnState
 	SkillLog   []SkillLogItem
 	PlayerTurn bool
 	AsOpp      bool

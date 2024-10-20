@@ -23,7 +23,7 @@ func cloneCharacter(c *Character) *Character {
 		}
 	}
 
-	cloned.effects = make([]Effect, len(c.effects))
+	cloned.effects = make(map[EffectDescription]Effect, len(c.effects))
 	for i, e := range c.effects {
 		cloned.effects[i] = clone.Clone(e)
 	}

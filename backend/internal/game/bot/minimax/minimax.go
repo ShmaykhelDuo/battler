@@ -2,25 +2,25 @@ package minimax
 
 import "github.com/ShmaykhelDuo/battler/backend/internal/game"
 
-func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth int, asOpp bool) (score int, strategy []int) {
+func MiniMax(c, opp *game.Character, turnState game.TurnState, skillsLeft int, depth int, asOpp bool) (score int, strategy []int) {
 	// c - кому делаем хорошо
 	// opp - кому делаем плохо
 	// asOpp - если сейчас ход противника
 
 	if skillsLeft == 0 {
-		endCtx := gameCtx
+		endCtx := turnState
 		endCtx.IsTurnEnd = true
 		c.OnTurnEnd(opp, endCtx)
 		opp.OnTurnEnd(c, endCtx)
 
-		nextCtx := gameCtx.AddTurns(0, true)
+		nextCtx := turnState.AddTurns(0, true)
 		if asOpp {
 			depth -= 1
 		}
 		return MiniMax(c, opp, nextCtx, opp.SkillsPerTurn(), depth, !asOpp)
 	}
 
-	if depth == 0 || hasGameEnded(c, opp, gameCtx) {
+	if depth == 0 || hasGameEnded(c, opp, turnState) {
 		score = c.HP() - opp.HP()
 		return
 	}
@@ -45,16 +45,16 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 
 	appropriate := make([]bool, 4)
 	for i, s := range playC.Skills() {
-		appropriate[i] = s.IsAppropriate(playOpp, gameCtx)
+		appropriate[i] = s.IsAppropriate(playOpp, turnState)
 	}
 	filterAppropriate := appropriate[0] || appropriate[1] || appropriate[2] || appropriate[3]
 
 	for i, s := range playC.Skills() {
-		if !s.IsAvailable(playOpp, gameCtx) {
+		if !s.IsAvailable(playOpp, turnState) {
 			continue
 		}
 
-		if filterAppropriate && !c.IsControlledByOpp() && !s.IsAppropriate(playOpp, gameCtx) {
+		if filterAppropriate && !c.IsControlledByOpp() && !s.IsAppropriate(playOpp, turnState) {
 			continue
 		}
 
@@ -70,9 +70,9 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 		}
 
 		clonedS := clonedPlayC.Skills()[i]
-		clonedS.Use(clonedPlayOpp, gameCtx)
+		clonedS.Use(clonedPlayOpp, turnState)
 
-		skillScore, skillStrategy := MiniMax(clonedC, clonedOpp, gameCtx, skillsLeft-1, depth, asOpp)
+		skillScore, skillStrategy := MiniMax(clonedC, clonedOpp, turnState, skillsLeft-1, depth, asOpp)
 
 		if (worst && skillScore < score) || (!worst && skillScore > score) {
 			score = skillScore
@@ -83,6 +83,6 @@ func MiniMax(c, opp *game.Character, gameCtx game.Context, skillsLeft int, depth
 	return
 }
 
-func hasGameEnded(c, opp *game.Character, gameCtx game.Context) bool {
-	return gameCtx.TurnNum > game.MaxTurnNumber || c.HP() <= 0 || opp.HP() <= 0
+func hasGameEnded(c, opp *game.Character, turnState game.TurnState) bool {
+	return turnState.TurnNum > game.MaxTurnNumber || c.HP() <= 0 || opp.HP() <= 0
 }

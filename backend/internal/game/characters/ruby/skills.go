@@ -10,8 +10,8 @@ var SkillDance = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourYellow,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(NewEffectDoubleDamage(gameCtx))
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		c.AddEffect(NewEffectDoubleDamage(turnState))
 	},
 }
 
@@ -22,8 +22,8 @@ var SkillRage = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourRed,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		dmg := 24 - 2*gameCtx.TurnNum
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		dmg := 24 - 2*turnState.TurnNum
 		c.Damage(opp, dmg, game.ColourRed)
 	},
 }
@@ -38,9 +38,9 @@ var SkillStop = game.SkillData{
 		Colour:     game.ColourCyan,
 	},
 	Cooldown: 1,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(NewEffectCannotHeal(gameCtx, false))
-		opp.AddEffect(NewEffectCannotHeal(gameCtx, true))
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		c.AddEffect(NewEffectCannotHeal(turnState, false))
+		opp.AddEffect(NewEffectCannotHeal(turnState, true))
 	},
 }
 
@@ -52,18 +52,18 @@ var SkillExecute = game.SkillData{
 		IsUltimate: true,
 		Colour:     game.ColourRed,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		if isBelowThreshold(c, opp) {
 			opp.Kill()
 		}
 	},
-	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+	IsAppropriate: func(c, opp *game.Character, turnState game.TurnState) bool {
 		return isBelowThreshold(c, opp)
 	},
 }
 
 func hasEffectCannotHeal(c *game.Character) bool {
-	_, found := game.CharacterEffect[EffectCannotHeal](c)
+	_, found := game.CharacterEffect[EffectCannotHeal](c, EffectDescCannotHeal)
 	return found
 }
 

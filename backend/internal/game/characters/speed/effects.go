@@ -81,7 +81,7 @@ func (e *EffectDamageReduced) ModifyTakenDamage(dmg int, colour game.Colour) int
 }
 
 // HasExpired reports whether the effect has expired.
-func (e *EffectDamageReduced) HasExpired(gameCtx game.Context) bool {
+func (e *EffectDamageReduced) HasExpired(turnState game.TurnState) bool {
 	return e.used
 }
 
@@ -113,9 +113,9 @@ type EffectSpedUp struct {
 	common.DurationExpirable
 }
 
-func NewEffectSpedUp(gameCtx game.Context) EffectSpedUp {
+func NewEffectSpedUp(turnState game.TurnState) EffectSpedUp {
 	return EffectSpedUp{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(1, false)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(1, false)),
 	}
 }
 

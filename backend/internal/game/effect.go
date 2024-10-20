@@ -1,7 +1,7 @@
 package game
 
 // EffectType represents a type of an effect.
-type EffectType int
+type EffectType uint8
 
 const (
 	EffectTypeBasic EffectType = iota

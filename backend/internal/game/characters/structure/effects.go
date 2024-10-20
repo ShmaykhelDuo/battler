@@ -42,9 +42,9 @@ type EffectSLayers struct {
 	threshold int
 }
 
-func NewEffectSLayers(gameCtx game.Context, threshold int) EffectSLayers {
+func NewEffectSLayers(turnState game.TurnState, threshold int) EffectSLayers {
 	return EffectSLayers{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(0, true)),
 		threshold:         threshold,
 	}
 }
@@ -75,11 +75,11 @@ var EffectDescLastChance = game.EffectDescription{
 // If you survive your opponent's next turn, fully heals you.
 type EffectLastChance struct {
 	common.DurationExpirable
-	healCtx game.Context
+	healCtx game.TurnState
 }
 
-func NewEffectLastChance(gameCtx game.Context) EffectLastChance {
-	endCtx := gameCtx.AddTurns(0, true)
+func NewEffectLastChance(turnState game.TurnState) EffectLastChance {
+	endCtx := turnState.AddTurns(0, true)
 
 	return EffectLastChance{
 		DurationExpirable: common.NewDurationExpirable(endCtx),
@@ -93,8 +93,8 @@ func (e EffectLastChance) Desc() game.EffectDescription {
 }
 
 // OnTurnEnd executes the end-of-turn action.
-func (e EffectLastChance) OnTurnEnd(c *game.Character, opp *game.Character, gameCtx game.Context) {
-	if gameCtx.IsAfter(e.healCtx) {
+func (e EffectLastChance) OnTurnEnd(c *game.Character, opp *game.Character, turnState game.TurnState) {
+	if turnState.IsAfter(e.healCtx) {
 		c.Heal(c.MaxHP())
 	}
 }

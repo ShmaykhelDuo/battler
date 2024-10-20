@@ -71,14 +71,14 @@ type SkillState struct {
 	IsAvailable int
 }
 
-func NewSkillState(s *game.Skill, opp *game.Character, gameCtx game.Context) SkillState {
+func NewSkillState(s *game.Skill, opp *game.Character, turnState game.TurnState) SkillState {
 	res := SkillState{
 		Colour:     int(s.Desc().Colour),
 		Cooldown:   s.Cooldown(),
 		UnlockTurn: s.UnlockTurn(),
 	}
 
-	if s.IsAvailable(opp, gameCtx) {
+	if s.IsAvailable(opp, turnState) {
 		res.IsAvailable = 1
 	}
 
@@ -116,7 +116,7 @@ type EffectsState struct {
 	StructureLastChance          int
 }
 
-func NewEffectsState(c *game.Character, gameCtx game.Context) EffectsState {
+func NewEffectsState(c *game.Character, turnState game.TurnState) EffectsState {
 	res := EffectsState{}
 
 	for _, e := range c.Effects() {
@@ -134,9 +134,9 @@ func NewEffectsState(c *game.Character, gameCtx game.Context) EffectsState {
 		case euphoria.EffectEuphoricHeal:
 			res.EuphoriaEuphoricHeal = 1
 		case ruby.EffectDoubleDamage:
-			res.RubyDoubleDamageTurnsLeft = eff.TurnsLeft(gameCtx)
+			res.RubyDoubleDamageTurnsLeft = eff.TurnsLeft(turnState)
 		case ruby.EffectCannotHeal:
-			res.RubyCannotHealTurnsLeft = eff.TurnsLeft(gameCtx)
+			res.RubyCannotHealTurnsLeft = eff.TurnsLeft(turnState)
 		case speed.EffectGreenTokens:
 			res.SpeedGreenTokensNumber = eff.Amount()
 		case speed.EffectBlackTokens:
@@ -146,7 +146,7 @@ func NewEffectsState(c *game.Character, gameCtx game.Context) EffectsState {
 		case milana.EffectStolenHP:
 			res.MilanaStolenHPAmount = eff.Amount()
 		case milana.EffectMintMist:
-			res.MilanaMintMistTurnsLeft = eff.TurnsLeft(gameCtx)
+			res.MilanaMintMistTurnsLeft = eff.TurnsLeft(turnState)
 		case *structure.EffectIBoost:
 			res.StructureIBoostAmount = eff.Amount()
 		case structure.EffectSLayers:
@@ -193,19 +193,19 @@ type CharState struct {
 	Effects       EffectsState
 }
 
-func NewCharState(c *game.Character, opp *game.Character, gameCtx game.Context) CharState {
+func NewCharState(c *game.Character, opp *game.Character, turnState game.TurnState) CharState {
 	res := CharState{
 		Number:   c.Desc().Number,
 		HP:       c.HP(),
 		MaxHP:    c.MaxHP(),
 		Defences: NewDefenceState(c.Defences()),
-		Effects:  NewEffectsState(c, gameCtx),
+		Effects:  NewEffectsState(c, turnState),
 	}
 
 	s := c.Skills()
 
 	for i := range 4 {
-		res.Skills[i] = NewSkillState(s[i], opp, gameCtx)
+		res.Skills[i] = NewSkillState(s[i], opp, turnState)
 	}
 
 	res.LastUsedSkill = slices.Index(s[:], c.LastUsedSkill())
@@ -233,12 +233,12 @@ type State struct {
 
 func NewState(in match.GameState) State {
 	s := State{
-		Char:    NewCharState(in.Character, in.Opponent, in.Context),
-		Opp:     NewCharState(in.Opponent, in.Character, in.Context),
-		TurnNum: in.Context.TurnNum,
+		Char:    NewCharState(in.Character, in.Opponent, in.TurnState),
+		Opp:     NewCharState(in.Opponent, in.Character, in.TurnState),
+		TurnNum: in.TurnState.TurnNum,
 	}
 
-	if in.Context.IsGoingFirst {
+	if in.TurnState.IsGoingFirst {
 		s.GoingFirst = 1
 	}
 

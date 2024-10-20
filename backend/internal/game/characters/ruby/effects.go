@@ -16,9 +16,9 @@ type EffectDoubleDamage struct {
 	common.DurationExpirable
 }
 
-func NewEffectDoubleDamage(gameCtx game.Context) EffectDoubleDamage {
+func NewEffectDoubleDamage(turnState game.TurnState) EffectDoubleDamage {
 	return EffectDoubleDamage{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(2, false)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(2, false)),
 	}
 }
 
@@ -43,12 +43,12 @@ type EffectCannotHeal struct {
 	common.DurationExpirable
 }
 
-func NewEffectCannotHeal(gameCtx game.Context, isOpp bool) EffectCannotHeal {
-	var expCtx game.Context
+func NewEffectCannotHeal(turnState game.TurnState, isOpp bool) EffectCannotHeal {
+	var expCtx game.TurnState
 	if isOpp {
-		expCtx = gameCtx.AddTurns(0, true)
+		expCtx = turnState.AddTurns(0, true)
 	} else {
-		expCtx = gameCtx.AddTurns(1, false)
+		expCtx = turnState.AddTurns(1, false)
 	}
 
 	return EffectCannotHeal{

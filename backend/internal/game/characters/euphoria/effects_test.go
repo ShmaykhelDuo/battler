@@ -165,7 +165,7 @@ func TestEffectEuphoricHeal_OnTurnEnd(t *testing.T) {
 		oppPrevDmg   int
 		effs         []game.Effect
 		oppEffs      []game.Effect
-		gameCtx      game.Context
+		turnState    game.TurnState
 		hp           int
 		oppHP        int
 		sourceAmount int
@@ -224,7 +224,7 @@ func TestEffectEuphoricHeal_OnTurnEnd(t *testing.T) {
 			}
 
 			eff := euphoria.EffectEuphoricHeal{}
-			eff.OnTurnEnd(c, opp, tt.gameCtx)
+			eff.OnTurnEnd(c, opp, tt.turnState)
 
 			assert.Equal(t, tt.hp, c.HP(), "HP")
 			assert.Equal(t, tt.oppHP, opp.HP(), "opponent's HP")

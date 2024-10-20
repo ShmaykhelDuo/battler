@@ -169,12 +169,12 @@ func toStringRow(row []int) []string {
 func runMiniMax(ctx context.Context, data1, data2 game.CharacterData, depth int, goingFirst bool, out chan<- Out) error {
 	c1 := game.NewCharacter(data1)
 	c2 := game.NewCharacter(data2)
-	gameCtx := game.Context{
+	turnState := game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: true,
 	}
 
-	_, _, res, err := MiniMax(ctx, c1, c2, gameCtx, 1, depth, !goingFirst, nil)
+	_, _, res, err := MiniMax(ctx, c1, c2, turnState, 1, depth, !goingFirst, nil)
 
 	for _, o := range res {
 		out <- o

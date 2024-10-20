@@ -13,10 +13,10 @@ func TestSkillYourNumber_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		oppData game.CharacterData
-		gameCtx game.Context
-		hp      int
+		name      string
+		oppData   game.CharacterData
+		turnState game.TurnState
+		hp        int
 	}{
 		{
 			name: "Opponent1",
@@ -55,7 +55,7 @@ func TestSkillYourNumber_Use(t *testing.T) {
 
 			s := c.Skills()[0]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())
@@ -69,17 +69,17 @@ func TestSkillYourColour_IsAvailable(t *testing.T) {
 	tests := []struct {
 		name            string
 		hasOppUsedSkill bool
-		oppGameCtx      game.Context
-		gameCtx         game.Context
+		oppturnState    game.TurnState
+		turnState       game.TurnState
 		isAvailable     bool
 	}{
 		{
 			name:            "OppUsedSkill",
 			hasOppUsedSkill: true,
-			oppGameCtx: game.Context{
+			oppturnState: game.TurnState{
 				TurnNum: 1,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum: 1,
 			},
 			isAvailable: true,
@@ -87,7 +87,7 @@ func TestSkillYourColour_IsAvailable(t *testing.T) {
 		{
 			name:            "OppNotUsedSkill",
 			hasOppUsedSkill: false,
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum: 1,
 			},
 			isAvailable: false,
@@ -105,14 +105,14 @@ func TestSkillYourColour_IsAvailable(t *testing.T) {
 
 			if tt.hasOppUsedSkill {
 				oppS := game.NewSkill(opp, game.SkillData{
-					Use: func(c, opp *game.Character, gameCtx game.Context) {},
+					Use: func(c, opp *game.Character, turnState game.TurnState) {},
 				})
-				oppS.Use(c, tt.oppGameCtx)
+				oppS.Use(c, tt.oppturnState)
 			}
 
 			s := c.Skills()[1]
 
-			isAvailable := s.IsAvailable(opp, tt.gameCtx)
+			isAvailable := s.IsAvailable(opp, tt.turnState)
 			assert.Equal(t, tt.isAvailable, isAvailable)
 		})
 	}
@@ -122,13 +122,13 @@ func TestSkillYourColour_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name           string
-		oppData        game.CharacterData
-		oppPrevSkill   game.SkillDescription
-		oppPrevGameCtx game.Context
-		gameCtx        game.Context
-		hp             int
-		colour         game.Colour
+		name             string
+		oppData          game.CharacterData
+		oppPrevSkill     game.SkillDescription
+		oppPrevturnState game.TurnState
+		turnState        game.TurnState
+		hp               int
+		colour           game.Colour
 	}{
 		{
 			name: "Opponent1",
@@ -144,10 +144,10 @@ func TestSkillYourColour_Use(t *testing.T) {
 			oppPrevSkill: game.SkillDescription{
 				Colour: game.ColourGreen,
 			},
-			oppPrevGameCtx: game.Context{TurnNum: 1},
-			gameCtx:        game.Context{TurnNum: 2},
-			hp:             102,
-			colour:         game.ColourGreen,
+			oppPrevturnState: game.TurnState{TurnNum: 1},
+			turnState:        game.TurnState{TurnNum: 2},
+			hp:               102,
+			colour:           game.ColourGreen,
 		},
 		{
 			name: "Opponent2",
@@ -163,10 +163,10 @@ func TestSkillYourColour_Use(t *testing.T) {
 			oppPrevSkill: game.SkillDescription{
 				Colour: game.ColourOrange,
 			},
-			oppPrevGameCtx: game.Context{TurnNum: 1},
-			gameCtx:        game.Context{TurnNum: 2},
-			hp:             104,
-			colour:         game.ColourOrange,
+			oppPrevturnState: game.TurnState{TurnNum: 1},
+			turnState:        game.TurnState{TurnNum: 2},
+			hp:               104,
+			colour:           game.ColourOrange,
 		},
 	}
 
@@ -179,23 +179,23 @@ func TestSkillYourColour_Use(t *testing.T) {
 
 			oppPrevSkillData := game.SkillData{
 				Desc: tt.oppPrevSkill,
-				Use:  func(c, opp *game.Character, gameCtx game.Context) {},
+				Use:  func(c, opp *game.Character, turnState game.TurnState) {},
 			}
 			oppPrevSkill := game.NewSkill(opp, oppPrevSkillData)
-			oppPrevSkill.Use(c, tt.oppPrevGameCtx)
+			oppPrevSkill.Use(c, tt.oppPrevturnState)
 
 			s := c.Skills()[1]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "HP")
 
-			eff, ok := game.CharacterEffect[storyteller.EffectCannotUse](opp)
+			eff, ok := game.CharacterEffect[storyteller.EffectCannotUse](opp, storyteller.EffectDescCannotUse)
 			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.colour, eff.Colour(), "colour")
-			assert.Equal(t, 1, eff.TurnsLeft(tt.gameCtx.AddTurns(0, true)), "turns left opponent")
+			assert.Equal(t, 1, eff.TurnsLeft(tt.turnState.AddTurns(0, true)), "turns left opponent")
 		})
 	}
 }
@@ -204,13 +204,13 @@ func TestSkillYourDream_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		oppData game.CharacterData
-		maxHP   int
-		dmg     int
-		colour  game.Colour
-		gameCtx game.Context
-		hp      int
+		name      string
+		oppData   game.CharacterData
+		maxHP     int
+		dmg       int
+		colour    game.Colour
+		turnState game.TurnState
+		hp        int
 	}{
 		{
 			name: "Opponent1",
@@ -219,11 +219,11 @@ func TestSkillYourDream_Use(t *testing.T) {
 					Number: 10,
 				},
 			},
-			maxHP:   119,
-			dmg:     42,
-			colour:  game.ColourBlack,
-			gameCtx: game.Context{TurnNum: 3},
-			hp:      112,
+			maxHP:     119,
+			dmg:       42,
+			colour:    game.ColourBlack,
+			turnState: game.TurnState{TurnNum: 3},
+			hp:        112,
 		},
 		{
 			name: "Opponent2",
@@ -232,11 +232,11 @@ func TestSkillYourDream_Use(t *testing.T) {
 					Number: 51,
 				},
 			},
-			maxHP:   119,
-			dmg:     12,
-			colour:  game.ColourGreen,
-			gameCtx: game.Context{TurnNum: 4},
-			hp:      119,
+			maxHP:     119,
+			dmg:       12,
+			colour:    game.ColourGreen,
+			turnState: game.TurnState{TurnNum: 4},
+			hp:        119,
 		},
 		{
 			name: "Opponent3",
@@ -245,11 +245,11 @@ func TestSkillYourDream_Use(t *testing.T) {
 					Number: 119,
 				},
 			},
-			maxHP:   119,
-			dmg:     20,
-			colour:  game.ColourCyan,
-			gameCtx: game.Context{TurnNum: 5},
-			hp:      106,
+			maxHP:     119,
+			dmg:       20,
+			colour:    game.ColourCyan,
+			turnState: game.TurnState{TurnNum: 5},
+			hp:        106,
 		},
 		{
 			name: "Opponent4",
@@ -258,11 +258,11 @@ func TestSkillYourDream_Use(t *testing.T) {
 					Number: 9,
 				},
 			},
-			maxHP:   143,
-			dmg:     24,
-			colour:  game.ColourPink,
-			gameCtx: game.Context{TurnNum: 6},
-			hp:      118,
+			maxHP:     143,
+			dmg:       24,
+			colour:    game.ColourPink,
+			turnState: game.TurnState{TurnNum: 6},
+			hp:        118,
 		},
 		{
 			name: "Opponent5",
@@ -271,9 +271,9 @@ func TestSkillYourDream_Use(t *testing.T) {
 					Number: 8,
 				},
 			},
-			maxHP:   6,
-			gameCtx: game.Context{TurnNum: 9},
-			hp:      6,
+			maxHP:     6,
+			turnState: game.TurnState{TurnNum: 9},
+			hp:        6,
 		},
 	}
 
@@ -289,7 +289,7 @@ func TestSkillYourDream_Use(t *testing.T) {
 
 			s := c.Skills()[2]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, c.HP(), "HP")
@@ -307,14 +307,14 @@ func TestSkillMyStory_Use(t *testing.T) {
 
 	s := c.Skills()[3]
 
-	gameCtx := game.Context{
+	turnState := game.TurnState{
 		TurnNum: 8,
 	}
-	err := s.Use(opp, gameCtx)
+	err := s.Use(opp, turnState)
 	require.NoError(t, err)
 
-	eff, ok := game.CharacterEffect[storyteller.EffectControlled](opp)
+	eff, ok := game.CharacterEffect[storyteller.EffectControlled](opp, storyteller.EffectDescControlled)
 	require.True(t, ok, "effect")
 
-	assert.Equal(t, 1, eff.TurnsLeft(gameCtx.AddTurns(0, true)), "turns left opponent")
+	assert.Equal(t, 1, eff.TurnsLeft(turnState.AddTurns(0, true)), "turns left opponent")
 }

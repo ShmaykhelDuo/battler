@@ -16,12 +16,12 @@ func Match(c1, c2 *game.Character, p1, p2 Player) (int, error) {
 
 	skillLog := NewSkillLog()
 
-	var gameCtx game.Context
+	var turnState game.TurnState
 	for turnNum := game.MinTurnNumber; turnNum <= game.MaxTurnNumber; turnNum++ {
-		gameCtx = game.TurnCtx(turnNum)
+		turnState = game.TurnCtx(turnNum)
 
-		gameCtx = gameCtx.WithGoingFirst(true)
-		end, err := Turn(p1, p2, c1, c2, gameCtx, skillLog)
+		turnState = turnState.WithGoingFirst(true)
+		end, err := Turn(p1, p2, c1, c2, turnState, skillLog)
 		if err != nil {
 			return 0, err
 		}
@@ -29,8 +29,8 @@ func Match(c1, c2 *game.Character, p1, p2 Player) (int, error) {
 			break
 		}
 
-		gameCtx = gameCtx.WithGoingFirst(false)
-		end, err = Turn(p2, p1, c2, c1, gameCtx, skillLog)
+		turnState = turnState.WithGoingFirst(false)
+		end, err = Turn(p2, p1, c2, c1, turnState, skillLog)
 		if err != nil {
 			return 0, err
 		}
@@ -39,11 +39,11 @@ func Match(c1, c2 *game.Character, p1, p2 Player) (int, error) {
 		}
 	}
 
-	err := sendState(p1, c1, c2, gameCtx.WithTurnEnd(), skillLog, false, false)
+	err := sendState(p1, c1, c2, turnState.WithTurnEnd(), skillLog, false, false)
 	if err != nil {
 		return 0, err
 	}
-	err = sendState(p2, c2, c1, gameCtx.WithTurnEnd(), skillLog, false, false)
+	err = sendState(p2, c2, c1, turnState.WithTurnEnd(), skillLog, false, false)
 	if err != nil {
 		return 0, err
 	}

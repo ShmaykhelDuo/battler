@@ -90,21 +90,21 @@ func main() {
 
 	c1 := game.NewCharacter(ruby.CharacterRuby)
 	c2 := game.NewCharacter(milana.CharacterMilana)
-	gameCtx := game.Context{
+	turnState := game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: true,
 	}
 
-	MiniMax(c1, c2, gameCtx, 1, 9, false, nil, c)
+	MiniMax(c1, c2, turnState, 1, 9, false, nil, c)
 
 	c1 = game.NewCharacter(ruby.CharacterRuby)
 	c2 = game.NewCharacter(milana.CharacterMilana)
-	gameCtx = game.Context{
+	turnState = game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: true,
 	}
 
-	MiniMax(c1, c2, gameCtx, 1, 9, true, nil, c)
+	MiniMax(c1, c2, turnState, 1, 9, true, nil, c)
 
 	close(c)
 	<-done

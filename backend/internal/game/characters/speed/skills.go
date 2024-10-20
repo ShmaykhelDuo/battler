@@ -11,10 +11,10 @@ var SkillRun = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourGreen,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		redAmount := 5
 
-		red, ok := game.CharacterEffect[*EffectDamageReduced](c)
+		red, ok := game.CharacterEffect[*EffectDamageReduced](c, EffectDescDamageReduced)
 		if ok {
 			red.Increase(redAmount)
 		} else {
@@ -25,7 +25,7 @@ var SkillRun = game.SkillData{
 			increaseGreenTokens(c)
 		}
 	},
-	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+	IsAppropriate: func(c, opp *game.Character, turnState game.TurnState) bool {
 		return greenTokensNumber(c) < 5
 	},
 }
@@ -37,14 +37,14 @@ var SkillWeaken = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourBlack,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		opp.AddEffect(EffectDefenceReduced{})
 
 		if blackTokensNumber(c) < 5 {
 			increaseBlackTokens(c)
 		}
 	},
-	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+	IsAppropriate: func(c, opp *game.Character, turnState game.TurnState) bool {
 		return blackTokensNumber(c) < 5
 	},
 }
@@ -54,16 +54,16 @@ var SkillSpeed = game.SkillData{
 	Desc:       game.SkillDescription{},
 	Cooldown:   0,
 	UnlockTurn: 0,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(NewEffectSpedUp(gameCtx))
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		c.AddEffect(NewEffectSpedUp(turnState))
 
 		if greenTokensNumber(c) < 5 {
 			increaseGreenTokens(c)
 		}
 	},
-	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
-		eff, ok := game.CharacterEffect[EffectSpedUp](c)
-		if ok && eff.TurnsLeft(gameCtx) > 1 {
+	IsAppropriate: func(c, opp *game.Character, turnState game.TurnState) bool {
+		eff, ok := game.CharacterEffect[EffectSpedUp](c, EffectDescSpedUp)
+		if ok && eff.TurnsLeft(turnState) > 1 {
 			return false
 		}
 
@@ -78,7 +78,7 @@ var SkillStab = game.SkillData{
 		IsUltimate: true,
 		Colour:     game.ColourBlack,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		mul := 6
 
 		green := greenTokensNumber(c)
@@ -87,13 +87,13 @@ var SkillStab = game.SkillData{
 		black := blackTokensNumber(c)
 		c.Damage(opp, black*mul, game.ColourBlack)
 	},
-	IsAppropriate: func(c, opp *game.Character, gameCtx game.Context) bool {
+	IsAppropriate: func(c, opp *game.Character, turnState game.TurnState) bool {
 		return greenTokensNumber(c) > 0 || blackTokensNumber(c) > 0
 	},
 }
 
 func greenTokensNumber(c *game.Character) int {
-	tokens, ok := game.CharacterEffect[EffectGreenTokens](c)
+	tokens, ok := game.CharacterEffect[EffectGreenTokens](c, EffectDescGreenTokens)
 	if !ok {
 		return 0
 	}
@@ -102,7 +102,7 @@ func greenTokensNumber(c *game.Character) int {
 }
 
 func increaseGreenTokens(c *game.Character) {
-	tokens, ok := game.CharacterEffect[EffectGreenTokens](c)
+	tokens, ok := game.CharacterEffect[EffectGreenTokens](c, EffectDescGreenTokens)
 	if ok {
 		tokens.Increase(1)
 		return
@@ -112,7 +112,7 @@ func increaseGreenTokens(c *game.Character) {
 }
 
 func blackTokensNumber(c *game.Character) int {
-	tokens, ok := game.CharacterEffect[EffectBlackTokens](c)
+	tokens, ok := game.CharacterEffect[EffectBlackTokens](c, EffectDescBlackTokens)
 	if !ok {
 		return 0
 	}
@@ -121,7 +121,7 @@ func blackTokensNumber(c *game.Character) int {
 }
 
 func increaseBlackTokens(c *game.Character) {
-	tokens, ok := game.CharacterEffect[EffectBlackTokens](c)
+	tokens, ok := game.CharacterEffect[EffectBlackTokens](c, EffectDescBlackTokens)
 	if ok {
 		tokens.Increase(1)
 		return

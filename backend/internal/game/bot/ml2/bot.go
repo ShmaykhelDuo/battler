@@ -75,7 +75,7 @@ func (b *Bot) RequestSkill() (int, error) {
 func (b *Bot) send(state match.GameState) error {
 	s := State{
 		PrevMoves: nil,
-		First:     state.Context.IsGoingFirst,
+		First:     state.TurnState.IsGoingFirst,
 	}
 	for _, it := range state.SkillLog {
 		s.PrevMoves = append(s.PrevMoves, it.SkillIndex)

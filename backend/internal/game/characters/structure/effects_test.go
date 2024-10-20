@@ -69,7 +69,7 @@ func TestNewEffectSLayers(t *testing.T) {
 
 	threshold := 5
 
-	eff := structure.NewEffectSLayers(game.Context{}, threshold)
+	eff := structure.NewEffectSLayers(game.TurnState{}, threshold)
 	assert.Equal(t, threshold, eff.Threshold())
 }
 
@@ -106,7 +106,7 @@ func TestEffectSLayers_ModifyTakenDamage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			eff := structure.NewEffectSLayers(game.Context{}, tt.threshold)
+			eff := structure.NewEffectSLayers(game.TurnState{}, tt.threshold)
 
 			out := eff.ModifyTakenDamage(tt.dmg, game.ColourNone)
 			assert.Equal(t, tt.out, out)
@@ -118,20 +118,20 @@ func TestEffectLastChance_OnTurnEnd(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name        string
-		prevDmg     int
-		initGameCtx game.Context
-		gameCtx     game.Context
-		hp          int
+		name          string
+		prevDmg       int
+		initturnState game.TurnState
+		turnState     game.TurnState
+		hp            int
 	}{
 		{
 			name:    "SameTurn",
 			prevDmg: 36,
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -141,11 +141,11 @@ func TestEffectLastChance_OnTurnEnd(t *testing.T) {
 		{
 			name:    "OpponentsTurnGoingFirst",
 			prevDmg: 36,
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: false,
 				IsTurnEnd:    true,
@@ -155,11 +155,11 @@ func TestEffectLastChance_OnTurnEnd(t *testing.T) {
 		{
 			name:    "OpponentsTurnGoingSecond",
 			prevDmg: 36,
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      8,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -177,9 +177,9 @@ func TestEffectLastChance_OnTurnEnd(t *testing.T) {
 
 			opp.Damage(c, tt.prevDmg, game.ColourNone)
 
-			eff := structure.NewEffectLastChance(tt.initGameCtx)
+			eff := structure.NewEffectLastChance(tt.initturnState)
 
-			eff.OnTurnEnd(c, opp, tt.gameCtx)
+			eff.OnTurnEnd(c, opp, tt.turnState)
 
 			assert.Equal(t, tt.hp, c.HP())
 		})

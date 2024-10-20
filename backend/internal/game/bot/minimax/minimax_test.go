@@ -48,54 +48,54 @@ func TestMiniMax(t *testing.T) {
 			c := game.NewCharacter(tt.c)
 			opp := game.NewCharacter(tt.opp)
 
-			gameCtx := game.Context{
+			turnState := game.TurnState{
 				TurnNum:      1,
 				IsGoingFirst: true,
 			}
 
-			score, strategy := minimax.MiniMax(c, opp, gameCtx, 1, tt.depth, false)
+			score, strategy := minimax.MiniMax(c, opp, turnState, 1, tt.depth, false)
 			assert.Equal(t, tt.score, score, "score")
 			assert.Equal(t, tt.strategy, strategy)
 		})
 	}
 }
 
-func TestMiniMax2(t *testing.T) {
+func ExampleMiniMax() {
 	c := game.NewCharacter(ruby.CharacterRuby)
 	opp := game.NewCharacter(milana.CharacterMilana)
 
-	opp.Skills()[0].Use(c, game.Context{
+	opp.Skills()[0].Use(c, game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: true,
 	})
-	c.Skills()[0].Use(opp, game.Context{
+	c.Skills()[0].Use(opp, game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: false,
 	})
-	opp.Skills()[2].Use(c, game.Context{
+	opp.Skills()[2].Use(c, game.TurnState{
 		TurnNum:      2,
 		IsGoingFirst: true,
 	})
 
-	gameCtx := game.Context{
+	turnState := game.TurnState{
 		TurnNum:      2,
 		IsGoingFirst: false,
 	}
-	minimax.MiniMax(c, opp, gameCtx, 1, 8, false)
+	minimax.MiniMax(c, opp, turnState, 1, 8, false)
 }
 
 func runMiniMax(b *testing.B, depth int) {
 	c := game.NewCharacter(storyteller.CharacterStoryteller)
 	opp := game.NewCharacter(ruby.CharacterRuby)
 
-	gameCtx := game.Context{
+	turnState := game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: true,
 	}
 
 	for i := 0; i < b.N; i++ {
 		clonedC, clonedOpp := game.Clone(c, opp)
-		minimax.MiniMax(clonedC, clonedOpp, gameCtx, 1, depth, false)
+		minimax.MiniMax(clonedC, clonedOpp, turnState, 1, depth, false)
 	}
 }
 

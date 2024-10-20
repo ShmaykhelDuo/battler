@@ -36,7 +36,7 @@ func (b *Bot) SendState(state match.GameState) error {
 	if state.AsOpp {
 		skills = clonedOpp.SkillsPerTurn()
 	}
-	_, strategy := MiniMax(clonedC, clonedOpp, state.Context, skills, b.depth, state.AsOpp)
+	_, strategy := MiniMax(clonedC, clonedOpp, state.TurnState, skills, b.depth, state.AsOpp)
 	// if len(strategy) < skills {
 	// 	fmt.Printf("WTF?? %#v\n%#v\n%#v\n", *state.Character, *state.Opponent, state.Context)
 	// 	for i, s := range clonedC.Skills() {

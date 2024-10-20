@@ -46,18 +46,18 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name        string
-		initGameCtx game.Context
-		gameCtx     game.Context
-		hasExpired  bool
+		name          string
+		initturnState game.TurnState
+		turnState     game.TurnState
+		hasExpired    bool
 	}{
 		{
 			name: "ImmediatelyAfterWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
@@ -65,11 +65,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterTurnEndWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -78,11 +78,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "OpponentTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
@@ -90,11 +90,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "NextTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -102,11 +102,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "SecondTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      6,
 				IsGoingFirst: true,
 			},
@@ -114,11 +114,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "AfterSecondTurnWhenGoingFirst",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      6,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -127,11 +127,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
@@ -139,11 +139,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "ImmediatelyAfterTurnEndWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 				IsTurnEnd:    true,
@@ -152,11 +152,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "OpponentTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -164,11 +164,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "NextTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
@@ -176,11 +176,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "SecondTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      6,
 				IsGoingFirst: false,
 			},
@@ -188,11 +188,11 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		},
 		{
 			name: "AfterSecondTurnWhenGoingSecond",
-			initGameCtx: game.Context{
+			initturnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      6,
 				IsGoingFirst: false,
 				IsTurnEnd:    true,
@@ -205,9 +205,9 @@ func TestEffectDoubleDamage_HasExpired(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			eff := ruby.NewEffectDoubleDamage(tt.initGameCtx)
+			eff := ruby.NewEffectDoubleDamage(tt.initturnState)
 
-			hasExpired := eff.HasExpired(tt.gameCtx)
+			hasExpired := eff.HasExpired(tt.turnState)
 			assert.Equal(t, tt.hasExpired, hasExpired)
 		})
 	}

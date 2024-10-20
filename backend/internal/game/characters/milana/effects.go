@@ -34,9 +34,9 @@ type EffectMintMist struct {
 	common.DurationExpirable
 }
 
-func NewEffectMintMist(gameCtx game.Context) EffectMintMist {
+func NewEffectMintMist(turnState game.TurnState) EffectMintMist {
 	return EffectMintMist{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(2, false)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(2, false)),
 	}
 }
 
