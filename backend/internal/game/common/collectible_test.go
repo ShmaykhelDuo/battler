@@ -124,7 +124,7 @@ func TestCollectible_HasExpired(t *testing.T) {
 
 			eff := common.NewCollectible(tt.amount)
 
-			assert.Equal(t, tt.isExpired, eff.HasExpired(game.Context{}))
+			assert.Equal(t, tt.isExpired, eff.HasExpired(game.TurnState{}))
 		})
 	}
 }

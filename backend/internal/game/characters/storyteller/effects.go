@@ -18,9 +18,9 @@ type EffectCannotUse struct {
 }
 
 // NewEffectCannotUse returns a new [EffectCannotUse] of provided colour.
-func NewEffectCannotUse(gameCtx game.Context, colour game.Colour) EffectCannotUse {
+func NewEffectCannotUse(turnState game.TurnState, colour game.Colour) EffectCannotUse {
 	return EffectCannotUse{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(0, true)),
 		colour:            colour,
 	}
 }
@@ -51,9 +51,9 @@ type EffectControlled struct {
 	common.DurationExpirable
 }
 
-func NewEffectControlled(gameCtx game.Context) EffectControlled {
+func NewEffectControlled(turnState game.TurnState) EffectControlled {
 	return EffectControlled{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(0, true)),
 	}
 }
 

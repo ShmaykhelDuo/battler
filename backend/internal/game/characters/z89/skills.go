@@ -11,7 +11,7 @@ var SkillScarcity = game.SkillData{
 		Colour:     game.ColourBlack,
 	},
 	Cooldown: 1,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		c.Damage(opp, 12, game.ColourBlack)
 		opp.SetMaxHP(opp.HP())
 	},
@@ -29,8 +29,8 @@ var SkillIndifference = game.SkillData{
 	},
 	Cooldown:   2,
 	UnlockTurn: 2,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		if hasOpponentUltimateUnlocked(opp, gameCtx) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		if hasOpponentUltimateUnlocked(opp, turnState) {
 			return
 		}
 
@@ -45,7 +45,7 @@ var SkillGreenSphere = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourGreen,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		dmg := 15 - (opp.MaxHP() - opp.HP())
 		c.Damage(opp, dmg, game.ColourGreen)
 	},
@@ -61,22 +61,22 @@ var SkillDespondency = game.SkillData{
 	},
 	Cooldown:   10,
 	UnlockTurn: 9,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		dmg := 40 - (opp.MaxHP() - 70)
 		c.Damage(opp, dmg, game.ColourBlue)
 	},
 }
 
-func hasOpponentUltimateUnlocked(opp *game.Character, gameCtx game.Context) bool {
-	unlockCtx := game.Context{
+func hasOpponentUltimateUnlocked(opp *game.Character, turnState game.TurnState) bool {
+	unlockCtx := game.TurnState{
 		TurnNum:      opp.Skills()[3].UnlockTurn(),
 		IsGoingFirst: true,
 	}
-	return gameCtx.IsAfter(unlockCtx)
+	return turnState.IsAfter(unlockCtx)
 }
 
 func increaseUltimateSlow(opp *game.Character) {
-	effSlow, ok := game.CharacterEffect[*EffectUltimateSlow](opp)
+	effSlow, ok := game.CharacterEffect[*EffectUltimateSlow](opp, EffectDescUltimateSlow)
 	if ok {
 		effSlow.Increase()
 		return

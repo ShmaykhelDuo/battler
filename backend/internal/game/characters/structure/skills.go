@@ -9,10 +9,10 @@ var SkillEShock = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourCyan,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		dmg := 5
 
-		boost, ok := game.CharacterEffect[*EffectIBoost](c)
+		boost, ok := game.CharacterEffect[*EffectIBoost](c, EffectDescIBoost)
 		if ok {
 			dmg += boost.Amount()
 		}
@@ -29,8 +29,8 @@ var SkillIBoost = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourViolet,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		boost, ok := game.CharacterEffect[*EffectIBoost](c)
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		boost, ok := game.CharacterEffect[*EffectIBoost](c, EffectDescIBoost)
 		if !ok {
 			c.AddEffect(NewEffectIBoost(5))
 			return
@@ -38,8 +38,8 @@ var SkillIBoost = game.SkillData{
 
 		boost.Increase()
 	},
-	IsAvailable: func(c *game.Character, opp *game.Character, gameCtx game.Context) bool {
-		boost, ok := game.CharacterEffect[*EffectIBoost](c)
+	IsAvailable: func(c *game.Character, opp *game.Character, turnState game.TurnState) bool {
+		boost, ok := game.CharacterEffect[*EffectIBoost](c, EffectDescIBoost)
 		if !ok {
 			return true
 		}
@@ -57,15 +57,15 @@ var SkillSLayers = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourGray,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		threshold := 5
 
-		boost, ok := game.CharacterEffect[*EffectIBoost](c)
+		boost, ok := game.CharacterEffect[*EffectIBoost](c, EffectDescIBoost)
 		if ok {
 			threshold += boost.Amount()
 		}
 
-		c.AddEffect(NewEffectSLayers(gameCtx, threshold))
+		c.AddEffect(NewEffectSLayers(turnState, threshold))
 	},
 }
 
@@ -76,7 +76,7 @@ var SkillLastChance = game.SkillData{
 	Desc:       game.SkillDescription{},
 	Cooldown:   10,
 	UnlockTurn: 7,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(NewEffectLastChance(gameCtx))
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		c.AddEffect(NewEffectLastChance(turnState))
 	},
 }

@@ -18,7 +18,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 		initMaxHP            int
 		initOppMaxHP         int
 		effs                 []game.Effect
-		gameCtx              game.Context
+		turnState            game.TurnState
 		maxHP                int
 		oppMaxHP             int
 		euphoricSourceAmount int
@@ -72,7 +72,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 
 			s := c.Skills()[0]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.maxHP, c.MaxHP(), "maximum HP")
@@ -84,7 +84,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 }
 
 func ultimateEarlyAmount(opp *game.Character) int {
-	eff, ok := game.CharacterEffect[*euphoria.EffectUltimateEarly](opp)
+	eff, ok := game.CharacterEffect[*euphoria.EffectUltimateEarly](opp, euphoria.EffectDescUltimateEarly)
 	if !ok {
 		return 0
 	}
@@ -100,7 +100,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 		oppData              game.CharacterData
 		effs                 []game.Effect
 		oppEffs              []game.Effect
-		gameCtx              game.Context
+		turnState            game.TurnState
 		hp                   int
 		maxHP                int
 		oppMaxHP             int
@@ -120,7 +120,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 					},
 				},
 			},
-			gameCtx:              game.Context{TurnNum: 4},
+			turnState:            game.TurnState{TurnNum: 4},
 			hp:                   127,
 			maxHP:                127,
 			oppMaxHP:             110,
@@ -143,7 +143,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 			effs: []game.Effect{
 				euphoria.NewEffectEuphoricSource(12),
 			},
-			gameCtx:              game.Context{TurnNum: 4},
+			turnState:            game.TurnState{TurnNum: 4},
 			hp:                   127,
 			maxHP:                127,
 			oppMaxHP:             110,
@@ -169,7 +169,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 			hp:                   127,
 			maxHP:                127,
 			oppMaxHP:             110,
-			gameCtx:              game.Context{TurnNum: 4},
+			turnState:            game.TurnState{TurnNum: 4},
 			euphoricSourceAmount: 10,
 			ultimateEarlyAmount:  2,
 		},
@@ -189,7 +189,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 			hp:                   137,
 			maxHP:                137,
 			oppMaxHP:             120,
-			gameCtx:              game.Context{TurnNum: 8},
+			turnState:            game.TurnState{TurnNum: 8},
 			euphoricSourceAmount: 20,
 		},
 		{
@@ -205,7 +205,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 					},
 				},
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: true,
 			},
@@ -228,7 +228,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 					},
 				},
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: false,
 			},
@@ -256,7 +256,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 
 			s := c.Skills()[1]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, c.HP(), "HP")
@@ -272,12 +272,12 @@ func TestSkillPinkSphere_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name     string
-		oppData  game.CharacterData
-		gameCtx  game.Context
-		oppHP    int
-		maxHP    int
-		oppMaxHP int
+		name      string
+		oppData   game.CharacterData
+		turnState game.TurnState
+		oppHP     int
+		maxHP     int
+		oppMaxHP  int
 	}{
 		{
 			name: "Opponent1",
@@ -299,7 +299,7 @@ func TestSkillPinkSphere_Use(t *testing.T) {
 
 			s := c.Skills()[2]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.oppHP, opp.HP(), "opponent's HP")
@@ -319,10 +319,10 @@ func TestSkillEuphoria_Use(t *testing.T) {
 
 	s := c.Skills()[3]
 
-	gameCtx := game.Context{TurnNum: 4}
-	err := s.Use(opp, gameCtx)
+	turnState := game.TurnState{TurnNum: 4}
+	err := s.Use(opp, turnState)
 	require.NoError(t, err)
 
-	_, ok := game.CharacterEffect[euphoria.EffectEuphoricHeal](c)
+	_, ok := game.CharacterEffect[euphoria.EffectEuphoricHeal](c, euphoria.EffectDescEuphoricHeal)
 	require.True(t, ok, "ultimate heal effect")
 }

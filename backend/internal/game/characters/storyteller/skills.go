@@ -13,7 +13,7 @@ var SkillYourNumber = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourOrange,
 	},
-	Use: func(c, opp *game.Character, gameCtx game.Context) {
+	Use: func(c, opp *game.Character, turnState game.TurnState) {
 		dmg := 10 + opp.Desc().Number%7
 		c.Damage(opp, dmg, game.ColourOrange)
 	},
@@ -29,12 +29,12 @@ var SkillYourColour = game.SkillData{
 		Colour:     game.ColourWhite,
 	},
 	Cooldown: 1,
-	Use: func(c, opp *game.Character, gameCtx game.Context) {
+	Use: func(c, opp *game.Character, turnState game.TurnState) {
 		colour := opp.LastUsedSkill().Desc().Colour
-		opp.AddEffect(NewEffectCannotUse(gameCtx, colour))
+		opp.AddEffect(NewEffectCannotUse(turnState, colour))
 		c.Damage(opp, 15, colour)
 	},
-	IsAvailable: func(c, opp *game.Character, gameCtx game.Context) bool {
+	IsAvailable: func(c, opp *game.Character, turnState game.TurnState) bool {
 		return opp.LastUsedSkill() != nil
 	},
 }
@@ -47,13 +47,13 @@ var SkillYourDream = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourViolet,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		num := opp.Desc().Number
 		if num > 83 {
 			num = 83
 		}
 
-		heal := int(math.Ceil(float64(c.MaxHP()-num) / float64(gameCtx.TurnNum)))
+		heal := int(math.Ceil(float64(c.MaxHP()-num) / float64(turnState.TurnNum)))
 		c.Heal(heal)
 	},
 }
@@ -65,11 +65,11 @@ var SkillMyStory = game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "My Story",
 		IsUltimate: true,
-		Colour:     0,
+		Colour:     game.ColourBlue,
 	},
 	Cooldown:   1,
 	UnlockTurn: 7,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		opp.AddEffect(NewEffectControlled(gameCtx))
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		opp.AddEffect(NewEffectControlled(turnState))
 	},
 }

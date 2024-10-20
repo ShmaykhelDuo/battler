@@ -83,8 +83,8 @@ func (e EffectEuphoricHeal) Desc() game.EffectDescription {
 }
 
 // OnTurnEnd executes the end-of-turn action.
-func (e EffectEuphoricHeal) OnTurnEnd(c *game.Character, opp *game.Character, gameCtx game.Context) {
-	source, ok := game.CharacterEffect[EffectEuphoricSource](c)
+func (e EffectEuphoricHeal) OnTurnEnd(c *game.Character, opp *game.Character, turnState game.TurnState) {
+	source, ok := game.CharacterEffect[EffectEuphoricSource](c, EffectDescEuphoricSource)
 	if !ok {
 		return
 	}

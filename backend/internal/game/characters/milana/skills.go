@@ -10,16 +10,16 @@ var SkillRoyalMove = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourGreen,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		dmg := 12
-		_, hasMintMist := game.CharacterEffect[EffectMintMist](c)
+		_, hasMintMist := game.CharacterEffect[EffectMintMist](c, EffectDescMintMist)
 		if hasMintMist {
 			dmg = 20
 		}
 
 		stolen := c.Damage(opp, dmg, game.ColourGreen)
 
-		effStolen, ok := game.CharacterEffect[EffectStolenHP](c)
+		effStolen, ok := game.CharacterEffect[EffectStolenHP](c, EffectDescStolenHP)
 		if ok {
 			effStolen.Increase(stolen)
 		} else {
@@ -36,8 +36,8 @@ var SkillComposure = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourWhite,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		effStolen, ok := game.CharacterEffect[EffectStolenHP](c)
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		effStolen, ok := game.CharacterEffect[EffectStolenHP](c, EffectDescStolenHP)
 		if !ok {
 			return
 		}
@@ -47,7 +47,7 @@ var SkillComposure = game.SkillData{
 		cost := 6
 		heal := 20
 
-		_, hasMintMist := game.CharacterEffect[EffectMintMist](c)
+		_, hasMintMist := game.CharacterEffect[EffectMintMist](c, EffectDescMintMist)
 		if hasMintMist {
 			cost = 10
 			heal = 30
@@ -74,8 +74,8 @@ var SkillMintMist = game.SkillData{
 		Colour:     game.ColourWhite,
 	},
 	Cooldown: 2,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		c.AddEffect(NewEffectMintMist(gameCtx))
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		c.AddEffect(NewEffectMintMist(turnState))
 	},
 }
 
@@ -88,8 +88,8 @@ var SkillPride = game.SkillData{
 		Colour:     game.ColourCyan,
 	},
 	UnlockTurn: 8,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
-		effStolen, ok := game.CharacterEffect[EffectStolenHP](c)
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+		effStolen, ok := game.CharacterEffect[EffectStolenHP](c, EffectDescStolenHP)
 		if !ok {
 			return
 		}

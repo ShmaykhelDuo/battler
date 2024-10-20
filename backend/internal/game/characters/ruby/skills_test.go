@@ -19,24 +19,24 @@ func TestSkillDance_Use(t *testing.T) {
 
 	s := c.Skills()[0]
 
-	gameCtx := game.Context{}
-	err := s.Use(opp, gameCtx)
+	turnState := game.TurnState{}
+	err := s.Use(opp, turnState)
 	require.NoError(t, err)
 
-	eff, ok := game.CharacterEffect[ruby.EffectDoubleDamage](c)
+	eff, ok := game.CharacterEffect[ruby.EffectDoubleDamage](c, ruby.EffectDescDoubleDamage)
 	require.True(t, ok, "effect")
 
-	assert.Equal(t, 2, eff.TurnsLeft(gameCtx.AddTurns(1, false)), "turns left next turn")
+	assert.Equal(t, 2, eff.TurnsLeft(turnState.AddTurns(1, false)), "turns left next turn")
 }
 
 func TestSkillRage_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		oppData game.CharacterData
-		gameCtx game.Context
-		oppHP   int
+		name      string
+		oppData   game.CharacterData
+		turnState game.TurnState
+		oppHP     int
 	}{
 		{
 			name: "Opponent1",
@@ -46,7 +46,7 @@ func TestSkillRage_Use(t *testing.T) {
 					game.ColourRed: -1,
 				},
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum: 3,
 			},
 			oppHP: 92,
@@ -59,7 +59,7 @@ func TestSkillRage_Use(t *testing.T) {
 					game.ColourRed: -1,
 				},
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum: 6,
 			},
 			oppHP: 106,
@@ -74,7 +74,7 @@ func TestSkillRage_Use(t *testing.T) {
 			opp := game.NewCharacter(tt.oppData)
 
 			s := c.Skills()[1]
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.oppHP, opp.HP())
@@ -82,17 +82,17 @@ func TestSkillRage_Use(t *testing.T) {
 	}
 }
 
-func assertEffectCannotHeal(t *testing.T, c *game.Character, gameCtx game.Context, isOpp bool, name string) {
+func assertEffectCannotHeal(t *testing.T, c *game.Character, turnState game.TurnState, isOpp bool, name string) {
 	t.Helper()
 
-	eff, ok := game.CharacterEffect[ruby.EffectCannotHeal](c)
+	eff, ok := game.CharacterEffect[ruby.EffectCannotHeal](c, ruby.EffectDescCannotHeal)
 	if !assert.True(t, ok, "%s's effect", name) {
 		return
 	}
 
-	checkCtx := gameCtx.AddTurns(1, false)
+	checkCtx := turnState.AddTurns(1, false)
 	if isOpp {
-		checkCtx = gameCtx.AddTurns(0, true)
+		checkCtx = turnState.AddTurns(0, true)
 	}
 
 	assert.Equal(t, 1, eff.TurnsLeft(checkCtx), "%s's effect turns left", name)
@@ -108,24 +108,24 @@ func TestSkillStop_Use(t *testing.T) {
 
 	s := c.Skills()[2]
 
-	gameCtx := game.Context{}
-	err := s.Use(opp, gameCtx)
+	turnState := game.TurnState{}
+	err := s.Use(opp, turnState)
 	require.NoError(t, err)
 
-	assertEffectCannotHeal(t, c, gameCtx, false, "character")
-	assertEffectCannotHeal(t, opp, gameCtx, true, "opponent")
+	assertEffectCannotHeal(t, c, turnState, false, "character")
+	assertEffectCannotHeal(t, opp, turnState, true, "opponent")
 }
 
 func TestSkillExecute_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		oppData game.CharacterData
-		prevDmg int
-		effs    []game.Effect
-		gameCtx game.Context
-		hp      int
+		name      string
+		oppData   game.CharacterData
+		prevDmg   int
+		effs      []game.Effect
+		turnState game.TurnState
+		hp        int
 	}{
 		{
 			name: "AboveThreshold",
@@ -182,7 +182,7 @@ func TestSkillExecute_Use(t *testing.T) {
 
 			s := c.Skills()[3]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "opponent's HP")

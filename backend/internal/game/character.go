@@ -2,7 +2,6 @@ package game
 
 import (
 	"maps"
-	"slices"
 )
 
 // CharacterDescription is a list of constant features of a character.
@@ -16,10 +15,10 @@ const SkillCount = 4
 
 // CharacterData is a list of features of a character.
 type CharacterData struct {
+	SkillData [SkillCount]SkillData // array of character's skills' descriptions
 	Desc      CharacterDescription  // character's description
 	DefaultHP int                   // character's HP on the beginning of the match
 	Defences  map[Colour]int        // map of the character's defences by colour
-	SkillData [SkillCount]SkillData // array of character's skills' descriptions
 }
 
 // DefenceModifier modifies a character's defences.
@@ -67,23 +66,23 @@ type HealFilter interface {
 // TurnEndHandler handles the end-of-turn action.
 type TurnEndHandler interface {
 	// OnTurnEnd executes the end-of-turn action.
-	OnTurnEnd(c, opp *Character, gameCtx Context)
+	OnTurnEnd(c, opp *Character, turnState TurnState)
 }
 
 // Expirable represents an effect which can be expired.
 type Expirable interface {
 	// HasExpired reports whether the effect has expired.
-	HasExpired(gameCtx Context) bool
+	HasExpired(turnState TurnState) bool
 }
 
 // Character is a representation of a character in a match.
 type Character struct {
+	skills        [SkillCount]*Skill
 	desc          CharacterDescription
 	hp            int
 	maxHP         int
 	defences      map[Colour]int
-	skills        [SkillCount]*Skill
-	effects       []Effect
+	effects       map[EffectDescription]Effect
 	lastUsedSkill *Skill
 }
 
@@ -94,6 +93,7 @@ func NewCharacter(data CharacterData) *Character {
 		hp:       data.DefaultHP,
 		maxHP:    data.DefaultHP,
 		defences: data.Defences,
+		effects:  make(map[EffectDescription]Effect),
 	}
 
 	for i := range SkillCount {
@@ -135,7 +135,12 @@ func (c *Character) Defences() map[Colour]int {
 
 // Effects returns a slice of effects applied to the character.
 func (c *Character) Effects() []Effect {
-	return slices.Clone(c.effects)
+	effs := make([]Effect, 0, len(c.effects))
+	for _, e := range c.effects {
+		effs = append(effs, e)
+	}
+
+	return effs
 }
 
 // Skills returns an array of skills provided by the character.
@@ -192,7 +197,8 @@ func (c *Character) AddEffect(eff Effect) {
 		}
 	}
 
-	c.effects = append(c.effects, eff)
+	desc := eff.Desc()
+	c.effects[desc] = eff
 }
 
 // Damage decreases the opponent's HP.
@@ -252,33 +258,34 @@ func (c *Character) Heal(heal int) int {
 }
 
 // OnTurnEnd triggers all the end-of-turn actions provided by effects applied to the character.
-func (c *Character) OnTurnEnd(opp *Character, gameCtx Context) {
+func (c *Character) OnTurnEnd(opp *Character, turnState TurnState) {
 	for _, e := range c.effects {
 		h, ok := e.(TurnEndHandler)
 		if ok {
-			h.OnTurnEnd(c, opp, gameCtx)
+			h.OnTurnEnd(c, opp, turnState)
 		}
 	}
 
-	c.removeExpiredEffects(gameCtx)
+	c.removeExpiredEffects(turnState)
 }
 
-func (c *Character) removeExpiredEffects(gameCtx Context) {
-	c.effects = slices.DeleteFunc(c.effects, func(e Effect) bool {
+func (c *Character) removeExpiredEffects(turnState TurnState) {
+	for desc, e := range c.effects {
 		exp, ok := e.(Expirable)
-		return ok && exp.HasExpired(gameCtx)
-	})
+		if ok && exp.HasExpired(turnState) {
+			delete(c.effects, desc)
+		}
+	}
 }
 
 // Effect returns an applied effect with matching description and whether it is found.
-// If no such effect is found, zero value of type is returned and found if false.
-func CharacterEffect[T Effect](c *Character) (eff T, found bool) {
-	for _, e := range c.Effects() {
-		eff, ok := e.(T)
-		if ok {
-			return eff, true
-		}
+// If no such effect is found, zero value of type is returned and found is false.
+func CharacterEffect[T Effect](c *Character, desc EffectDescription) (eff T, found bool) {
+	e, ok := c.effects[desc]
+	if !ok {
+		return eff, false
 	}
 
-	return eff, false
+	eff, found = e.(T)
+	return
 }

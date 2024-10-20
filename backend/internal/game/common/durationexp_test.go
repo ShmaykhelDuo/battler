@@ -13,17 +13,17 @@ func TestDurationExpirable_TurnsLeft(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		expCtx    game.Context
-		gameCtx   game.Context
+		expCtx    game.TurnState
+		turnState game.TurnState
 		turnsLeft int
 	}{
 		{
 			name: "ExpiresThisTurn",
-			expCtx: game.Context{
+			expCtx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -31,11 +31,11 @@ func TestDurationExpirable_TurnsLeft(t *testing.T) {
 		},
 		{
 			name: "ExpiresOpponentsNextTurnGoingFirst",
-			expCtx: game.Context{
+			expCtx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -43,11 +43,11 @@ func TestDurationExpirable_TurnsLeft(t *testing.T) {
 		},
 		{
 			name: "ExpiresOpponentsNextTurnGoingSecond",
-			expCtx: game.Context{
+			expCtx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      4,
 				IsGoingFirst: false,
 			},
@@ -55,11 +55,11 @@ func TestDurationExpirable_TurnsLeft(t *testing.T) {
 		},
 		{
 			name: "ExpiresYourNextTurn",
-			expCtx: game.Context{
+			expCtx: game.TurnState{
 				TurnNum:      6,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -67,11 +67,11 @@ func TestDurationExpirable_TurnsLeft(t *testing.T) {
 		},
 		{
 			name: "ExpiresOpponentsSecondNextTurnGoingFirst",
-			expCtx: game.Context{
+			expCtx: game.TurnState{
 				TurnNum:      6,
 				IsGoingFirst: false,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -79,11 +79,11 @@ func TestDurationExpirable_TurnsLeft(t *testing.T) {
 		},
 		{
 			name: "ExpiresOpponentsSecondNextTurnGoingSecond",
-			expCtx: game.Context{
+			expCtx: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: true,
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
@@ -97,7 +97,7 @@ func TestDurationExpirable_TurnsLeft(t *testing.T) {
 
 			exp := common.NewDurationExpirable(tt.expCtx)
 
-			turnsLeft := exp.TurnsLeft(tt.gameCtx)
+			turnsLeft := exp.TurnsLeft(tt.turnState)
 			assert.Equal(t, tt.turnsLeft, turnsLeft)
 		})
 	}

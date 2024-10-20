@@ -13,10 +13,10 @@ func TestSkillScarcity(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		oppData game.CharacterData
-		gameCtx game.Context
-		hp      int
+		name      string
+		oppData   game.CharacterData
+		turnState game.TurnState
+		hp        int
 	}{
 		{
 			name: "Opponent1",
@@ -55,7 +55,7 @@ func TestSkillScarcity(t *testing.T) {
 
 			s := c.Skills()[0]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "HP")
@@ -65,7 +65,7 @@ func TestSkillScarcity(t *testing.T) {
 }
 
 func ultimateSlowAmount(opp *game.Character) int {
-	e, ok := game.CharacterEffect[*z89.EffectUltimateSlow](opp)
+	e, ok := game.CharacterEffect[*z89.EffectUltimateSlow](opp, z89.EffectDescUltimateSlow)
 	if !ok {
 		return 0
 	}
@@ -80,7 +80,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 		name      string
 		oppData   game.CharacterData
 		effs      []game.Effect
-		gameCtx   game.Context
+		turnState game.TurnState
 		effAmount int
 	}{
 		{
@@ -95,7 +95,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 					},
 				},
 			},
-			gameCtx:   game.Context{TurnNum: 5},
+			turnState: game.TurnState{TurnNum: 5},
 			effAmount: 1,
 		},
 		{
@@ -110,7 +110,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 					},
 				},
 			},
-			gameCtx:   game.Context{TurnNum: 8},
+			turnState: game.TurnState{TurnNum: 8},
 			effAmount: 0,
 		},
 		{
@@ -125,7 +125,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 					},
 				},
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: true,
 			},
@@ -143,7 +143,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 					},
 				},
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      7,
 				IsGoingFirst: false,
 			},
@@ -164,7 +164,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 			effs: []game.Effect{
 				z89.NewEffectUltimateSlow(),
 			},
-			gameCtx:   game.Context{TurnNum: 5},
+			turnState: game.TurnState{TurnNum: 5},
 			effAmount: 2,
 		},
 		{
@@ -182,7 +182,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 			effs: []game.Effect{
 				z89.NewEffectUltimateSlow(),
 			},
-			gameCtx:   game.Context{TurnNum: 9},
+			turnState: game.TurnState{TurnNum: 9},
 			effAmount: 1,
 		},
 		{
@@ -200,7 +200,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 			effs: []game.Effect{
 				z89.NewEffectUltimateSlow(),
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      8,
 				IsGoingFirst: true,
 			},
@@ -221,7 +221,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 			effs: []game.Effect{
 				z89.NewEffectUltimateSlow(),
 			},
-			gameCtx: game.Context{
+			turnState: game.TurnState{
 				TurnNum:      8,
 				IsGoingFirst: false,
 			},
@@ -242,7 +242,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 
 			s := c.Skills()[1]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.effAmount, ultimateSlowAmount(opp), "ultimate slow amount")
@@ -258,7 +258,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 		oppData    game.CharacterData
 		prevDmg    int
 		prevColour game.Colour
-		gameCtx    game.Context
+		turnState  game.TurnState
 		hp         int
 	}{
 		{
@@ -319,7 +319,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 
 			s := c.Skills()[2]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())
@@ -331,11 +331,11 @@ func TestSkillDespondency_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		oppData game.CharacterData
-		maxHP   int
-		gameCtx game.Context
-		hp      int
+		name      string
+		oppData   game.CharacterData
+		maxHP     int
+		turnState game.TurnState
+		hp        int
 	}{
 		{
 			name: "Opponent1",
@@ -348,9 +348,9 @@ func TestSkillDespondency_Use(t *testing.T) {
 					game.ColourBlue: 0,
 				},
 			},
-			maxHP:   101,
-			gameCtx: game.Context{TurnNum: 9},
-			hp:      92,
+			maxHP:     101,
+			turnState: game.TurnState{TurnNum: 9},
+			hp:        92,
 		},
 		{
 			name: "Opponent2",
@@ -363,9 +363,9 @@ func TestSkillDespondency_Use(t *testing.T) {
 					game.ColourBlue: 0,
 				},
 			},
-			maxHP:   81,
-			gameCtx: game.Context{TurnNum: 9},
-			hp:      52,
+			maxHP:     81,
+			turnState: game.TurnState{TurnNum: 9},
+			hp:        52,
 		},
 		{
 			name: "Opponent3",
@@ -379,9 +379,9 @@ func TestSkillDespondency_Use(t *testing.T) {
 					game.ColourBlack: -2,
 				},
 			},
-			maxHP:   66,
-			gameCtx: game.Context{TurnNum: 9},
-			hp:      22,
+			maxHP:     66,
+			turnState: game.TurnState{TurnNum: 9},
+			hp:        22,
 		},
 	}
 
@@ -396,7 +396,7 @@ func TestSkillDespondency_Use(t *testing.T) {
 
 			s := c.Skills()[3]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())
