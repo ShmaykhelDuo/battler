@@ -23,4 +23,7 @@ type EffectDescription struct {
 type Effect interface {
 	// Desc returns the effect's description.
 	Desc() EffectDescription
+
+	// Clone returns a clone of the effect.
+	Clone() Effect
 }

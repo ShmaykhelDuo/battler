@@ -44,14 +44,14 @@ func (s State) toInputMap() map[string]int64 {
 		out["first"] = 0
 	}
 
-	skillsToMap(out, s.Skills, "skill")
-	skillsToMap(out, s.OppSkills, "oppskill")
+	skillsToMap(out, s.Skills, 9, "skill")
+	skillsToMap(out, s.OppSkills, 10, "oppskill")
 
 	return out
 }
 
-func skillsToMap(out map[string]int64, s []int, prefix string) {
-	for i := range 9 {
+func skillsToMap(out map[string]int64, s []int, n int, prefix string) {
+	for i := range n {
 		name := fmt.Sprintf("%s%d", prefix, i+1)
 		var res int64 = -1
 		if i < len(s) {

@@ -43,6 +43,11 @@ func (e dummyEffect) Desc() game.EffectDescription {
 	return e.desc
 }
 
+// Clone returns a clone of the effect.
+func (e dummyEffect) Clone() game.Effect {
+	return e
+}
+
 func TestEffectMintMist_IsEffectAllowed(t *testing.T) {
 	t.Parallel()
 

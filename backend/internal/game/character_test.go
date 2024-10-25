@@ -55,6 +55,11 @@ func (e defenceModifierEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e defenceModifierEffect) Clone() game.Effect {
+	return e
+}
+
 // ModifyDefences returns the modified defences.
 func (e defenceModifierEffect) ModifyDefences(def map[game.Colour]int) {
 	def[e.colour] += e.delta
@@ -163,6 +168,11 @@ func (e controlEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e controlEffect) Clone() game.Effect {
+	return e
+}
+
 // HasTakenControl reports whether the opponent has taken control over the character.
 func (e controlEffect) HasTakenControl() bool {
 	return e.takenControl
@@ -218,6 +228,11 @@ type skillsPerTurnEffect struct {
 // Desc returns the effect's description.
 func (e skillsPerTurnEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e skillsPerTurnEffect) Clone() game.Effect {
+	return e
 }
 
 // SkillsPerTurn returns a number of tines available for the character to use skills this turn.
@@ -315,6 +330,11 @@ func (e testEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e testEffect) Clone() game.Effect {
+	return e
+}
+
 type effectFilterEffect struct {
 	isAllowed bool
 }
@@ -322,6 +342,11 @@ type effectFilterEffect struct {
 // Desc returns the effect's description.
 func (e effectFilterEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e effectFilterEffect) Clone() game.Effect {
+	return e
 }
 
 // IsEffectAllowed reports whether the effect can be applied to a character.
@@ -392,6 +417,11 @@ func (e dealtDamageModifierEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e dealtDamageModifierEffect) Clone() game.Effect {
+	return e
+}
+
 // ModifyDealtDamage returns the modified amount of damage based on provided amount of damage and damage colour.
 func (e dealtDamageModifierEffect) ModifyDealtDamage(dmg int, colour game.Colour) int {
 	return dmg + e.delta
@@ -404,6 +434,11 @@ type takenDamageModifierEffect struct {
 // Desc returns the effect's description.
 func (e takenDamageModifierEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e takenDamageModifierEffect) Clone() game.Effect {
+	return e
 }
 
 // ModifyTakenDamage returns the modified amount of damage based on provided amount of damage and damage colour.
@@ -567,6 +602,11 @@ func (e healFilterEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e healFilterEffect) Clone() game.Effect {
+	return e
+}
+
 // IsHealAllowed reports whether the healing is allowed based on provided amount of healing.
 func (e healFilterEffect) IsHealAllowed(heal int) bool {
 	return e.isAllowed
@@ -673,6 +713,11 @@ func (e *turnEndHandlerEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e *turnEndHandlerEffect) Clone() game.Effect {
+	return e
+}
+
 // OnTurnEnd executes the end-of-turn action.
 func (e *turnEndHandlerEffect) OnTurnEnd(c, opp *game.Character, turnState game.TurnState) {
 	e.gotC = c
@@ -737,6 +782,11 @@ func (e effectType1) Desc() game.EffectDescription {
 	return desc1
 }
 
+// Clone returns a clone of the effect.
+func (e effectType1) Clone() game.Effect {
+	return e
+}
+
 var desc2 = game.EffectDescription{
 	Name: "2",
 }
@@ -749,6 +799,11 @@ func (e effectType2) Desc() game.EffectDescription {
 	return desc2
 }
 
+// Clone returns a clone of the effect.
+func (e effectType2) Clone() game.Effect {
+	return e
+}
+
 var desc3 = game.EffectDescription{
 	Name: "3",
 }
@@ -759,6 +814,11 @@ type effectType3 struct {
 // Desc returns the effect's description.
 func (e effectType3) Desc() game.EffectDescription {
 	return desc3
+}
+
+// Clone returns a clone of the effect.
+func (e effectType3) Clone() game.Effect {
+	return e
 }
 
 func TestCharacterEffect(t *testing.T) {

@@ -19,6 +19,11 @@ func (e *EffectExpirable) Desc() game.EffectDescription {
 	return EffectDescExpirable
 }
 
+// Clone returns a clone of the effect.
+func (e *EffectExpirable) Clone() game.Effect {
+	return NewEffectExpirable(e.expired)
+}
+
 func (e *EffectExpirable) Expire() {
 	e.expired = true
 }

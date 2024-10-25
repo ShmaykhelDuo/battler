@@ -1,14 +1,12 @@
 package game
 
-import clone "github.com/huandu/go-clone/generic"
-
 func Clone(c, opp *Character) (clonedC, clonedOpp *Character) {
-	clonedC = cloneCharacter(c)
-	clonedOpp = cloneCharacter(opp)
+	clonedC = CloneCharacter(c)
+	clonedOpp = CloneCharacter(opp)
 	return
 }
 
-func cloneCharacter(c *Character) *Character {
+func CloneCharacter(c *Character) *Character {
 	cloned := &Character{}
 	*cloned = *c
 
@@ -25,7 +23,7 @@ func cloneCharacter(c *Character) *Character {
 
 	cloned.effects = make(map[EffectDescription]Effect, len(c.effects))
 	for i, e := range c.effects {
-		cloned.effects[i] = clone.Clone(e)
+		cloned.effects[i] = e.Clone()
 	}
 	return cloned
 }

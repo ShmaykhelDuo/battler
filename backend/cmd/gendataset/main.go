@@ -10,6 +10,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
+	"runtime/pprof"
 	"strconv"
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
@@ -29,6 +31,8 @@ func run() error {
 	oppNumber := flag.Int("opp", 0, "opponent number")
 	bufSize := flag.Int("buf", 100, "channel buffer size")
 	depth := flag.Int("d", 10, "depth")
+	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to `file`")
+	memprofile := flag.String("memprofile", "", "write memory profile to `file`")
 	flag.Parse()
 
 	if *outputFile == "" {
@@ -52,6 +56,18 @@ func run() error {
 	}
 	if *depth <= 0 {
 		return errors.New("invalid depth")
+	}
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			return fmt.Errorf("could not create CPU profile: %w", err)
+		}
+		defer f.Close() // error handling omitted for example
+		if err := pprof.StartCPUProfile(f); err != nil {
+			return fmt.Errorf("could not start CPU profile: %w", err)
+		}
+		defer pprof.StopCPUProfile()
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
@@ -108,7 +124,21 @@ func run() error {
 		return nil
 	})
 
-	return eg.Wait()
+	err = eg.Wait()
+
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			return fmt.Errorf("could not create memory profile: %w", err)
+		}
+		defer f.Close() // error handling omitted for example
+		runtime.GC()    // get up-to-date statistics
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			return fmt.Errorf("could not write memory profile: %w", err)
+		}
+	}
+
+	return err
 }
 
 func writeData(ctx context.Context, out io.Writer, data <-chan []int) error {

@@ -142,8 +142,7 @@ func MiniMax(ctx context.Context, c, opp *game.Character, turnState game.TurnSta
 }
 
 func miniMaxEndOfTurn(ctx context.Context, c, opp *game.Character, turnState game.TurnState, depth int, asOpp bool, prevMoves []int) (score int, strategy []int, res []Out, err error) {
-	endCtx := turnState
-	endCtx.IsTurnEnd = true
+	endCtx := turnState.WithTurnEnd()
 	c.OnTurnEnd(opp, endCtx)
 	opp.OnTurnEnd(c, endCtx)
 

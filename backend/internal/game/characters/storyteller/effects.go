@@ -30,6 +30,11 @@ func (e EffectCannotUse) Desc() game.EffectDescription {
 	return EffectDescCannotUse
 }
 
+// Clone returns a clone of the effect.
+func (e EffectCannotUse) Clone() game.Effect {
+	return e
+}
+
 // Colour returns the forbidden skills' colour.
 func (e EffectCannotUse) Colour() game.Colour {
 	return e.colour
@@ -60,6 +65,11 @@ func NewEffectControlled(turnState game.TurnState) EffectControlled {
 // Desc returns the effect's description.
 func (e EffectControlled) Desc() game.EffectDescription {
 	return EffectDescControlled
+}
+
+// Clone returns a clone of the effect.
+func (e EffectControlled) Clone() game.Effect {
+	return e
 }
 
 // HasTakenControl reports whether the opponent has taken control over the character.

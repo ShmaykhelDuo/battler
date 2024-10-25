@@ -23,6 +23,11 @@ func (e *EffectUltimateSlow) Desc() game.EffectDescription {
 	return EffectDescUltimateSlow
 }
 
+// Clone returns a clone of the effect.
+func (e *EffectUltimateSlow) Clone() game.Effect {
+	return &EffectUltimateSlow{amount: e.amount}
+}
+
 // Amount returns the amount of delay.
 func (e *EffectUltimateSlow) Amount() int {
 	return e.amount

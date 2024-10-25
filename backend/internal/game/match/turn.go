@@ -1,8 +1,6 @@
 package match
 
 import (
-	"log"
-
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
 )
 
@@ -37,7 +35,7 @@ func Turn(p, oppP Player, c, opp *game.Character, turnState game.TurnState, skil
 				return true, err
 			}
 
-			log.Printf("Player %s has selected skill %d\n", c.Desc().Name, i)
+			// log.Printf("Player %s has selected skill %d\n", c.Desc().Name, i)
 
 			err = c.Skills()[i].Use(opp, turnState)
 			if err == nil {

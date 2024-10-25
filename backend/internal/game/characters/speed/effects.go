@@ -25,6 +25,11 @@ func (e EffectGreenTokens) Desc() game.EffectDescription {
 	return EffectDescGreenTokens
 }
 
+// Clone returns a clone of the effect.
+func (e EffectGreenTokens) Clone() game.Effect {
+	return NewEffectGreenTokens(e.Amount())
+}
+
 var EffectDescBlackTokens = game.EffectDescription{
 	Name: "Black Tokens",
 	Type: game.EffectTypeNumeric,
@@ -45,6 +50,11 @@ func (e EffectBlackTokens) Desc() game.EffectDescription {
 	return EffectDescBlackTokens
 }
 
+// Clone returns a clone of the effect.
+func (e EffectBlackTokens) Clone() game.Effect {
+	return NewEffectBlackTokens(e.Amount())
+}
+
 var EffectDescDamageReduced = game.EffectDescription{
 	Name: "Damage Reduced",
 	Type: game.EffectTypeBuff,
@@ -63,6 +73,14 @@ func NewEffectDamageReduced(amount int) *EffectDamageReduced {
 // Desc returns the effect's description.
 func (e *EffectDamageReduced) Desc() game.EffectDescription {
 	return EffectDescDamageReduced
+}
+
+// Clone returns a clone of the effect.
+func (e *EffectDamageReduced) Clone() game.Effect {
+	return &EffectDamageReduced{
+		amount: e.amount,
+		used:   e.used,
+	}
 }
 
 func (e *EffectDamageReduced) Amount() int {
@@ -98,6 +116,11 @@ func (e EffectDefenceReduced) Desc() game.EffectDescription {
 	return EffectDescDefenceReduced
 }
 
+// Clone returns a clone of the effect.
+func (e EffectDefenceReduced) Clone() game.Effect {
+	return e
+}
+
 // ModifyDefences returns the modified defences.
 func (e EffectDefenceReduced) ModifyDefences(def map[game.Colour]int) {
 	def[game.ColourGreen]--
@@ -122,6 +145,11 @@ func NewEffectSpedUp(turnState game.TurnState) EffectSpedUp {
 // Desc returns the effect's description.
 func (e EffectSpedUp) Desc() game.EffectDescription {
 	return EffectDescSpedUp
+}
+
+// Clone returns a clone of the effect.
+func (e EffectSpedUp) Clone() game.Effect {
+	return e
 }
 
 // SkillsPerTurn returns a number of tines available for the character to use skills this turn.

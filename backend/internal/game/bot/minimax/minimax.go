@@ -43,36 +43,41 @@ func MiniMax(c, opp *game.Character, turnState game.TurnState, skillsLeft int, d
 		playOpp = opp
 	}
 
-	appropriate := make([]bool, 4)
-	for i, s := range playC.Skills() {
-		appropriate[i] = s.IsAppropriate(playOpp, turnState)
+	moves := make([]int, 0, 4)
+
+	if !worst {
+		for i, s := range playC.Skills() {
+			if s.IsAppropriate(playOpp, turnState) {
+				moves = append(moves, i)
+			}
+		}
 	}
-	filterAppropriate := appropriate[0] || appropriate[1] || appropriate[2] || appropriate[3]
 
-	for i, s := range playC.Skills() {
-		if !s.IsAvailable(playOpp, turnState) {
-			continue
+	if len(moves) == 0 {
+		for i, s := range playC.Skills() {
+			if s.IsAvailable(playOpp, turnState) {
+				moves = append(moves, i)
+			}
 		}
+	}
 
-		if filterAppropriate && !c.IsControlledByOpp() && !s.IsAppropriate(playOpp, turnState) {
-			continue
-		}
+	clonedC := makeClones(c, len(moves))
+	clonedOpp := makeClones(opp, len(moves))
 
-		clonedC, clonedOpp := game.Clone(c, opp)
+	var clonedPlayC, clonedPlayOpp []*game.Character
+	if asOpp {
+		clonedPlayC = clonedOpp
+		clonedPlayOpp = clonedC
+	} else {
+		clonedPlayC = clonedC
+		clonedPlayOpp = clonedOpp
+	}
 
-		var clonedPlayC, clonedPlayOpp *game.Character
-		if asOpp {
-			clonedPlayC = clonedOpp
-			clonedPlayOpp = clonedC
-		} else {
-			clonedPlayC = clonedC
-			clonedPlayOpp = clonedOpp
-		}
+	for i, skillNum := range moves {
+		clonedS := clonedPlayC[i].Skills()[skillNum]
+		clonedS.Use(clonedPlayOpp[i], turnState)
 
-		clonedS := clonedPlayC.Skills()[i]
-		clonedS.Use(clonedPlayOpp, turnState)
-
-		skillScore, skillStrategy := MiniMax(clonedC, clonedOpp, turnState, skillsLeft-1, depth, asOpp)
+		skillScore, skillStrategy := MiniMax(clonedC[i], clonedOpp[i], turnState, skillsLeft-1, depth, asOpp)
 
 		if (worst && skillScore < score) || (!worst && skillScore > score) {
 			score = skillScore
@@ -85,4 +90,19 @@ func MiniMax(c, opp *game.Character, turnState game.TurnState, skillsLeft int, d
 
 func hasGameEnded(c, opp *game.Character, turnState game.TurnState) bool {
 	return turnState.TurnNum > game.MaxTurnNumber || c.HP() <= 0 || opp.HP() <= 0
+}
+
+func makeClones(c *game.Character, n int) []*game.Character {
+	res := make([]*game.Character, n)
+
+	for i := range n {
+		if i == 0 {
+			res[i] = c
+			continue
+		}
+
+		res[i] = game.CloneCharacter(c)
+	}
+
+	return res
 }

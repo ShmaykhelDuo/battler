@@ -24,6 +24,11 @@ func (e *EffectIBoost) Desc() game.EffectDescription {
 	return EffectDescIBoost
 }
 
+// Clone returns a clone of the effect.
+func (e *EffectIBoost) Clone() game.Effect {
+	return NewEffectIBoost(e.amount)
+}
+
 func (e *EffectIBoost) Amount() int {
 	return e.amount
 }
@@ -52,6 +57,11 @@ func NewEffectSLayers(turnState game.TurnState, threshold int) EffectSLayers {
 // Desc returns the effect's description.
 func (e EffectSLayers) Desc() game.EffectDescription {
 	return EffectDescSLayers
+}
+
+// Clone returns a clone of the effect.
+func (e EffectSLayers) Clone() game.Effect {
+	return e
 }
 
 func (e EffectSLayers) Threshold() int {
@@ -90,6 +100,11 @@ func NewEffectLastChance(turnState game.TurnState) EffectLastChance {
 // Desc returns the effect's description.
 func (e EffectLastChance) Desc() game.EffectDescription {
 	return EffectDescLastChance
+}
+
+// Clone returns a clone of the effect.
+func (e EffectLastChance) Clone() game.Effect {
+	return e
 }
 
 // OnTurnEnd executes the end-of-turn action.

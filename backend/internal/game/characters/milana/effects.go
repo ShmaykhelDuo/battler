@@ -25,6 +25,11 @@ func (e EffectStolenHP) Desc() game.EffectDescription {
 	return EffectDescStolenHP
 }
 
+// Clone returns a clone of the effect.
+func (e EffectStolenHP) Clone() game.Effect {
+	return NewEffectStolenHP(e.Amount())
+}
+
 var EffectDescMintMist = game.EffectDescription{
 	Name: "Mint Mist",
 }
@@ -43,6 +48,11 @@ func NewEffectMintMist(turnState game.TurnState) EffectMintMist {
 // Desc returns the effect's description.
 func (e EffectMintMist) Desc() game.EffectDescription {
 	return EffectDescMintMist
+}
+
+// Clone returns a clone of the effect.
+func (e EffectMintMist) Clone() game.Effect {
+	return e
 }
 
 // IsEffectAllowed reports whether the effect can be applied to a character.

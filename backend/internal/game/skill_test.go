@@ -18,6 +18,11 @@ func (e skillUnlockTurnModifierEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e skillUnlockTurnModifierEffect) Clone() game.Effect {
+	return e
+}
+
 // ModifySkillUnlockTurn returns the modified turn number when skill is to be unlocked.
 func (e skillUnlockTurnModifierEffect) ModifySkillUnlockTurn(s *game.Skill, unlockTurn int) int {
 	return unlockTurn + e.delta
@@ -30,6 +35,11 @@ type skillAvailabilityFilterEffect struct {
 // Desc returns the effect's description.
 func (e skillAvailabilityFilterEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e skillAvailabilityFilterEffect) Clone() game.Effect {
+	return e
 }
 
 // IsSkillAvailable reports whether the skill can be used.

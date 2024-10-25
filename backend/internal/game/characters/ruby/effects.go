@@ -27,6 +27,11 @@ func (e EffectDoubleDamage) Desc() game.EffectDescription {
 	return EffectDescDoubleDamage
 }
 
+// Clone returns a clone of the effect.
+func (e EffectDoubleDamage) Clone() game.Effect {
+	return e
+}
+
 // ModifyDealtDamage returns the modified amount of damage based on provided amount of damage and damage colour.
 func (e EffectDoubleDamage) ModifyDealtDamage(dmg int, colour game.Colour) int {
 	return dmg * 2
@@ -59,6 +64,11 @@ func NewEffectCannotHeal(turnState game.TurnState, isOpp bool) EffectCannotHeal 
 // Desc returns the effect's description.
 func (e EffectCannotHeal) Desc() game.EffectDescription {
 	return EffectDescCannotHeal
+}
+
+// Clone returns a clone of the effect.
+func (e EffectCannotHeal) Clone() game.Effect {
+	return e
 }
 
 // IsHealAllowed reports whether the healing is allowed based on provided amount of healing.
