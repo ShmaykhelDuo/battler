@@ -5,15 +5,29 @@ const (
 	MaxTurnNumber = 10 // maximum valid turn number
 )
 
-// Context contains any additional data needed to be used.
-type Context struct {
+// TurnState contains any additional data needed to be used.
+type TurnState struct {
 	TurnNum      int  // the current character's turn number
 	IsGoingFirst bool // whether the current character is going first
 	IsTurnEnd    bool // whether it is the end of turn
 }
 
+func TurnCtx(turnNum int) TurnState {
+	return TurnState{TurnNum: turnNum}
+}
+
+func (c TurnState) WithGoingFirst(isGoingFirst bool) TurnState {
+	c.IsGoingFirst = isGoingFirst
+	return c
+}
+
+func (c TurnState) WithTurnEnd() TurnState {
+	c.IsTurnEnd = true
+	return c
+}
+
 // IsAfter reports whether the current context is indicating later game time than provided context.
-func (c Context) IsAfter(other Context) bool {
+func (c TurnState) IsAfter(other TurnState) bool {
 	if c.TurnNum != other.TurnNum {
 		return c.TurnNum > other.TurnNum
 	}
@@ -27,7 +41,7 @@ func (c Context) IsAfter(other Context) bool {
 
 // AddTurns returns the context of provided number of turns ahead.
 // Is isOpponentsTurn is true, the returned context is of the nearest opponent's turn.
-func (c Context) AddTurns(turns int, isOpponentsTurn bool) Context {
+func (c TurnState) AddTurns(turns int, isOpponentsTurn bool) TurnState {
 	c.TurnNum += turns
 
 	if isOpponentsTurn {

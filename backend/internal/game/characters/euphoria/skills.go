@@ -11,7 +11,7 @@ var SkillAmpleness = game.SkillData{
 		Colour:     game.ColourOrange,
 	},
 	Cooldown: 1,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		amount := 12
 		increaseMaxHP(c, opp, amount)
 		increaseEuphoricSource(c, amount)
@@ -29,10 +29,10 @@ var SkillExuberance = game.SkillData{
 		Colour:     game.ColourOrange,
 	},
 	Cooldown: 2,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		amount := 20
 
-		if !isSkillUnlocked(gameCtx, opp.Skills()[3]) {
+		if !isSkillUnlocked(turnState, opp.Skills()[3]) {
 			amount = 10
 			increaseUltimateEarly(opp)
 		}
@@ -50,7 +50,7 @@ var SkillPinkSphere = game.SkillData{
 		IsUltimate: false,
 		Colour:     game.ColourPink,
 	},
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		c.Damage(opp, 12, game.ColourPink)
 		increaseMaxHP(c, opp, 12)
 	},
@@ -67,7 +67,7 @@ var SkillEuphoria = game.SkillData{
 	},
 	Cooldown:   20,
 	UnlockTurn: 4,
-	Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {
+	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		c.AddEffect(EffectEuphoricHeal{})
 	},
 }
@@ -78,7 +78,7 @@ func increaseMaxHP(c, opp *game.Character, amount int) {
 }
 
 func increaseEuphoricSource(c *game.Character, amount int) {
-	source, ok := game.CharacterEffect[EffectEuphoricSource](c)
+	source, ok := game.CharacterEffect[EffectEuphoricSource](c, EffectDescEuphoricSource)
 	if ok {
 		source.Increase(amount)
 		return
@@ -87,16 +87,16 @@ func increaseEuphoricSource(c *game.Character, amount int) {
 	c.AddEffect(NewEffectEuphoricSource(amount))
 }
 
-func isSkillUnlocked(gameCtx game.Context, s *game.Skill) bool {
-	if gameCtx.TurnNum == s.UnlockTurn() {
-		return !gameCtx.IsGoingFirst
+func isSkillUnlocked(turnState game.TurnState, s *game.Skill) bool {
+	if turnState.TurnNum == s.UnlockTurn() {
+		return !turnState.IsGoingFirst
 	}
 
-	return gameCtx.TurnNum > s.UnlockTurn()
+	return turnState.TurnNum > s.UnlockTurn()
 }
 
 func increaseUltimateEarly(opp *game.Character) {
-	eff, ok := game.CharacterEffect[*EffectUltimateEarly](opp)
+	eff, ok := game.CharacterEffect[*EffectUltimateEarly](opp, EffectDescUltimateEarly)
 	if ok {
 		eff.Increase()
 		return

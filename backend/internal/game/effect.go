@@ -1,7 +1,7 @@
 package game
 
 // EffectType represents a type of an effect.
-type EffectType int
+type EffectType uint8
 
 const (
 	EffectTypeBasic EffectType = iota
@@ -23,4 +23,7 @@ type EffectDescription struct {
 type Effect interface {
 	// Desc returns the effect's description.
 	Desc() EffectDescription
+
+	// Clone returns a clone of the effect.
+	Clone() Effect
 }

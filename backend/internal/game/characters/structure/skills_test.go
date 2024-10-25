@@ -68,7 +68,7 @@ func TestSkillEShock_Use(t *testing.T) {
 			}
 
 			s := c.Skills()[0]
-			err := s.Use(opp, game.Context{})
+			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())
@@ -116,7 +116,7 @@ func TestSkillIBoost_IsAvailable(t *testing.T) {
 			}
 
 			s := c.Skills()[1]
-			isAvailable := s.IsAvailable(opp, game.Context{})
+			isAvailable := s.IsAvailable(opp, game.TurnState{})
 			assert.Equal(t, tt.isAvailable, isAvailable)
 		})
 	}
@@ -162,10 +162,10 @@ func TestSkillIBoost_Use(t *testing.T) {
 			}
 
 			s := c.Skills()[1]
-			err := s.Use(opp, game.Context{})
+			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
-			boost, ok := game.CharacterEffect[*structure.EffectIBoost](c)
+			boost, ok := game.CharacterEffect[*structure.EffectIBoost](c, structure.EffectDescIBoost)
 			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.amount, boost.Amount())
@@ -220,14 +220,14 @@ func TestSkillSLayers_Use(t *testing.T) {
 			}
 
 			s := c.Skills()[2]
-			err := s.Use(opp, game.Context{})
+			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
-			layers, ok := game.CharacterEffect[structure.EffectSLayers](c)
+			layers, ok := game.CharacterEffect[structure.EffectSLayers](c, structure.EffectDescSLayers)
 			require.True(t, ok, "effect")
 
 			assert.Equal(t, tt.threshold, layers.Threshold(), "threshold")
-			assert.Equal(t, 1, layers.TurnsLeft(game.Context{}.AddTurns(0, true)), "turns left")
+			assert.Equal(t, 1, layers.TurnsLeft(game.TurnState{}.AddTurns(0, true)), "turns left")
 		})
 	}
 }
@@ -238,14 +238,14 @@ func TestSkillLastChance_Use(t *testing.T) {
 	c := game.NewCharacter(structure.CharacterStructure)
 	opp := game.NewCharacter(game.CharacterData{})
 
-	gameCtx := game.Context{TurnNum: 7}
+	turnState := game.TurnState{TurnNum: 7}
 
 	s := c.Skills()[3]
-	err := s.Use(opp, gameCtx)
+	err := s.Use(opp, turnState)
 	require.NoError(t, err)
 
-	eff, ok := game.CharacterEffect[structure.EffectLastChance](c)
+	eff, ok := game.CharacterEffect[structure.EffectLastChance](c, structure.EffectDescLastChance)
 	require.True(t, ok, "effect")
 
-	assert.Equal(t, 1, eff.TurnsLeft(gameCtx.AddTurns(0, true)), "turns left")
+	assert.Equal(t, 1, eff.TurnsLeft(turnState.AddTurns(0, true)), "turns left")
 }

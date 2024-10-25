@@ -28,6 +28,13 @@ func (e EffectEuphoricSource) Desc() game.EffectDescription {
 	return EffectDescEuphoricSource
 }
 
+// Clone returns a clone of the effect.
+func (e EffectEuphoricSource) Clone() game.Effect {
+	return EffectEuphoricSource{
+		Collectible: common.NewCollectible(e.Amount()),
+	}
+}
+
 // EffectDescUltimateEarly is a description of [EffectUltimateEarly]
 var EffectDescUltimateEarly = game.EffectDescription{
 	Name: "Ultimate Early",
@@ -47,6 +54,11 @@ func NewEffectUltimateEarly() *EffectUltimateEarly {
 // Desc returns the effect's description.
 func (e *EffectUltimateEarly) Desc() game.EffectDescription {
 	return EffectDescUltimateEarly
+}
+
+// Clone returns a clone of the effect.
+func (e *EffectUltimateEarly) Clone() game.Effect {
+	return &EffectUltimateEarly{amount: e.amount}
 }
 
 // Amount returns the amount of shift.
@@ -82,9 +94,14 @@ func (e EffectEuphoricHeal) Desc() game.EffectDescription {
 	return EffectDescEuphoricHeal
 }
 
+// Clone returns a clone of the effect.
+func (e EffectEuphoricHeal) Clone() game.Effect {
+	return e
+}
+
 // OnTurnEnd executes the end-of-turn action.
-func (e EffectEuphoricHeal) OnTurnEnd(c *game.Character, opp *game.Character, gameCtx game.Context) {
-	source, ok := game.CharacterEffect[EffectEuphoricSource](c)
+func (e EffectEuphoricHeal) OnTurnEnd(c *game.Character, opp *game.Character, turnState game.TurnState) {
+	source, ok := game.CharacterEffect[EffectEuphoricSource](c, EffectDescEuphoricSource)
 	if !ok {
 		return
 	}

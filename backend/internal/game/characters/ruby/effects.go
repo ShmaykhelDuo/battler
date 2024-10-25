@@ -16,15 +16,20 @@ type EffectDoubleDamage struct {
 	common.DurationExpirable
 }
 
-func NewEffectDoubleDamage(gameCtx game.Context) EffectDoubleDamage {
+func NewEffectDoubleDamage(turnState game.TurnState) EffectDoubleDamage {
 	return EffectDoubleDamage{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(2, false)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(2, false)),
 	}
 }
 
 // Desc returns the effect's description.
 func (e EffectDoubleDamage) Desc() game.EffectDescription {
 	return EffectDescDoubleDamage
+}
+
+// Clone returns a clone of the effect.
+func (e EffectDoubleDamage) Clone() game.Effect {
+	return e
 }
 
 // ModifyDealtDamage returns the modified amount of damage based on provided amount of damage and damage colour.
@@ -43,12 +48,12 @@ type EffectCannotHeal struct {
 	common.DurationExpirable
 }
 
-func NewEffectCannotHeal(gameCtx game.Context, isOpp bool) EffectCannotHeal {
-	var expCtx game.Context
+func NewEffectCannotHeal(turnState game.TurnState, isOpp bool) EffectCannotHeal {
+	var expCtx game.TurnState
 	if isOpp {
-		expCtx = gameCtx.AddTurns(0, true)
+		expCtx = turnState.AddTurns(0, true)
 	} else {
-		expCtx = gameCtx.AddTurns(1, false)
+		expCtx = turnState.AddTurns(1, false)
 	}
 
 	return EffectCannotHeal{
@@ -59,6 +64,11 @@ func NewEffectCannotHeal(gameCtx game.Context, isOpp bool) EffectCannotHeal {
 // Desc returns the effect's description.
 func (e EffectCannotHeal) Desc() game.EffectDescription {
 	return EffectDescCannotHeal
+}
+
+// Clone returns a clone of the effect.
+func (e EffectCannotHeal) Clone() game.Effect {
+	return e
 }
 
 // IsHealAllowed reports whether the healing is allowed based on provided amount of healing.

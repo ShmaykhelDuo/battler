@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
+	"github.com/ShmaykhelDuo/battler/backend/internal/game/gametest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,6 +53,11 @@ type defenceModifierEffect struct {
 // Desc returns the effect's description.
 func (e defenceModifierEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e defenceModifierEffect) Clone() game.Effect {
+	return e
 }
 
 // ModifyDefences returns the modified defences.
@@ -131,10 +137,10 @@ func TestCharacter_LastUsedSkill(t *testing.T) {
 
 	data := game.CharacterData{
 		SkillData: [4]game.SkillData{
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
-			{Use: func(c *game.Character, opp *game.Character, gameCtx game.Context) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
+			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
 		},
 	}
 	c := game.NewCharacter(data)
@@ -143,11 +149,11 @@ func TestCharacter_LastUsedSkill(t *testing.T) {
 	assert.Nil(t, c.LastUsedSkill(), "before any skills used")
 
 	for i, s := range c.Skills() {
-		gameCtx := game.Context{
+		turnState := game.TurnState{
 			TurnNum: i + 1,
 		}
 
-		s.Use(opp, gameCtx)
+		s.Use(opp, turnState)
 
 		assert.Same(t, s, c.LastUsedSkill(), "after skill #%d", i+1)
 	}
@@ -160,6 +166,11 @@ type controlEffect struct {
 // Desc returns the effect's description.
 func (e controlEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e controlEffect) Clone() game.Effect {
+	return e
 }
 
 // HasTakenControl reports whether the opponent has taken control over the character.
@@ -217,6 +228,11 @@ type skillsPerTurnEffect struct {
 // Desc returns the effect's description.
 func (e skillsPerTurnEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e skillsPerTurnEffect) Clone() game.Effect {
+	return e
 }
 
 // SkillsPerTurn returns a number of tines available for the character to use skills this turn.
@@ -314,6 +330,11 @@ func (e testEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e testEffect) Clone() game.Effect {
+	return e
+}
+
 type effectFilterEffect struct {
 	isAllowed bool
 }
@@ -321,6 +342,11 @@ type effectFilterEffect struct {
 // Desc returns the effect's description.
 func (e effectFilterEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e effectFilterEffect) Clone() game.Effect {
+	return e
 }
 
 // IsEffectAllowed reports whether the effect can be applied to a character.
@@ -391,6 +417,11 @@ func (e dealtDamageModifierEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e dealtDamageModifierEffect) Clone() game.Effect {
+	return e
+}
+
 // ModifyDealtDamage returns the modified amount of damage based on provided amount of damage and damage colour.
 func (e dealtDamageModifierEffect) ModifyDealtDamage(dmg int, colour game.Colour) int {
 	return dmg + e.delta
@@ -403,6 +434,11 @@ type takenDamageModifierEffect struct {
 // Desc returns the effect's description.
 func (e takenDamageModifierEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
+}
+
+// Clone returns a clone of the effect.
+func (e takenDamageModifierEffect) Clone() game.Effect {
+	return e
 }
 
 // ModifyTakenDamage returns the modified amount of damage based on provided amount of damage and damage colour.
@@ -566,6 +602,11 @@ func (e healFilterEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e healFilterEffect) Clone() game.Effect {
+	return e
+}
+
 // IsHealAllowed reports whether the healing is allowed based on provided amount of healing.
 func (e healFilterEffect) IsHealAllowed(heal int) bool {
 	return e.isAllowed
@@ -664,7 +705,7 @@ func TestCharacter_Heal(t *testing.T) {
 
 type turnEndHandlerEffect struct {
 	gotC, gotOpp *game.Character
-	gotGameCtx   game.Context
+	gotturnState game.TurnState
 }
 
 // Desc returns the effect's description.
@@ -672,11 +713,16 @@ func (e *turnEndHandlerEffect) Desc() game.EffectDescription {
 	return game.EffectDescription{}
 }
 
+// Clone returns a clone of the effect.
+func (e *turnEndHandlerEffect) Clone() game.Effect {
+	return e
+}
+
 // OnTurnEnd executes the end-of-turn action.
-func (e *turnEndHandlerEffect) OnTurnEnd(c, opp *game.Character, gameCtx game.Context) {
+func (e *turnEndHandlerEffect) OnTurnEnd(c, opp *game.Character, turnState game.TurnState) {
 	e.gotC = c
 	e.gotOpp = opp
-	e.gotGameCtx = gameCtx
+	e.gotturnState = turnState
 }
 
 func TestCharacter_OnTurnEnd(t *testing.T) {
@@ -692,15 +738,15 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 		eff := &turnEndHandlerEffect{}
 		c.AddEffect(eff)
 
-		gameCtx := game.Context{
+		turnState := game.TurnState{
 			TurnNum: 4,
 		}
 
-		c.OnTurnEnd(opp, gameCtx)
+		c.OnTurnEnd(opp, turnState)
 
 		assert.Same(t, c, eff.gotC, "character")
 		assert.Same(t, opp, eff.gotOpp, "opponent")
-		assert.Equal(t, gameCtx, eff.gotGameCtx, "game context")
+		assert.Equal(t, turnState, eff.gotturnState, "game context")
 	})
 
 	t.Run("RemovesExpiredEffects", func(t *testing.T) {
@@ -710,28 +756,69 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 		c := game.NewCharacter(data)
 		opp := game.NewCharacter(data)
 
-		eff := &expirableEffect{expired: true}
+		eff := gametest.NewEffectExpirable(true)
 		c.AddEffect(eff)
 
-		gameCtx := game.Context{
+		turnState := game.TurnState{
 			TurnNum: 4,
 		}
 
-		c.OnTurnEnd(opp, gameCtx)
+		c.OnTurnEnd(opp, turnState)
 
-		_, found := game.CharacterEffect[*expirableEffect](c)
+		_, found := game.CharacterEffect[*gametest.EffectExpirable](c, gametest.EffectDescExpirable)
 		assert.False(t, found, "effect after expiry")
 	})
 }
 
+var desc1 = game.EffectDescription{
+	Name: "1",
+}
+
 type effectType1 struct {
-	descriptionEffect
 }
+
+// Desc returns the effect's description.
+func (e effectType1) Desc() game.EffectDescription {
+	return desc1
+}
+
+// Clone returns a clone of the effect.
+func (e effectType1) Clone() game.Effect {
+	return e
+}
+
+var desc2 = game.EffectDescription{
+	Name: "2",
+}
+
 type effectType2 struct {
-	descriptionEffect
 }
+
+// Desc returns the effect's description.
+func (e effectType2) Desc() game.EffectDescription {
+	return desc2
+}
+
+// Clone returns a clone of the effect.
+func (e effectType2) Clone() game.Effect {
+	return e
+}
+
+var desc3 = game.EffectDescription{
+	Name: "3",
+}
+
 type effectType3 struct {
-	descriptionEffect
+}
+
+// Desc returns the effect's description.
+func (e effectType3) Desc() game.EffectDescription {
+	return desc3
+}
+
+// Clone returns a clone of the effect.
+func (e effectType3) Clone() game.Effect {
+	return e
 }
 
 func TestCharacterEffect(t *testing.T) {
@@ -745,15 +832,15 @@ func TestCharacterEffect(t *testing.T) {
 	c.AddEffect(eff1)
 	c.AddEffect(eff2)
 
-	got1, ok1 := game.CharacterEffect[*effectType1](c)
+	got1, ok1 := game.CharacterEffect[*effectType1](c, desc1)
 	assert.True(t, ok1, "ok 1")
 	assert.Same(t, eff1, got1, "same 1")
 
-	got2, ok2 := game.CharacterEffect[*effectType2](c)
+	got2, ok2 := game.CharacterEffect[*effectType2](c, desc2)
 	assert.True(t, ok2, "ok 2")
 	assert.Same(t, eff2, got2, "same 2")
 
-	got3, ok3 := game.CharacterEffect[*effectType3](c)
+	got3, ok3 := game.CharacterEffect[*effectType3](c, desc3)
 	assert.False(t, ok3, "ok 3")
 	assert.Zero(t, got3, "zero 3")
 }

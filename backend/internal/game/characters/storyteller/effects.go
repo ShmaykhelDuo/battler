@@ -18,9 +18,9 @@ type EffectCannotUse struct {
 }
 
 // NewEffectCannotUse returns a new [EffectCannotUse] of provided colour.
-func NewEffectCannotUse(gameCtx game.Context, colour game.Colour) EffectCannotUse {
+func NewEffectCannotUse(turnState game.TurnState, colour game.Colour) EffectCannotUse {
 	return EffectCannotUse{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(0, true)),
 		colour:            colour,
 	}
 }
@@ -28,6 +28,11 @@ func NewEffectCannotUse(gameCtx game.Context, colour game.Colour) EffectCannotUs
 // Desc returns the effect's description.
 func (e EffectCannotUse) Desc() game.EffectDescription {
 	return EffectDescCannotUse
+}
+
+// Clone returns a clone of the effect.
+func (e EffectCannotUse) Clone() game.Effect {
+	return e
 }
 
 // Colour returns the forbidden skills' colour.
@@ -51,15 +56,20 @@ type EffectControlled struct {
 	common.DurationExpirable
 }
 
-func NewEffectControlled(gameCtx game.Context) EffectControlled {
+func NewEffectControlled(turnState game.TurnState) EffectControlled {
 	return EffectControlled{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(0, true)),
 	}
 }
 
 // Desc returns the effect's description.
 func (e EffectControlled) Desc() game.EffectDescription {
 	return EffectDescControlled
+}
+
+// Clone returns a clone of the effect.
+func (e EffectControlled) Clone() game.Effect {
+	return e
 }
 
 // HasTakenControl reports whether the opponent has taken control over the character.

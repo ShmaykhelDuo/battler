@@ -10,7 +10,7 @@ import (
 )
 
 func greenTokensNumber(c *game.Character) int {
-	tokens, ok := game.CharacterEffect[speed.EffectGreenTokens](c)
+	tokens, ok := game.CharacterEffect[speed.EffectGreenTokens](c, speed.EffectDescGreenTokens)
 	if !ok {
 		return 0
 	}
@@ -19,7 +19,7 @@ func greenTokensNumber(c *game.Character) int {
 }
 
 func blackTokensNumber(c *game.Character) int {
-	tokens, ok := game.CharacterEffect[speed.EffectBlackTokens](c)
+	tokens, ok := game.CharacterEffect[speed.EffectBlackTokens](c, speed.EffectDescBlackTokens)
 	if !ok {
 		return 0
 	}
@@ -27,7 +27,7 @@ func blackTokensNumber(c *game.Character) int {
 	return tokens.Amount()
 }
 
-func runSkill(t *testing.T, skillIndex int, effs []game.Effect, gameCtx game.Context) (c, opp *game.Character) {
+func runSkill(t *testing.T, skillIndex int, effs []game.Effect, turnState game.TurnState) (c, opp *game.Character) {
 	t.Helper()
 
 	c = game.NewCharacter(speed.CharacterSpeed)
@@ -41,7 +41,7 @@ func runSkill(t *testing.T, skillIndex int, effs []game.Effect, gameCtx game.Con
 
 	s := c.Skills()[skillIndex]
 
-	err := s.Use(opp, gameCtx)
+	err := s.Use(opp, turnState)
 	require.NoError(t, err)
 
 	return
@@ -52,10 +52,10 @@ func testGainGreenToken(t *testing.T, skillIndex int) {
 		t.Parallel()
 
 		tests := []struct {
-			name    string
-			effs    []game.Effect
-			gameCtx game.Context
-			number  int
+			name      string
+			effs      []game.Effect
+			turnState game.TurnState
+			number    int
 		}{
 			{
 				name:   "Basic",
@@ -81,7 +81,7 @@ func testGainGreenToken(t *testing.T, skillIndex int) {
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
-				c, _ := runSkill(t, skillIndex, tt.effs, tt.gameCtx)
+				c, _ := runSkill(t, skillIndex, tt.effs, tt.turnState)
 
 				assert.Equal(t, tt.number, greenTokensNumber(c), "tokens")
 			})
@@ -98,7 +98,7 @@ func TestSkillRun_Use(t *testing.T) {
 		tests := []struct {
 			name                  string
 			effs                  []game.Effect
-			gameCtx               game.Context
+			turnState             game.TurnState
 			damageReductionAmount int
 		}{
 			{
@@ -118,9 +118,9 @@ func TestSkillRun_Use(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
-				c, _ := runSkill(t, 0, tt.effs, tt.gameCtx)
+				c, _ := runSkill(t, 0, tt.effs, tt.turnState)
 
-				red, ok := game.CharacterEffect[*speed.EffectDamageReduced](c)
+				red, ok := game.CharacterEffect[*speed.EffectDamageReduced](c, speed.EffectDescDamageReduced)
 				require.True(t, ok, "effect")
 
 				assert.Equal(t, tt.damageReductionAmount, red.Amount(), "reduction amount")
@@ -137,18 +137,18 @@ func TestSkillWeaken_Use(t *testing.T) {
 	t.Run("ReduceDefence", func(t *testing.T) {
 		t.Parallel()
 
-		_, opp := runSkill(t, 1, nil, game.Context{})
+		_, opp := runSkill(t, 1, nil, game.TurnState{})
 
-		_, ok := game.CharacterEffect[speed.EffectDefenceReduced](opp)
+		_, ok := game.CharacterEffect[speed.EffectDefenceReduced](opp, speed.EffectDescDefenceReduced)
 		require.True(t, ok, "effect")
 	})
 
 	t.Run("GainBlackToken", func(t *testing.T) {
 		tests := []struct {
-			name    string
-			effs    []game.Effect
-			gameCtx game.Context
-			number  int
+			name      string
+			effs      []game.Effect
+			turnState game.TurnState
+			number    int
 		}{
 			{
 				name:   "Basic",
@@ -174,7 +174,7 @@ func TestSkillWeaken_Use(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
-				c, _ := runSkill(t, 1, tt.effs, tt.gameCtx)
+				c, _ := runSkill(t, 1, tt.effs, tt.turnState)
 
 				assert.Equal(t, tt.number, blackTokensNumber(c), "tokens")
 			})
@@ -188,12 +188,12 @@ func TestSkillSpeed_Use(t *testing.T) {
 	t.Run("SpeedUp", func(t *testing.T) {
 		t.Parallel()
 
-		c, _ := runSkill(t, 2, nil, game.Context{})
+		c, _ := runSkill(t, 2, nil, game.TurnState{})
 
-		eff, ok := game.CharacterEffect[speed.EffectSpedUp](c)
+		eff, ok := game.CharacterEffect[speed.EffectSpedUp](c, speed.EffectDescSpedUp)
 		require.True(t, ok, "effect")
 
-		assert.Equal(t, 1, eff.TurnsLeft(game.Context{}.AddTurns(1, false)), "turns left")
+		assert.Equal(t, 1, eff.TurnsLeft(game.TurnState{}.AddTurns(1, false)), "turns left")
 	})
 
 	testGainGreenToken(t, 2)
@@ -203,11 +203,11 @@ func TestSkillStab_Use(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		oppData game.CharacterData
-		effs    []game.Effect
-		gameCtx game.Context
-		hp      int
+		name      string
+		oppData   game.CharacterData
+		effs      []game.Effect
+		turnState game.TurnState
+		hp        int
 	}{
 		{
 			name: "Opponent1",
@@ -254,7 +254,7 @@ func TestSkillStab_Use(t *testing.T) {
 
 			s := c.Skills()[3]
 
-			err := s.Use(opp, tt.gameCtx)
+			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())

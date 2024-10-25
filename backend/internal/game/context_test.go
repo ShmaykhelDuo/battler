@@ -12,37 +12,37 @@ func TestContext_IsAfter(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		ctx     game.Context
-		other   game.Context
+		ctx     game.TurnState
+		other   game.TurnState
 		isAfter bool
 	}{
 		{
 			name: "LessTurn",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum: 5,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum: 6,
 			},
 			isAfter: false,
 		},
 		{
 			name: "GreaterTurn",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum: 6,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum: 5,
 			},
 			isAfter: true,
 		},
 		{
 			name: "EqualTurnLessGoingFirst",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
@@ -50,11 +50,11 @@ func TestContext_IsAfter(t *testing.T) {
 		},
 		{
 			name: "EqualTurnGreaterGoingFirst",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
@@ -62,12 +62,12 @@ func TestContext_IsAfter(t *testing.T) {
 		},
 		{
 			name: "EqualTurnAndGoingFirstLessTurnEnd",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    false,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -76,12 +76,12 @@ func TestContext_IsAfter(t *testing.T) {
 		},
 		{
 			name: "EqualTurnAndGoingFirstGreaterTurnEnd",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    false,
@@ -90,12 +90,12 @@ func TestContext_IsAfter(t *testing.T) {
 		},
 		{
 			name: "EqualAllTurnEnd",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    true,
@@ -104,12 +104,12 @@ func TestContext_IsAfter(t *testing.T) {
 		},
 		{
 			name: "EqualAllNotTurnEnd",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    false,
 			},
-			other: game.Context{
+			other: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 				IsTurnEnd:    false,
@@ -133,72 +133,72 @@ func TestContext_AddTurns(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		ctx             game.Context
+		ctx             game.TurnState
 		turns           int
 		isOpponentsTurn bool
-		res             game.Context
+		res             game.TurnState
 	}{
 		{
 			name: "AddNone",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
 			turns:           0,
 			isOpponentsTurn: false,
-			res: game.Context{
+			res: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
 		},
 		{
 			name: "NextOpponentsTurnGoingFirst",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: true,
 			},
 			turns:           0,
 			isOpponentsTurn: true,
-			res: game.Context{
+			res: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
 		},
 		{
 			name: "NextOpponentsTurnNotGoingFirst",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
 			turns:           0,
 			isOpponentsTurn: true,
-			res: game.Context{
+			res: game.TurnState{
 				TurnNum:      6,
 				IsGoingFirst: true,
 			},
 		},
 		{
 			name: "AddSomeTurns",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
 			turns:           3,
 			isOpponentsTurn: false,
-			res: game.Context{
+			res: game.TurnState{
 				TurnNum:      8,
 				IsGoingFirst: false,
 			},
 		},
 		{
 			name: "AddSomeTurnsWithOpponentsTurn",
-			ctx: game.Context{
+			ctx: game.TurnState{
 				TurnNum:      5,
 				IsGoingFirst: false,
 			},
 			turns:           3,
 			isOpponentsTurn: true,
-			res: game.Context{
+			res: game.TurnState{
 				TurnNum:      9,
 				IsGoingFirst: true,
 			},

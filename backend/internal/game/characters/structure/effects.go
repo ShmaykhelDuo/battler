@@ -24,6 +24,11 @@ func (e *EffectIBoost) Desc() game.EffectDescription {
 	return EffectDescIBoost
 }
 
+// Clone returns a clone of the effect.
+func (e *EffectIBoost) Clone() game.Effect {
+	return NewEffectIBoost(e.amount)
+}
+
 func (e *EffectIBoost) Amount() int {
 	return e.amount
 }
@@ -42,9 +47,9 @@ type EffectSLayers struct {
 	threshold int
 }
 
-func NewEffectSLayers(gameCtx game.Context, threshold int) EffectSLayers {
+func NewEffectSLayers(turnState game.TurnState, threshold int) EffectSLayers {
 	return EffectSLayers{
-		DurationExpirable: common.NewDurationExpirable(gameCtx.AddTurns(0, true)),
+		DurationExpirable: common.NewDurationExpirable(turnState.AddTurns(0, true)),
 		threshold:         threshold,
 	}
 }
@@ -52,6 +57,11 @@ func NewEffectSLayers(gameCtx game.Context, threshold int) EffectSLayers {
 // Desc returns the effect's description.
 func (e EffectSLayers) Desc() game.EffectDescription {
 	return EffectDescSLayers
+}
+
+// Clone returns a clone of the effect.
+func (e EffectSLayers) Clone() game.Effect {
+	return e
 }
 
 func (e EffectSLayers) Threshold() int {
@@ -75,11 +85,11 @@ var EffectDescLastChance = game.EffectDescription{
 // If you survive your opponent's next turn, fully heals you.
 type EffectLastChance struct {
 	common.DurationExpirable
-	healCtx game.Context
+	healCtx game.TurnState
 }
 
-func NewEffectLastChance(gameCtx game.Context) EffectLastChance {
-	endCtx := gameCtx.AddTurns(0, true)
+func NewEffectLastChance(turnState game.TurnState) EffectLastChance {
+	endCtx := turnState.AddTurns(0, true)
 
 	return EffectLastChance{
 		DurationExpirable: common.NewDurationExpirable(endCtx),
@@ -92,9 +102,14 @@ func (e EffectLastChance) Desc() game.EffectDescription {
 	return EffectDescLastChance
 }
 
+// Clone returns a clone of the effect.
+func (e EffectLastChance) Clone() game.Effect {
+	return e
+}
+
 // OnTurnEnd executes the end-of-turn action.
-func (e EffectLastChance) OnTurnEnd(c *game.Character, opp *game.Character, gameCtx game.Context) {
-	if gameCtx.IsAfter(e.healCtx) {
+func (e EffectLastChance) OnTurnEnd(c *game.Character, opp *game.Character, turnState game.TurnState) {
+	if turnState.IsAfter(e.healCtx) {
 		c.Heal(c.MaxHP())
 	}
 }
