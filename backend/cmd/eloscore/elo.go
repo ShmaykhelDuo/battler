@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/ShmaykhelDuo/battler/backend/internal/game"
 	"github.com/ShmaykhelDuo/battler/backend/internal/game/match"
+	"golang.org/x/sync/errgroup"
 )
 
 type eloScoring struct {
@@ -42,13 +44,56 @@ func (s *eloScoring) run(rounds int) error {
 		})
 		log.Printf("%v\n", order)
 
+		eg, _ := errgroup.WithContext(context.Background())
+
+		res := make([]int, len(order))
+		for j, pair := range order {
+			eg.Go(func() error {
+				var err error
+				res[j], err = s.match(pair[0], pair[1])
+				if err != nil {
+					return err
+				}
+
+				p1 := pair[0]
+				p2 := pair[1]
+
+				if res[j] == 1 {
+					log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
+				} else if res[j] == -1 {
+					log.Printf("%s as %s won over %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
+				} else {
+					log.Printf("%s as %s drawed with %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
+				}
+
+				return nil
+			})
+		}
+
+		err := eg.Wait()
+		if err != nil {
+			return err
+		}
+
+		log.Printf("Round %d/%d SUMMARY\n\n", i+1, rounds)
+
 		for j, pair := range order {
 			log.Printf("Round %d/%d: match %d/%d\n", i+1, rounds, j+1, len(order))
 
-			err := s.match(pair[0], pair[1])
-			if err != nil {
-				return err
+			p1 := pair[0]
+			p2 := pair[1]
+
+			s.updateRatings(p1, p2, res[j])
+
+			if res[j] == 1 {
+				log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
+			} else if res[j] == -1 {
+				log.Printf("%s as %s won over %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
+			} else {
+				log.Printf("%s as %s drawed with %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
 			}
+
+			log.Printf("New ratings: %s=%d, %s=%d\n", p1, s.ratings[p1], p2, s.ratings[p2])
 		}
 	}
 
@@ -71,7 +116,7 @@ func (s *eloScoring) pairs() [][2]string {
 	return pairs
 }
 
-func (s *eloScoring) match(p1, p2 string) error {
+func (s *eloScoring) match(p1, p2 string) (int, error) {
 	player1 := s.players[p1].Player(s.c1.Desc)
 	player2 := s.players[p2].Player(s.c2.Desc)
 	c1 := game.NewCharacter(s.c1)
@@ -79,22 +124,10 @@ func (s *eloScoring) match(p1, p2 string) error {
 
 	res, err := match.Match(c1, c2, player1, player2)
 	if err != nil {
-		return fmt.Errorf("match: %w", err)
+		return 0, fmt.Errorf("match: %w", err)
 	}
 
-	s.updateRatings(p1, p2, res)
-
-	if res == 1 {
-		log.Printf("%s won over %s.", p2, p1)
-	} else if res == -1 {
-		log.Printf("%s won over %s.", p1, p2)
-	} else {
-		log.Printf("%s drawed with %s.", p1, p2)
-	}
-
-	log.Printf("New ratings: %s=%d, %s=%d\n", p1, s.ratings[p1], p2, s.ratings[p2])
-
-	return nil
+	return res, nil
 }
 
 func (s *eloScoring) updateRatings(p1, p2 string, res int) {
