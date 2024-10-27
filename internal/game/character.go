@@ -286,6 +286,29 @@ func (c *Character) removeExpiredEffects(turnState TurnState) {
 	}
 }
 
+// Clones returns a deep clone of the character.
+func (c *Character) Clone() *Character {
+	cloned := &Character{}
+	*cloned = *c
+
+	for i, s := range c.skills {
+		clonedSkill := &Skill{}
+		*clonedSkill = *s
+		clonedSkill.c = cloned
+		cloned.skills[i] = clonedSkill
+
+		if c.lastUsedSkill == s {
+			cloned.lastUsedSkill = clonedSkill
+		}
+	}
+
+	cloned.effects = make(map[EffectDescription]Effect, len(c.effects))
+	for i, e := range c.effects {
+		cloned.effects[i] = e.Clone()
+	}
+	return cloned
+}
+
 // Effect returns an applied effect with matching description and whether it is found.
 // If no such effect is found, zero value of type is returned and found is false.
 func CharacterEffect[T Effect](c *Character, desc EffectDescription) (eff T, found bool) {

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
+	"github.com/ShmaykhelDuo/battler/internal/game/bot"
 	"github.com/ShmaykhelDuo/battler/internal/game/bot/minimax"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/ruby"
@@ -20,22 +21,41 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// bot1 := moveml.NewBot(model)
-	bot1 := minimax.NewBot(8)
-	bot2 := minimax.NewBot(8)
+	bot1 := minimax.NewBot(4)
+	// bot2 := minimax.NewBot(4)
+	bot2 := &bot.RandomBot{}
 
 	// c1, c2 := getRandomPair()
 	c1 := game.NewCharacter(ruby.CharacterRuby)
 	c2 := game.NewCharacter(milana.CharacterMilana)
 
-	res, err := match.Match(c1, c2, bot1, bot2)
+	p1 := match.CharacterPlayer{
+		Character: c1,
+		Player:    bot1,
+	}
+	p2 := match.CharacterPlayer{
+		Character: c2,
+		Player:    bot2,
+	}
+
+	m := match.New(p1, p2, false)
+
+	err := m.Run()
 	if err != nil {
-		log.Printf("match: %v\n", err)
+		log.Printf("match run: %v\n", err)
 		return
 	}
+
+	res, err := m.Result()
+	if err != nil {
+		log.Printf("match result: %v\n", err)
+		return
+	}
+
 	switch res {
-	case 1:
+	case match.ResultWonSecond:
 		fmt.Println("Lost")
-	case -1:
+	case match.ResultWonFirst:
 		fmt.Println("Won")
 	default:
 		fmt.Println("Draw")

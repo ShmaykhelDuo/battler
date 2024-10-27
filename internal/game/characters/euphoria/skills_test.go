@@ -70,7 +70,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[0]
+			s := c.Skills()[euphoria.SkillAmplenessIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -254,7 +254,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 				opp.AddEffect(e)
 			}
 
-			s := c.Skills()[1]
+			s := c.Skills()[euphoria.SkillExuberanceIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -297,7 +297,7 @@ func TestSkillPinkSphere_Use(t *testing.T) {
 			c := game.NewCharacter(euphoria.CharacterEuphoria)
 			opp := game.NewCharacter(tt.oppData)
 
-			s := c.Skills()[2]
+			s := c.Skills()[euphoria.SkillPinkSphereIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -317,7 +317,7 @@ func TestSkillEuphoria_Use(t *testing.T) {
 	data := game.CharacterData{}
 	opp := game.NewCharacter(data)
 
-	s := c.Skills()[3]
+	s := c.Skills()[euphoria.SkillEuphoriaIndex]
 
 	turnState := game.TurnState{TurnNum: 4}
 	err := s.Use(opp, turnState)

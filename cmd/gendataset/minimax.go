@@ -77,7 +77,8 @@ func MiniMax(ctx context.Context, c, opp *game.Character, turnState game.TurnSta
 			continue
 		}
 
-		clonedC, clonedOpp := game.Clone(c, opp)
+		clonedC := c.Clone()
+		clonedOpp := opp.Clone()
 
 		var clonedPlayC, clonedPlayOpp *game.Character
 		if asOpp {

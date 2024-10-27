@@ -94,7 +94,8 @@ func runMiniMax(b *testing.B, depth int) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		clonedC, clonedOpp := game.Clone(c, opp)
+		clonedC := c.Clone()
+		clonedOpp := opp.Clone()
 		minimax.MiniMax(clonedC, clonedOpp, turnState, 1, depth, false)
 	}
 }

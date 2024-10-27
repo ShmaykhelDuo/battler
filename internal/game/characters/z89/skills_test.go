@@ -53,7 +53,7 @@ func TestSkillScarcity(t *testing.T) {
 			c := game.NewCharacter(z89.CharacterZ89)
 			opp := game.NewCharacter(tt.oppData)
 
-			s := c.Skills()[0]
+			s := c.Skills()[z89.SkillScarcityIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -240,7 +240,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 				opp.AddEffect(e)
 			}
 
-			s := c.Skills()[1]
+			s := c.Skills()[z89.SkillIndifferenceIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -317,7 +317,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 
 			c.Damage(opp, tt.prevDmg, tt.prevColour)
 
-			s := c.Skills()[2]
+			s := c.Skills()[z89.SkillGreenSphereIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -394,7 +394,7 @@ func TestSkillDespondency_Use(t *testing.T) {
 
 			opp.SetMaxHP(tt.maxHP)
 
-			s := c.Skills()[3]
+			s := c.Skills()[z89.SkillDespondencyIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand/v2"
 	"net"
 	"os"
 	"os/signal"
@@ -56,15 +57,34 @@ func handleConnection(conn net.Conn) {
 	c1 := game.NewCharacter(milana.CharacterMilana)
 	c2 := game.NewCharacter(ruby.CharacterRuby)
 
-	res, err := match.Match(c1, c2, learner, bot)
+	p1 := match.CharacterPlayer{
+		Character: c1,
+		Player:    learner,
+	}
+	p2 := match.CharacterPlayer{
+		Character: c2,
+		Player:    bot,
+	}
+
+	invertedOrder := rand.IntN(2) == 1
+	m := match.New(p1, p2, invertedOrder)
+
+	err := m.Run()
 	if err != nil {
 		log.Printf("match: %v\n", err)
 		return
 	}
+
+	res, err := m.Result()
+	if err != nil {
+		log.Printf("match result: %v\n", err)
+		return
+	}
+
 	switch res {
-	case 1:
+	case match.ResultWonSecond:
 		fmt.Println("Lost")
-	case -1:
+	case match.ResultWonFirst:
 		fmt.Println("Won")
 	default:
 		fmt.Println("Draw")

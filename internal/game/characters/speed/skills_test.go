@@ -118,7 +118,7 @@ func TestSkillRun_Use(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
-				c, _ := runSkill(t, 0, tt.effs, tt.turnState)
+				c, _ := runSkill(t, speed.SkillRunIndex, tt.effs, tt.turnState)
 
 				red, ok := game.CharacterEffect[*speed.EffectDamageReduced](c, speed.EffectDescDamageReduced)
 				require.True(t, ok, "effect")
@@ -128,7 +128,7 @@ func TestSkillRun_Use(t *testing.T) {
 		}
 	})
 
-	testGainGreenToken(t, 0)
+	testGainGreenToken(t, speed.SkillRunIndex)
 }
 
 func TestSkillWeaken_Use(t *testing.T) {
@@ -137,7 +137,7 @@ func TestSkillWeaken_Use(t *testing.T) {
 	t.Run("ReduceDefence", func(t *testing.T) {
 		t.Parallel()
 
-		_, opp := runSkill(t, 1, nil, game.TurnState{})
+		_, opp := runSkill(t, speed.SkillWeakenIndex, nil, game.TurnState{})
 
 		_, ok := game.CharacterEffect[speed.EffectDefenceReduced](opp, speed.EffectDescDefenceReduced)
 		require.True(t, ok, "effect")
@@ -174,7 +174,7 @@ func TestSkillWeaken_Use(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
-				c, _ := runSkill(t, 1, tt.effs, tt.turnState)
+				c, _ := runSkill(t, speed.SkillWeakenIndex, tt.effs, tt.turnState)
 
 				assert.Equal(t, tt.number, blackTokensNumber(c), "tokens")
 			})
@@ -188,7 +188,7 @@ func TestSkillSpeed_Use(t *testing.T) {
 	t.Run("SpeedUp", func(t *testing.T) {
 		t.Parallel()
 
-		c, _ := runSkill(t, 2, nil, game.TurnState{})
+		c, _ := runSkill(t, speed.SkillSpeedIndex, nil, game.TurnState{})
 
 		eff, ok := game.CharacterEffect[speed.EffectSpedUp](c, speed.EffectDescSpedUp)
 		require.True(t, ok, "effect")
@@ -196,7 +196,7 @@ func TestSkillSpeed_Use(t *testing.T) {
 		assert.Equal(t, 1, eff.TurnsLeft(game.TurnState{}.AddTurns(1, false)), "turns left")
 	})
 
-	testGainGreenToken(t, 2)
+	testGainGreenToken(t, speed.SkillSpeedIndex)
 }
 
 func TestSkillStab_Use(t *testing.T) {
@@ -252,7 +252,7 @@ func TestSkillStab_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[3]
+			s := c.Skills()[speed.SkillStabIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)

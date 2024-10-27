@@ -81,7 +81,7 @@ func MiniMax(c, opp *game.Character, turnState game.TurnState, skillsLeft int, d
 
 		if (worst && skillScore < score) || (!worst && skillScore > score) {
 			score = skillScore
-			strategy = append([]int{i}, skillStrategy...)
+			strategy = append([]int{skillNum}, skillStrategy...)
 		}
 	}
 
@@ -101,7 +101,7 @@ func makeClones(c *game.Character, n int) []*game.Character {
 			continue
 		}
 
-		res[i] = game.CloneCharacter(c)
+		res[i] = c.Clone()
 	}
 
 	return res

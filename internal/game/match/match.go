@@ -1,71 +1,175 @@
 package match
 
 import (
-	"math/rand/v2"
+	"errors"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 )
 
-func Match(c1, c2 *game.Character, p1, p2 Player) (int, error) {
-	goingFirst := rand.IntN(2) == 0
+var ErrMatchNotEnded = errors.New("match has not ended")
 
-	if !goingFirst {
-		c1, c2 = c2, c1
+type CharacterPlayer struct {
+	Character *game.Character
+	Player    Player
+}
+
+type Result int
+
+const (
+	ResultDraw      Result = 0
+	ResultWonFirst  Result = 1
+	ResultWonSecond Result = -1
+)
+
+// Match is a game between two characters.
+type Match struct {
+	p1, p2        CharacterPlayer
+	invertedOrder bool
+	skillLog      *SkillLog
+}
+
+// New creates a new match.
+func New(p1, p2 CharacterPlayer, invertedOrder bool) *Match {
+	if invertedOrder {
 		p1, p2 = p2, p1
 	}
 
-	skillLog := NewSkillLog()
+	return &Match{
+		p1:            p1,
+		p2:            p2,
+		invertedOrder: invertedOrder,
+		skillLog:      NewSkillLog(),
+	}
+}
 
+// Run runs the match.
+func (m *Match) Run() error {
 	var turnState game.TurnState
-	for turnNum := game.MinTurnNumber; turnNum <= game.MaxTurnNumber; turnNum++ {
-		turnState = game.TurnCtx(turnNum)
-
-		turnState = turnState.WithGoingFirst(true)
-		end, err := Turn(p1, p2, c1, c2, turnState, skillLog)
+	for turnState = game.StartTurnState(); turnState.TurnNum <= game.MaxTurnNumber; turnState = turnState.Next() {
+		end, err := m.runTurn(turnState)
 		if err != nil {
-			return 0, err
-		}
-		if end {
-			break
-		}
-
-		turnState = turnState.WithGoingFirst(false)
-		end, err = Turn(p2, p1, c2, c1, turnState, skillLog)
-		if err != nil {
-			return 0, err
+			return err
 		}
 		if end {
 			break
 		}
 	}
 
-	err := sendState(p1, c1, c2, turnState.WithTurnEnd(), skillLog, false, false)
+	err := m.sendState(m.p1, m.p2, turnState.WithTurnEnd(), false, false)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	err = sendState(p2, c2, c1, turnState.WithTurnEnd(), skillLog, false, false)
+	err = m.sendState(m.p2, m.p1, turnState.WithTurnEnd(), false, false)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	err = p1.SendEnd()
+	err = m.p1.Player.SendEnd()
 	if err != nil {
-		return 0, err
+		return err
 	}
-	err = p2.SendEnd()
+	err = m.p2.Player.SendEnd()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	res := 0
-	if c1.HP() < c2.HP() {
-		res = 1
-	} else if c2.HP() < c1.HP() {
-		res = -1
+	return nil
+}
+
+func (m *Match) Result() (Result, error) {
+	if !m.isEnd() {
+		return ResultDraw, ErrMatchNotEnded
 	}
 
-	if !goingFirst {
-		res *= -1
+	hp1 := m.p1.Character.HP()
+	hp2 := m.p2.Character.HP()
+
+	if m.invertedOrder {
+		hp1, hp2 = hp2, hp1
 	}
 
-	return res, nil
+	if hp1 > hp2 {
+		return ResultWonFirst, nil
+	} else if hp1 < hp2 {
+		return ResultWonSecond, nil
+	} else {
+		return ResultDraw, nil
+	}
+}
+
+func (m *Match) runTurn(turnState game.TurnState) (end bool, err error) {
+	var c, opp CharacterPlayer
+	if turnState.IsGoingFirst {
+		c = m.p1
+		opp = m.p2
+	} else {
+		c = m.p2
+		opp = m.p1
+	}
+
+	asOpp := c.Character.IsControlledByOpp()
+
+	var control, observer CharacterPlayer
+	if asOpp {
+		control = opp
+		observer = c
+	} else {
+		control = c
+		observer = opp
+	}
+
+	for range c.Character.SkillsPerTurn() {
+		err = m.sendState(control, observer, turnState, true, asOpp)
+		if err != nil {
+			return true, err
+		}
+		err = m.sendState(observer, control, turnState, false, asOpp)
+		if err != nil {
+			return true, err
+		}
+
+		for {
+			i, err := control.Player.RequestSkill()
+			if err != nil {
+				return true, err
+			}
+
+			// log.Printf("Player %s has selected skill %d\n", c.Desc().Name, i)
+
+			err = c.Character.Skills()[i].Use(opp.Character, turnState)
+			if err == nil {
+				m.skillLog.Add(c.Character, i)
+				break
+			}
+
+			err = control.Player.SendError()
+			if err != nil {
+				return true, err
+			}
+		}
+
+		if m.isEnd() {
+			return true, nil
+		}
+	}
+
+	endState := turnState.WithTurnEnd()
+	c.Character.OnTurnEnd(opp.Character, endState)
+	opp.Character.OnTurnEnd(c.Character, endState)
+	return m.isEnd(), nil
+}
+
+func (m *Match) sendState(c, opp CharacterPlayer, turnState game.TurnState, playerTurn bool, asOpp bool) error {
+	state := GameState{
+		Character:  c.Character,
+		Opponent:   opp.Character,
+		TurnState:  turnState,
+		SkillLog:   m.skillLog.Items(),
+		PlayerTurn: playerTurn,
+		AsOpp:      asOpp,
+	}
+	return c.Player.SendState(state)
+}
+
+func (m *Match) isEnd() bool {
+	return m.p1.Character.HP() <= 0 || m.p2.Character.HP() <= 0
 }

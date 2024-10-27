@@ -67,7 +67,7 @@ func TestSkillEShock_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[0]
+			s := c.Skills()[structure.SkillEShockIndex]
 			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
@@ -115,7 +115,7 @@ func TestSkillIBoost_IsAvailable(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[1]
+			s := c.Skills()[structure.SkillIBoostIndex]
 			isAvailable := s.IsAvailable(opp, game.TurnState{})
 			assert.Equal(t, tt.isAvailable, isAvailable)
 		})
@@ -161,7 +161,7 @@ func TestSkillIBoost_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[1]
+			s := c.Skills()[structure.SkillIBoostIndex]
 			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
@@ -219,7 +219,7 @@ func TestSkillSLayers_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[2]
+			s := c.Skills()[structure.SkillSLayersIndex]
 			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
@@ -240,7 +240,7 @@ func TestSkillLastChance_Use(t *testing.T) {
 
 	turnState := game.TurnState{TurnNum: 7}
 
-	s := c.Skills()[3]
+	s := c.Skills()[structure.SkillLastChanceIndex]
 	err := s.Use(opp, turnState)
 	require.NoError(t, err)
 

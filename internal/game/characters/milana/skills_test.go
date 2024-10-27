@@ -81,7 +81,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[0]
+			s := c.Skills()[milana.SkillRoyalMoveIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestSkillComposure_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[1]
+			s := c.Skills()[milana.SkillComposureIndex]
 			err := s.Use(opp, game.TurnState{})
 			require.NoError(t, err)
 
@@ -170,7 +170,7 @@ func TestSkillMintMist_Use(t *testing.T) {
 	c := game.NewCharacter(milana.CharacterMilana)
 	opp := game.NewCharacter(game.CharacterData{})
 
-	s := c.Skills()[2]
+	s := c.Skills()[milana.SkillMintMistIndex]
 	err := s.Use(opp, game.TurnState{})
 	require.NoError(t, err)
 
@@ -228,7 +228,7 @@ func TestSkillPride_Use(t *testing.T) {
 				c.AddEffect(e)
 			}
 
-			s := c.Skills()[3]
+			s := c.Skills()[milana.SkillPrideIndex]
 
 			err := s.Use(opp, game.TurnState{TurnNum: 8})
 			require.NoError(t, err)

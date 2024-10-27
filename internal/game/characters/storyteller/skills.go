@@ -6,6 +6,13 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/game"
 )
 
+const (
+	SkillYourNumberIndex int = iota
+	SkillYourColourIndex
+	SkillYourDreamIndex
+	SkillMyStoryIndex
+)
+
 // Deal 10 + the remainder of your opponent's number divided by 7 Orange damage.
 var SkillYourNumber = game.SkillData{
 	Desc: game.SkillDescription{

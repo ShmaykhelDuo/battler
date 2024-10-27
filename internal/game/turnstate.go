@@ -12,15 +12,25 @@ type TurnState struct {
 	IsTurnEnd    bool // whether it is the end of turn
 }
 
-func TurnCtx(turnNum int) TurnState {
+// NewTurnState returns a new [TurnState] with provided turn number.
+func NewTurnState(turnNum int) TurnState {
 	return TurnState{TurnNum: turnNum}
 }
 
+func StartTurnState() TurnState {
+	return TurnState{
+		TurnNum:      MinTurnNumber,
+		IsGoingFirst: true,
+	}
+}
+
+// WithGoingFirst returns a copy of the state with going first set.
 func (c TurnState) WithGoingFirst(isGoingFirst bool) TurnState {
 	c.IsGoingFirst = isGoingFirst
 	return c
 }
 
+// WithTurnEnd returns a copy of the state with turn end set.
 func (c TurnState) WithTurnEnd() TurnState {
 	c.IsTurnEnd = true
 	return c
@@ -53,4 +63,8 @@ func (c TurnState) AddTurns(turns int, isOpponentsTurn bool) TurnState {
 	}
 
 	return c
+}
+
+func (c TurnState) Next() TurnState {
+	return c.AddTurns(0, true)
 }

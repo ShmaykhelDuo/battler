@@ -3,7 +3,6 @@ package minimax
 import (
 	"errors"
 
-	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 )
 
@@ -30,7 +29,8 @@ func (b *Bot) SendState(state match.GameState) error {
 		return nil
 	}
 
-	clonedC, clonedOpp := game.Clone(state.Character, state.Opponent)
+	clonedC := state.Character.Clone()
+	clonedOpp := state.Opponent.Clone()
 
 	skills := clonedC.SkillsPerTurn()
 	if state.AsOpp {

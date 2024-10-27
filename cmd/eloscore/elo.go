@@ -46,7 +46,7 @@ func (s *eloScoring) run(rounds int) error {
 
 		eg, _ := errgroup.WithContext(context.Background())
 
-		res := make([]int, len(order))
+		res := make([]match.Result, len(order))
 		for j, pair := range order {
 			eg.Go(func() error {
 				var err error
@@ -58,11 +58,12 @@ func (s *eloScoring) run(rounds int) error {
 				p1 := pair[0]
 				p2 := pair[1]
 
-				if res[j] == 1 {
-					log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
-				} else if res[j] == -1 {
+				switch res[j] {
+				case match.ResultWonFirst:
 					log.Printf("%s as %s won over %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
-				} else {
+				case match.ResultWonSecond:
+					log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
+				default:
 					log.Printf("%s as %s drawed with %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
 				}
 
@@ -85,11 +86,12 @@ func (s *eloScoring) run(rounds int) error {
 
 			s.updateRatings(p1, p2, res[j])
 
-			if res[j] == 1 {
-				log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
-			} else if res[j] == -1 {
+			switch res[j] {
+			case match.ResultWonFirst:
 				log.Printf("%s as %s won over %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
-			} else {
+			case match.ResultWonSecond:
+				log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
+			default:
 				log.Printf("%s as %s drawed with %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
 			}
 
@@ -116,21 +118,33 @@ func (s *eloScoring) pairs() [][2]string {
 	return pairs
 }
 
-func (s *eloScoring) match(p1, p2 string) (int, error) {
-	player1 := s.players[p1].Player(s.c1.Desc)
-	player2 := s.players[p2].Player(s.c2.Desc)
-	c1 := game.NewCharacter(s.c1)
-	c2 := game.NewCharacter(s.c2)
+func (s *eloScoring) match(p1, p2 string) (match.Result, error) {
+	cp1 := match.CharacterPlayer{
+		Character: game.NewCharacter(s.c1),
+		Player:    s.players[p1].Player(s.c1.Desc),
+	}
+	cp2 := match.CharacterPlayer{
+		Character: game.NewCharacter(s.c2),
+		Player:    s.players[p2].Player(s.c2.Desc),
+	}
 
-	res, err := match.Match(c1, c2, player1, player2)
+	invertedOrder := rand.IntN(2) == 1
+	m := match.New(cp1, cp2, invertedOrder)
+
+	err := m.Run()
 	if err != nil {
 		return 0, fmt.Errorf("match: %w", err)
+	}
+
+	res, err := m.Result()
+	if err != nil {
+		return 0, fmt.Errorf("match result: %w", err)
 	}
 
 	return res, nil
 }
 
-func (s *eloScoring) updateRatings(p1, p2 string, res int) {
+func (s *eloScoring) updateRatings(p1, p2 string, res match.Result) {
 	r1 := s.ratings[p1]
 	r2 := s.ratings[p2]
 
@@ -140,8 +154,18 @@ func (s *eloScoring) updateRatings(p1, p2 string, res int) {
 	e1 := q1 / (q1 + q2)
 	e2 := q2 / (q1 + q2)
 
-	s1 := 0.5 * float64(1-res)
-	s2 := 0.5 * float64(1+res)
+	var s1, s2 float64
+	switch res {
+	case match.ResultWonFirst:
+		s1 = 1.0
+		s2 = 0.0
+	case match.ResultWonSecond:
+		s1 = 0.0
+		s2 = 1.0
+	default:
+		s1 = 0.5
+		s2 = 0.5
+	}
 
 	k := 32.0
 	s.ratings[p1] = r1 + int(math.Round(k*(s1-e1)))

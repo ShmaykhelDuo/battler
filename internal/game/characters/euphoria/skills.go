@@ -2,6 +2,13 @@ package euphoria
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
+const (
+	SkillAmplenessIndex int = iota
+	SkillExuberanceIndex
+	SkillPinkSphereIndex
+	SkillEuphoriaIndex
+)
+
 // Increases Euphoric Source and everyone's max HP by 12.
 // Cooldown: 1.
 var SkillAmpleness = game.SkillData{

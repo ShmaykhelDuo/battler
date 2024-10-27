@@ -2,6 +2,13 @@ package z89
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
+const (
+	SkillScarcityIndex int = iota
+	SkillIndifferenceIndex
+	SkillGreenSphereIndex
+	SkillDespondencyIndex
+)
+
 // Deal 12 Black damage, then set opponent's max HP to their current HP.
 // Cooldown 1.
 var SkillScarcity = game.SkillData{
