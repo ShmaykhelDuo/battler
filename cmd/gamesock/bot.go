@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -33,7 +34,7 @@ func NewDQLLearnerBot(conn net.Conn) *DQLLearnerBot {
 	}
 }
 
-func (b *DQLLearnerBot) SendState(state match.GameState) error {
+func (b *DQLLearnerBot) SendState(ctx context.Context, state match.GameState) error {
 	b.state = state
 
 	if !state.PlayerTurn {
@@ -43,15 +44,15 @@ func (b *DQLLearnerBot) SendState(state match.GameState) error {
 	return b.send(state, false, false)
 }
 
-func (b *DQLLearnerBot) SendError() error {
+func (b *DQLLearnerBot) SendError(ctx context.Context) error {
 	return b.send(b.state, false, true)
 }
 
-func (b *DQLLearnerBot) SendEnd() error {
+func (b *DQLLearnerBot) SendEnd(ctx context.Context) error {
 	return b.send(b.state, true, false)
 }
 
-func (b *DQLLearnerBot) RequestSkill() (int, error) {
+func (b *DQLLearnerBot) RequestSkill(ctx context.Context) (int, error) {
 	var msg actionMsg
 	err := b.decoder.Decode(&msg)
 	if err != nil {

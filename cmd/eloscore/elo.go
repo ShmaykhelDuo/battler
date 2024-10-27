@@ -131,7 +131,7 @@ func (s *eloScoring) match(p1, p2 string) (match.Result, error) {
 	invertedOrder := rand.IntN(2) == 1
 	m := match.New(cp1, cp2, invertedOrder)
 
-	err := m.Run()
+	err := m.Run(context.Background())
 	if err != nil {
 		return 0, fmt.Errorf("match: %w", err)
 	}

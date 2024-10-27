@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"math/rand/v2"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
@@ -22,14 +23,14 @@ func NewRandomWrapperBot(bot match.Player, p float64) *RandomWrapperBot {
 	}
 }
 
-func (b *RandomWrapperBot) SendState(state match.GameState) error {
+func (b *RandomWrapperBot) SendState(ctx context.Context, state match.GameState) error {
 	if state.TurnState != b.lastCtx {
 		b.isRand = rand.Float64() < b.p
 		b.lastCtx = state.TurnState
 	}
 
 	if !b.isRand {
-		return b.bot.SendState(state)
+		return b.bot.SendState(ctx, state)
 	}
 
 	var available []int
@@ -44,22 +45,22 @@ func (b *RandomWrapperBot) SendState(state match.GameState) error {
 	return nil
 }
 
-func (b *RandomWrapperBot) SendError() error {
+func (b *RandomWrapperBot) SendError(ctx context.Context) error {
 	if b.isRand {
 		return nil
 	}
-	return b.bot.SendError()
+	return b.bot.SendError(ctx)
 }
 
-func (b *RandomWrapperBot) SendEnd() error {
-	return b.bot.SendEnd()
+func (b *RandomWrapperBot) SendEnd(ctx context.Context) error {
+	return b.bot.SendEnd(ctx)
 }
 
-func (b RandomWrapperBot) RequestSkill() (int, error) {
+func (b RandomWrapperBot) RequestSkill(ctx context.Context) (int, error) {
 	if b.isRand {
 		i := rand.IntN(len(b.available))
 		return b.available[i], nil
 	}
 
-	return b.bot.RequestSkill()
+	return b.bot.RequestSkill(ctx)
 }

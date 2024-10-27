@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand/v2"
@@ -69,7 +70,7 @@ func handleConnection(conn net.Conn) {
 	invertedOrder := rand.IntN(2) == 1
 	m := match.New(p1, p2, invertedOrder)
 
-	err := m.Run()
+	err := m.Run(context.Background())
 	if err != nil {
 		log.Printf("match: %v\n", err)
 		return

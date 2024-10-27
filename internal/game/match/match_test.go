@@ -1,6 +1,7 @@
 package match_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -18,21 +19,21 @@ type FakePlayer struct {
 	hasEnd   bool
 }
 
-func (p *FakePlayer) SendState(state match.GameState) error {
+func (p *FakePlayer) SendState(ctx context.Context, state match.GameState) error {
 	p.hasState = true
 	return nil
 }
 
-func (p *FakePlayer) SendError() error {
+func (p *FakePlayer) SendError(ctx context.Context) error {
 	return errors.New("got error in fake")
 }
 
-func (p *FakePlayer) SendEnd() error {
+func (p *FakePlayer) SendEnd(ctx context.Context) error {
 	p.hasEnd = true
 	return nil
 }
 
-func (p *FakePlayer) RequestSkill() (int, error) {
+func (p *FakePlayer) RequestSkill(ctx context.Context) (int, error) {
 	if !p.hasState {
 		return 0, errors.New("has no state")
 	}
@@ -107,7 +108,7 @@ func TestMatch(t *testing.T) {
 
 			m := match.New(cp1, cp2, tt.invertedOrder)
 
-			err := m.Run()
+			err := m.Run(context.Background())
 			require.NoError(t, err, "error")
 
 			res, err := m.Result()

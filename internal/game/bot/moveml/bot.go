@@ -1,6 +1,7 @@
 package moveml
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -17,7 +18,7 @@ func NewBot(model *Model) *Bot {
 	return &Bot{model: model}
 }
 
-func (b *Bot) SendState(state match.GameState) error {
+func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 	if !state.PlayerTurn {
 		return nil
 	}
@@ -31,7 +32,7 @@ func (b *Bot) SendState(state match.GameState) error {
 	return nil
 }
 
-func (b *Bot) SendError() error {
+func (b *Bot) SendError(ctx context.Context) error {
 	if len(b.actions) == 0 {
 		return errors.New("no actions left")
 	}
@@ -40,11 +41,11 @@ func (b *Bot) SendError() error {
 	return nil
 }
 
-func (b *Bot) SendEnd() error {
+func (b *Bot) SendEnd(ctx context.Context) error {
 	return nil
 }
 
-func (b *Bot) RequestSkill() (int, error) {
+func (b *Bot) RequestSkill(ctx context.Context) (int, error) {
 	return b.actions[0], nil
 }
 

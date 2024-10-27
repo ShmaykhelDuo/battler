@@ -1,6 +1,7 @@
 package match
 
 import (
+	"context"
 	"errors"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
@@ -43,10 +44,10 @@ func New(p1, p2 CharacterPlayer, invertedOrder bool) *Match {
 }
 
 // Run runs the match.
-func (m *Match) Run() error {
+func (m *Match) Run(ctx context.Context) error {
 	var turnState game.TurnState
 	for turnState = game.StartTurnState(); turnState.TurnNum <= game.MaxTurnNumber; turnState = turnState.Next() {
-		end, err := m.runTurn(turnState)
+		end, err := m.runTurn(ctx, turnState)
 		if err != nil {
 			return err
 		}
@@ -55,19 +56,19 @@ func (m *Match) Run() error {
 		}
 	}
 
-	err := m.sendState(m.p1, m.p2, turnState.WithTurnEnd(), false, false)
+	err := m.sendState(ctx, m.p1, m.p2, turnState.WithTurnEnd(), false, false)
 	if err != nil {
 		return err
 	}
-	err = m.sendState(m.p2, m.p1, turnState.WithTurnEnd(), false, false)
+	err = m.sendState(ctx, m.p2, m.p1, turnState.WithTurnEnd(), false, false)
 	if err != nil {
 		return err
 	}
-	err = m.p1.Player.SendEnd()
+	err = m.p1.Player.SendEnd(ctx)
 	if err != nil {
 		return err
 	}
-	err = m.p2.Player.SendEnd()
+	err = m.p2.Player.SendEnd(ctx)
 	if err != nil {
 		return err
 	}
@@ -96,7 +97,7 @@ func (m *Match) Result() (Result, error) {
 	}
 }
 
-func (m *Match) runTurn(turnState game.TurnState) (end bool, err error) {
+func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool, err error) {
 	var c, opp CharacterPlayer
 	if turnState.IsGoingFirst {
 		c = m.p1
@@ -118,17 +119,17 @@ func (m *Match) runTurn(turnState game.TurnState) (end bool, err error) {
 	}
 
 	for range c.Character.SkillsPerTurn() {
-		err = m.sendState(control, observer, turnState, true, asOpp)
+		err = m.sendState(ctx, control, observer, turnState, true, asOpp)
 		if err != nil {
 			return true, err
 		}
-		err = m.sendState(observer, control, turnState, false, asOpp)
+		err = m.sendState(ctx, observer, control, turnState, false, asOpp)
 		if err != nil {
 			return true, err
 		}
 
 		for {
-			i, err := control.Player.RequestSkill()
+			i, err := control.Player.RequestSkill(ctx)
 			if err != nil {
 				return true, err
 			}
@@ -141,7 +142,7 @@ func (m *Match) runTurn(turnState game.TurnState) (end bool, err error) {
 				break
 			}
 
-			err = control.Player.SendError()
+			err = control.Player.SendError(ctx)
 			if err != nil {
 				return true, err
 			}
@@ -158,7 +159,7 @@ func (m *Match) runTurn(turnState game.TurnState) (end bool, err error) {
 	return m.isEnd(), nil
 }
 
-func (m *Match) sendState(c, opp CharacterPlayer, turnState game.TurnState, playerTurn bool, asOpp bool) error {
+func (m *Match) sendState(ctx context.Context, c, opp CharacterPlayer, turnState game.TurnState, playerTurn bool, asOpp bool) error {
 	state := GameState{
 		Character:  c.Character,
 		Opponent:   opp.Character,
@@ -167,7 +168,7 @@ func (m *Match) sendState(c, opp CharacterPlayer, turnState game.TurnState, play
 		PlayerTurn: playerTurn,
 		AsOpp:      asOpp,
 	}
-	return c.Player.SendState(state)
+	return c.Player.SendState(ctx, state)
 }
 
 func (m *Match) isEnd() bool {

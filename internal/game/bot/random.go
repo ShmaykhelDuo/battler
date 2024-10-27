@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"math/rand/v2"
 
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
@@ -10,7 +11,7 @@ type RandomBot struct {
 	available []int
 }
 
-func (b *RandomBot) SendState(state match.GameState) error {
+func (b *RandomBot) SendState(ctx context.Context, state match.GameState) error {
 	var available []int
 
 	for i, s := range state.Character.Skills() {
@@ -23,15 +24,15 @@ func (b *RandomBot) SendState(state match.GameState) error {
 	return nil
 }
 
-func (b *RandomBot) SendError() error {
+func (b *RandomBot) SendError(ctx context.Context) error {
 	return nil
 }
 
-func (b *RandomBot) SendEnd() error {
+func (b *RandomBot) SendEnd(ctx context.Context) error {
 	return nil
 }
 
-func (b RandomBot) RequestSkill() (int, error) {
+func (b RandomBot) RequestSkill(ctx context.Context) (int, error) {
 	i := rand.IntN(len(b.available))
 	return b.available[i], nil
 }

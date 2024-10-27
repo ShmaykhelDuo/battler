@@ -1,6 +1,7 @@
 package minimax_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -25,8 +26,8 @@ func BenchmarkMiniMaxBot(b *testing.B) {
 			bot := minimax.NewBot(depth)
 
 			for i := 0; i < b.N; i++ {
-				bot.SendState(state)
-				bot.RequestSkill()
+				bot.SendState(context.Background(), state)
+				bot.RequestSkill(context.Background())
 			}
 		})
 	}

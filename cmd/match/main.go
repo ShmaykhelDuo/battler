@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -40,7 +41,7 @@ func main() {
 
 	m := match.New(p1, p2, false)
 
-	err := m.Run()
+	err := m.Run(context.Background())
 	if err != nil {
 		log.Printf("match run: %v\n", err)
 		return

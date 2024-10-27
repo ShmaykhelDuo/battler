@@ -1,6 +1,7 @@
 package ml
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -37,7 +38,7 @@ func NewBot() (*Bot, error) {
 	}, nil
 }
 
-func (b *Bot) SendState(state match.GameState) error {
+func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 	b.state = state
 
 	if !state.PlayerTurn {
@@ -47,17 +48,17 @@ func (b *Bot) SendState(state match.GameState) error {
 	return b.send(state)
 }
 
-func (b *Bot) SendError() error {
+func (b *Bot) SendError(ctx context.Context) error {
 	b.actions = b.actions[1:]
 	b.hasErr = true
 	return nil
 }
 
-func (b *Bot) SendEnd() error {
+func (b *Bot) SendEnd(ctx context.Context) error {
 	return nil
 }
 
-func (b *Bot) RequestSkill() (int, error) {
+func (b *Bot) RequestSkill(ctx context.Context) (int, error) {
 	if b.hasErr {
 		return b.actions[0], nil
 	}

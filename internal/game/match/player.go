@@ -1,8 +1,10 @@
 package match
 
+import "context"
+
 type Player interface {
-	SendState(state GameState) error
-	SendError() error
-	SendEnd() error
-	RequestSkill() (int, error)
+	SendState(ctx context.Context, state GameState) error
+	SendError(ctx context.Context) error
+	SendEnd(ctx context.Context) error
+	RequestSkill(ctx context.Context) (int, error)
 }

@@ -1,6 +1,7 @@
 package minimax
 
 import (
+	"context"
 	"errors"
 
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
@@ -16,7 +17,7 @@ func NewBot(depth int) *Bot {
 	return &Bot{depth: depth}
 }
 
-func (b *Bot) SendState(state match.GameState) error {
+func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 	if !state.PlayerTurn {
 		// fmt.Printf("Skip\n")
 		return nil
@@ -50,7 +51,7 @@ func (b *Bot) SendState(state match.GameState) error {
 	return nil
 }
 
-func (b *Bot) SendError() error {
+func (b *Bot) SendError(ctx context.Context) error {
 	// log.Printf("\n\n\n\nError!!!!\n\n\n\n")
 	// for i, s := range b.lastState.Character.Skills() {
 	// 	log.Printf("Skill #%d: %v", i, s.IsAvailable(b.lastState.Opponent, b.lastState.Context))
@@ -59,11 +60,11 @@ func (b *Bot) SendError() error {
 	return nil
 }
 
-func (b *Bot) SendEnd() error {
+func (b *Bot) SendEnd(ctx context.Context) error {
 	return nil
 }
 
-func (b *Bot) RequestSkill() (int, error) {
+func (b *Bot) RequestSkill(ctx context.Context) (int, error) {
 	// log.Printf("Has Cached: %v\n", b.cached)
 	if len(b.cached) < 1 {
 		return 0, errors.New("Heck!")
