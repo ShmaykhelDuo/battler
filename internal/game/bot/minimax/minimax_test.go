@@ -75,10 +75,10 @@ func TestMiniMax(t *testing.T) {
 				PlayerTurn: true,
 				AsOpp:      false,
 			}
-			score, strategy, _, err := minimax.MiniMax(context.Background(), state, tt.depth)
+			res, err := minimax.MiniMax(context.Background(), state, tt.depth)
 			require.NoError(t, err, "error")
-			assert.Equal(t, tt.score, score, "score")
-			assert.Equal(t, tt.strategy, strategy, "strategy")
+			assert.Equal(t, tt.score, res.Score, "score")
+			assert.Equal(t, tt.strategy, res.Strategy, "strategy")
 		})
 	}
 }

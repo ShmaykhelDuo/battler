@@ -8,151 +8,165 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 )
 
-var ErrNoAvailableMoves = errors.New("no available moves")
+var ErrNoAvailableSkills = errors.New("no available moves")
 
 type MiniMaxEntry struct {
-	state  match.GameState
-	result match.SkillLog
+	State  match.GameState
+	Result match.SkillLog
 }
 
-func MiniMax(ctx context.Context, state match.GameState, depth int) (score int, strategy match.SkillLog, entries []MiniMaxEntry, err error) {
-	// c - кому делаем хорошо
-	// opp - кому делаем плохо
-	// asOpp - если сейчас ход противника
+type MiniMaxResult struct {
+	Score    int
+	Strategy match.SkillLog
+	Entries  []MiniMaxEntry
+}
 
-	c := state.Character
-	opp := state.Opponent
-	turnState := state.TurnState
-	skillsLeft := state.SkillsLeft
-	asOpp := state.AsOpp
-
-	if skillsLeft == 0 {
-		endCtx := turnState.WithTurnEnd()
-		c.OnTurnEnd(opp, endCtx)
-		opp.OnTurnEnd(c, endCtx)
-
-		state.TurnState = turnState.Next()
-		state.SkillsLeft = opp.SkillsPerTurn()
-		state.AsOpp = !asOpp
-		if asOpp {
-			depth -= 1
-		}
-		return MiniMax(ctx, state, depth)
+func MiniMax(ctx context.Context, state match.GameState, depth int) (MiniMaxResult, error) {
+	if depth == 0 || hasGameEnded(state) {
+		return MiniMaxResult{
+			Score:    state.Character.HP() - state.Opponent.HP(),
+			Strategy: make(match.SkillLog),
+		}, nil
 	}
 
-	if depth == 0 || hasGameEnded(c, opp, turnState) {
-		score = c.HP() - opp.HP()
-		strategy = make(match.SkillLog)
-		return
+	if state.SkillsLeft == 0 {
+		return miniMaxTurnEnd(ctx, state, depth)
 	}
 
 	// Делаем плохо, если ходит противник (сам или за нас)
-	worst := asOpp != c.IsControlledByOpp()
+	worst := state.AsOpp != state.Character.IsControlledByOpp()
 
-	if worst {
-		score = 1000
-	} else {
-		score = -1000
+	skills := getSkills(state, !worst)
+
+	if len(skills) == 0 {
+		return MiniMaxResult{}, ErrNoAvailableSkills
 	}
 
-	var playC, playOpp *game.Character
+	skillResults := make([]MiniMaxResult, len(skills))
+
+	for i, skillNum := range skills {
+		var err error
+		skillResults[i], err = miniMaxSkill(ctx, state.Clone(), skillNum, depth)
+		if err != nil {
+			return MiniMaxResult{}, err
+		}
+	}
+
+	return miniMaxAccumulate(state, skills, skillResults, worst), nil
+}
+
+func miniMaxTurnEnd(ctx context.Context, state match.GameState, depth int) (MiniMaxResult, error) {
+	c := state.Character
+	opp := state.Opponent
+	turnState := state.TurnState
+	asOpp := state.AsOpp
+
+	endCtx := turnState.WithTurnEnd()
+	c.OnTurnEnd(opp, endCtx)
+	opp.OnTurnEnd(c, endCtx)
+
+	state.TurnState = turnState.Next()
+	state.SkillsLeft = opp.SkillsPerTurn()
+	state.AsOpp = !asOpp
 	if asOpp {
-		playC = opp
-		playOpp = c
+		depth -= 1
+	}
+	return MiniMax(ctx, state, depth)
+}
+
+func hasGameEnded(state match.GameState) bool {
+	return state.TurnState.TurnNum > game.MaxTurnNumber || state.Character.HP() <= 0 || state.Opponent.HP() <= 0
+}
+
+func getSkills(state match.GameState, filterAppropriate bool) []int {
+	var playC, playOpp *game.Character
+	if state.AsOpp {
+		playC = state.Opponent
+		playOpp = state.Character
 	} else {
-		playC = c
-		playOpp = opp
+		playC = state.Character
+		playOpp = state.Opponent
 	}
 
 	moves := make([]int, 0, 4)
 
-	if !worst {
+	if filterAppropriate {
 		for i, s := range playC.Skills() {
-			if s.IsAppropriate(playOpp, turnState) {
+			if s.IsAppropriate(playOpp, state.TurnState) {
 				moves = append(moves, i)
 			}
 		}
-	}
 
-	if len(moves) == 0 {
-		for i, s := range playC.Skills() {
-			if s.IsAvailable(playOpp, turnState) {
-				moves = append(moves, i)
-			}
+		if len(moves) > 0 {
+			return moves
 		}
 	}
 
-	if len(moves) == 0 {
-		err = ErrNoAvailableMoves
-		return
+	for i, s := range playC.Skills() {
+		if s.IsAvailable(playOpp, state.TurnState) {
+			moves = append(moves, i)
+		}
 	}
 
-	for _, skillNum := range moves {
-		newState := state.Clone()
+	return moves
+}
 
-		var clonedPlayC, clonedPlayOpp *game.Character
-		if asOpp {
-			clonedPlayC = newState.Opponent
-			clonedPlayOpp = newState.Character
-		} else {
-			clonedPlayC = newState.Character
-			clonedPlayOpp = newState.Opponent
-		}
+func miniMaxSkill(ctx context.Context, state match.GameState, skillNum int, depth int) (res MiniMaxResult, err error) {
+	var clonedPlayC, clonedPlayOpp *game.Character
+	if state.AsOpp {
+		clonedPlayC = state.Opponent
+		clonedPlayOpp = state.Character
+	} else {
+		clonedPlayC = state.Character
+		clonedPlayOpp = state.Opponent
+	}
 
-		clonedS := clonedPlayC.Skills()[skillNum]
-		clonedS.Use(clonedPlayOpp, turnState)
+	turnState := state.TurnState
 
-		newState.SkillLog[turnState] = append(newState.SkillLog[turnState], skillNum)
-		newState.SkillsLeft--
+	clonedS := clonedPlayC.Skills()[skillNum]
+	clonedS.Use(clonedPlayOpp, turnState)
 
-		var skillScore int
-		var skillStrategy match.SkillLog
-		var skillEntries []MiniMaxEntry
-		skillScore, skillStrategy, skillEntries, err = MiniMax(ctx, newState, depth)
-		if err != nil {
-			return
-		}
+	state.SkillLog[turnState] = append(state.SkillLog[turnState], skillNum)
+	state.SkillsLeft--
 
-		if (worst && skillScore < score) || (!worst && skillScore > score) {
-			score = skillScore
+	return MiniMax(ctx, state, depth)
+}
 
-			skillStrategy[turnState] = append([]int{skillNum}, skillStrategy[turnState]...)
-			strategy = skillStrategy
+func miniMaxAccumulate(state match.GameState, skills []int, results []MiniMaxResult, worst bool) MiniMaxResult {
+	var res MiniMaxResult
+
+	if worst {
+		res.Score = 1000
+	} else {
+		res.Score = -1000
+	}
+
+	var selected int
+
+	for i, skillRes := range results {
+		if (worst && skillRes.Score < res.Score) || (!worst && skillRes.Score > res.Score) {
+			selected = skills[i]
+
+			res.Score = skillRes.Score
+			res.Strategy = skillRes.Strategy
 
 			if !worst {
-				entries = skillEntries
+				res.Entries = skillRes.Entries
 			}
 		}
 
 		if worst {
-			entries = append(entries, skillEntries...)
+			res.Entries = append(res.Entries, skillRes.Entries...)
 		}
 	}
+
+	res.Strategy[state.TurnState] = append([]int{selected}, res.Strategy[state.TurnState]...)
 
 	newEntry := MiniMaxEntry{
-		state:  state,
-		result: strategy,
+		State:  state,
+		Result: res.Strategy,
 	}
-	entries = append(entries, newEntry)
-
-	return
-}
-
-func hasGameEnded(c, opp *game.Character, turnState game.TurnState) bool {
-	return turnState.TurnNum > game.MaxTurnNumber || c.HP() <= 0 || opp.HP() <= 0
-}
-
-func makeClones(c *game.Character, n int) []*game.Character {
-	res := make([]*game.Character, n)
-
-	for i := range n {
-		if i == 0 {
-			res[i] = c
-			continue
-		}
-
-		res[i] = c.Clone()
-	}
+	res.Entries = append(res.Entries, newEntry)
 
 	return res
 }

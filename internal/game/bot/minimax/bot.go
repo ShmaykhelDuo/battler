@@ -30,7 +30,7 @@ func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 		return nil
 	}
 
-	_, strategy, _, err := MiniMax(ctx, state.Clone(), b.depth)
+	res, err := MiniMax(ctx, state.Clone(), b.depth)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 	// 	MiniMax(clonedC, clonedOpp, state.Context, skills, b.depth, state.AsOpp)
 	// }
 	// fmt.Printf("Opp Strategy: %v, skills: %d\n", strategy, skills)
-	b.cached = strategy[state.TurnState]
+	b.cached = res.Strategy[state.TurnState]
 	// log.Printf("Got Strat: %v\n", b.cached)
 	return nil
 }
