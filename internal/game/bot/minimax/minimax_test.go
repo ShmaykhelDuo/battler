@@ -1,6 +1,7 @@
 package minimax_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -9,7 +10,9 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/ruby"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/storyteller"
+	"github.com/ShmaykhelDuo/battler/internal/game/match"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMiniMax(t *testing.T) {
@@ -21,23 +24,33 @@ func TestMiniMax(t *testing.T) {
 		opp      game.CharacterData
 		depth    int
 		score    int
-		strategy []int
+		strategy match.SkillLog
 	}{
 		{
-			name:     "StorytellerRuby1",
-			c:        storyteller.CharacterStoryteller,
-			opp:      ruby.CharacterRuby,
-			depth:    1,
-			score:    0,
-			strategy: []int{0, 1},
+			name:  "StorytellerRuby1",
+			c:     storyteller.CharacterStoryteller,
+			opp:   ruby.CharacterRuby,
+			depth: 1,
+			score: 0,
+			// strategy: []int{0, 1},
+			strategy: match.SkillLog{
+				game.NewTurnState(1).WithGoingFirst(true):  []int{storyteller.SkillYourNumberIndex},
+				game.NewTurnState(1).WithGoingFirst(false): []int{ruby.SkillRageIndex},
+			},
 		},
 		{
-			name:     "StorytellerRuby2",
-			c:        storyteller.CharacterStoryteller,
-			opp:      ruby.CharacterRuby,
-			depth:    2,
-			score:    -4,
-			strategy: []int{0, 0, 0, 1},
+			name:  "StorytellerRuby2",
+			c:     storyteller.CharacterStoryteller,
+			opp:   ruby.CharacterRuby,
+			depth: 2,
+			score: -4,
+			// strategy: []int{0, 0, 0, 1},
+			strategy: match.SkillLog{
+				game.NewTurnState(1).WithGoingFirst(true):  []int{storyteller.SkillYourNumberIndex},
+				game.NewTurnState(1).WithGoingFirst(false): []int{ruby.SkillDanceIndex},
+				game.NewTurnState(2).WithGoingFirst(true):  []int{storyteller.SkillYourNumberIndex},
+				game.NewTurnState(2).WithGoingFirst(false): []int{ruby.SkillRageIndex},
+			},
 		},
 	}
 
@@ -53,9 +66,19 @@ func TestMiniMax(t *testing.T) {
 				IsGoingFirst: true,
 			}
 
-			score, strategy := minimax.MiniMax(c, opp, turnState, 1, tt.depth, false)
+			state := match.GameState{
+				Character:  c,
+				Opponent:   opp,
+				TurnState:  turnState,
+				SkillsLeft: 1,
+				SkillLog:   make(match.SkillLog),
+				PlayerTurn: true,
+				AsOpp:      false,
+			}
+			score, strategy, _, err := minimax.MiniMax(context.Background(), state, tt.depth)
+			require.NoError(t, err, "error")
 			assert.Equal(t, tt.score, score, "score")
-			assert.Equal(t, tt.strategy, strategy)
+			assert.Equal(t, tt.strategy, strategy, "strategy")
 		})
 	}
 }
@@ -64,15 +87,15 @@ func ExampleMiniMax() {
 	c := game.NewCharacter(ruby.CharacterRuby)
 	opp := game.NewCharacter(milana.CharacterMilana)
 
-	opp.Skills()[0].Use(c, game.TurnState{
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(c, game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: true,
 	})
-	c.Skills()[0].Use(opp, game.TurnState{
+	c.Skills()[ruby.SkillDanceIndex].Use(opp, game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: false,
 	})
-	opp.Skills()[2].Use(c, game.TurnState{
+	opp.Skills()[milana.SkillMintMistIndex].Use(c, game.TurnState{
 		TurnNum:      2,
 		IsGoingFirst: true,
 	})
@@ -81,7 +104,22 @@ func ExampleMiniMax() {
 		TurnNum:      2,
 		IsGoingFirst: false,
 	}
-	minimax.MiniMax(c, opp, turnState, 1, 8, false)
+
+	state := match.GameState{
+		Character:  c,
+		Opponent:   opp,
+		TurnState:  turnState,
+		SkillsLeft: 1,
+		SkillLog: match.SkillLog{
+			game.NewTurnState(1).WithGoingFirst(true):  []int{milana.SkillRoyalMoveIndex},
+			game.NewTurnState(1).WithGoingFirst(false): []int{ruby.SkillDanceIndex},
+			game.NewTurnState(2).WithGoingFirst(true):  []int{milana.SkillMintMistIndex},
+		},
+		PlayerTurn: true,
+		AsOpp:      false,
+	}
+
+	minimax.MiniMax(context.Background(), state, 8)
 }
 
 func runMiniMax(b *testing.B, depth int) {
@@ -96,7 +134,18 @@ func runMiniMax(b *testing.B, depth int) {
 	for i := 0; i < b.N; i++ {
 		clonedC := c.Clone()
 		clonedOpp := opp.Clone()
-		minimax.MiniMax(clonedC, clonedOpp, turnState, 1, depth, false)
+
+		state := match.GameState{
+			Character:  clonedC,
+			Opponent:   clonedOpp,
+			TurnState:  turnState,
+			SkillsLeft: 1,
+			SkillLog:   make(match.SkillLog),
+			PlayerTurn: true,
+			AsOpp:      false,
+		}
+
+		minimax.MiniMax(context.Background(), state, depth)
 	}
 }
 

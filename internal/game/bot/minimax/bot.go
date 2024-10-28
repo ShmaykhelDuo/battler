@@ -30,14 +30,10 @@ func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 		return nil
 	}
 
-	clonedC := state.Character.Clone()
-	clonedOpp := state.Opponent.Clone()
-
-	skills := clonedC.SkillsPerTurn()
-	if state.AsOpp {
-		skills = clonedOpp.SkillsPerTurn()
+	_, strategy, _, err := MiniMax(ctx, state.Clone(), b.depth)
+	if err != nil {
+		return err
 	}
-	_, strategy := MiniMax(clonedC, clonedOpp, state.TurnState, skills, b.depth, state.AsOpp)
 	// if len(strategy) < skills {
 	// 	fmt.Printf("WTF?? %#v\n%#v\n%#v\n", *state.Character, *state.Opponent, state.Context)
 	// 	for i, s := range clonedC.Skills() {
@@ -46,7 +42,7 @@ func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 	// 	MiniMax(clonedC, clonedOpp, state.Context, skills, b.depth, state.AsOpp)
 	// }
 	// fmt.Printf("Opp Strategy: %v, skills: %d\n", strategy, skills)
-	b.cached = strategy[:skills]
+	b.cached = strategy[state.TurnState]
 	// log.Printf("Got Strat: %v\n", b.cached)
 	return nil
 }

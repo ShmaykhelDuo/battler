@@ -3,6 +3,7 @@ package match
 import (
 	"context"
 	"errors"
+	"maps"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 )
@@ -26,7 +27,7 @@ const (
 type Match struct {
 	p1, p2        CharacterPlayer
 	invertedOrder bool
-	skillLog      *SkillLog
+	skillLog      SkillLog
 }
 
 // New creates a new match.
@@ -39,7 +40,7 @@ func New(p1, p2 CharacterPlayer, invertedOrder bool) *Match {
 		p1:            p1,
 		p2:            p2,
 		invertedOrder: invertedOrder,
-		skillLog:      NewSkillLog(),
+		skillLog:      make(SkillLog),
 	}
 }
 
@@ -56,11 +57,11 @@ func (m *Match) Run(ctx context.Context) error {
 		}
 	}
 
-	err := m.sendState(ctx, m.p1, m.p2, turnState.WithTurnEnd(), false, false)
+	err := m.sendState(ctx, m.p1, m.p2, turnState.WithTurnEnd(), 0, false, false)
 	if err != nil {
 		return err
 	}
-	err = m.sendState(ctx, m.p2, m.p1, turnState.WithTurnEnd(), false, false)
+	err = m.sendState(ctx, m.p2, m.p1, turnState.WithTurnEnd(), 0, false, false)
 	if err != nil {
 		return err
 	}
@@ -118,12 +119,12 @@ func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool
 		observer = opp
 	}
 
-	for range c.Character.SkillsPerTurn() {
-		err = m.sendState(ctx, control, observer, turnState, true, asOpp)
+	for skillsLeft := c.Character.SkillsPerTurn(); skillsLeft > 0; skillsLeft-- {
+		err = m.sendState(ctx, control, observer, turnState, skillsLeft, true, asOpp)
 		if err != nil {
 			return true, err
 		}
-		err = m.sendState(ctx, observer, control, turnState, false, asOpp)
+		err = m.sendState(ctx, observer, control, turnState, skillsLeft, false, asOpp)
 		if err != nil {
 			return true, err
 		}
@@ -138,7 +139,7 @@ func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool
 
 			err = c.Character.Skills()[i].Use(opp.Character, turnState)
 			if err == nil {
-				m.skillLog.Add(c.Character, i)
+				m.skillLog[turnState] = append(m.skillLog[turnState], i)
 				break
 			}
 
@@ -159,12 +160,13 @@ func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool
 	return m.isEnd(), nil
 }
 
-func (m *Match) sendState(ctx context.Context, c, opp CharacterPlayer, turnState game.TurnState, playerTurn bool, asOpp bool) error {
+func (m *Match) sendState(ctx context.Context, c, opp CharacterPlayer, turnState game.TurnState, skillsLeft int, playerTurn bool, asOpp bool) error {
 	state := GameState{
 		Character:  c.Character,
 		Opponent:   opp.Character,
 		TurnState:  turnState,
-		SkillLog:   m.skillLog.Items(),
+		SkillsLeft: skillsLeft,
+		SkillLog:   maps.Clone(m.skillLog),
 		PlayerTurn: playerTurn,
 		AsOpp:      asOpp,
 	}

@@ -79,7 +79,7 @@ func (b *Bot) send(state match.GameState) error {
 		First:     state.TurnState.IsGoingFirst,
 	}
 	for _, it := range state.SkillLog {
-		s.PrevMoves = append(s.PrevMoves, it.SkillIndex)
+		s.PrevMoves = append(s.PrevMoves, it...)
 	}
 	sMsg := stateMsg{
 		State: s.ToSlice(),

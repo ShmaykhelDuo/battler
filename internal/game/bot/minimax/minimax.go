@@ -1,27 +1,48 @@
 package minimax
 
-import "github.com/ShmaykhelDuo/battler/internal/game"
+import (
+	"context"
+	"errors"
 
-func MiniMax(c, opp *game.Character, turnState game.TurnState, skillsLeft int, depth int, asOpp bool) (score int, strategy []int) {
+	"github.com/ShmaykhelDuo/battler/internal/game"
+	"github.com/ShmaykhelDuo/battler/internal/game/match"
+)
+
+var ErrNoAvailableMoves = errors.New("no available moves")
+
+type MiniMaxEntry struct {
+	state  match.GameState
+	result match.SkillLog
+}
+
+func MiniMax(ctx context.Context, state match.GameState, depth int) (score int, strategy match.SkillLog, entries []MiniMaxEntry, err error) {
 	// c - кому делаем хорошо
 	// opp - кому делаем плохо
 	// asOpp - если сейчас ход противника
 
+	c := state.Character
+	opp := state.Opponent
+	turnState := state.TurnState
+	skillsLeft := state.SkillsLeft
+	asOpp := state.AsOpp
+
 	if skillsLeft == 0 {
-		endCtx := turnState
-		endCtx.IsTurnEnd = true
+		endCtx := turnState.WithTurnEnd()
 		c.OnTurnEnd(opp, endCtx)
 		opp.OnTurnEnd(c, endCtx)
 
-		nextCtx := turnState.AddTurns(0, true)
+		state.TurnState = turnState.Next()
+		state.SkillsLeft = opp.SkillsPerTurn()
+		state.AsOpp = !asOpp
 		if asOpp {
 			depth -= 1
 		}
-		return MiniMax(c, opp, nextCtx, opp.SkillsPerTurn(), depth, !asOpp)
+		return MiniMax(ctx, state, depth)
 	}
 
 	if depth == 0 || hasGameEnded(c, opp, turnState) {
 		score = c.HP() - opp.HP()
+		strategy = make(match.SkillLog)
 		return
 	}
 
@@ -61,29 +82,58 @@ func MiniMax(c, opp *game.Character, turnState game.TurnState, skillsLeft int, d
 		}
 	}
 
-	clonedC := makeClones(c, len(moves))
-	clonedOpp := makeClones(opp, len(moves))
-
-	var clonedPlayC, clonedPlayOpp []*game.Character
-	if asOpp {
-		clonedPlayC = clonedOpp
-		clonedPlayOpp = clonedC
-	} else {
-		clonedPlayC = clonedC
-		clonedPlayOpp = clonedOpp
+	if len(moves) == 0 {
+		err = ErrNoAvailableMoves
+		return
 	}
 
-	for i, skillNum := range moves {
-		clonedS := clonedPlayC[i].Skills()[skillNum]
-		clonedS.Use(clonedPlayOpp[i], turnState)
+	for _, skillNum := range moves {
+		newState := state.Clone()
 
-		skillScore, skillStrategy := MiniMax(clonedC[i], clonedOpp[i], turnState, skillsLeft-1, depth, asOpp)
+		var clonedPlayC, clonedPlayOpp *game.Character
+		if asOpp {
+			clonedPlayC = newState.Opponent
+			clonedPlayOpp = newState.Character
+		} else {
+			clonedPlayC = newState.Character
+			clonedPlayOpp = newState.Opponent
+		}
+
+		clonedS := clonedPlayC.Skills()[skillNum]
+		clonedS.Use(clonedPlayOpp, turnState)
+
+		newState.SkillLog[turnState] = append(newState.SkillLog[turnState], skillNum)
+		newState.SkillsLeft--
+
+		var skillScore int
+		var skillStrategy match.SkillLog
+		var skillEntries []MiniMaxEntry
+		skillScore, skillStrategy, skillEntries, err = MiniMax(ctx, newState, depth)
+		if err != nil {
+			return
+		}
 
 		if (worst && skillScore < score) || (!worst && skillScore > score) {
 			score = skillScore
-			strategy = append([]int{skillNum}, skillStrategy...)
+
+			skillStrategy[turnState] = append([]int{skillNum}, skillStrategy[turnState]...)
+			strategy = skillStrategy
+
+			if !worst {
+				entries = skillEntries
+			}
+		}
+
+		if worst {
+			entries = append(entries, skillEntries...)
 		}
 	}
+
+	newEntry := MiniMaxEntry{
+		state:  state,
+		result: strategy,
+	}
+	entries = append(entries, newEntry)
 
 	return
 }
