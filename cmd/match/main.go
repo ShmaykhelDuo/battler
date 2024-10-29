@@ -22,7 +22,7 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// bot1 := moveml.NewBot(model)
-	bot1 := minimax.NewBot(4)
+	bot1 := minimax.NewBot(minimax.TimeOptConcurrentRunner, 8)
 	// bot2 := minimax.NewBot(4)
 	bot2 := &bot.RandomBot{}
 

@@ -31,6 +31,10 @@ type GameState struct {
 	AsOpp      bool
 }
 
+func (s GameState) IsEnd() bool {
+	return s.TurnState.TurnNum > game.MaxTurnNumber || s.Character.HP() <= 0 || s.Opponent.HP() <= 0
+}
+
 // Clone returns a clone of the state.
 func (s GameState) Clone() GameState {
 	return GameState{

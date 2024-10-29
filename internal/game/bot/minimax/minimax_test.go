@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/bot/minimax"
@@ -75,7 +76,8 @@ func TestMiniMax(t *testing.T) {
 				PlayerTurn: true,
 				AsOpp:      false,
 			}
-			res, err := minimax.MiniMax(context.Background(), state, tt.depth)
+			r := minimax.Runner{}
+			res, err := r.MiniMax(context.Background(), state, tt.depth)
 			require.NoError(t, err, "error")
 			assert.Equal(t, tt.score, res.Score, "score")
 			assert.Equal(t, tt.strategy, res.Strategy, "strategy")
@@ -83,7 +85,7 @@ func TestMiniMax(t *testing.T) {
 	}
 }
 
-func ExampleMiniMax() {
+func ExampleRunner_MiniMax() {
 	c := game.NewCharacter(ruby.CharacterRuby)
 	opp := game.NewCharacter(milana.CharacterMilana)
 
@@ -119,10 +121,11 @@ func ExampleMiniMax() {
 		AsOpp:      false,
 	}
 
-	minimax.MiniMax(context.Background(), state, 8)
+	r := minimax.Runner{}
+	r.MiniMax(context.Background(), state, 8)
 }
 
-func runMiniMax(b *testing.B, depth int) {
+func runMiniMax(b *testing.B, depth int, r minimax.Runner) {
 	c := game.NewCharacter(storyteller.CharacterStoryteller)
 	opp := game.NewCharacter(ruby.CharacterRuby)
 
@@ -145,14 +148,25 @@ func runMiniMax(b *testing.B, depth int) {
 			AsOpp:      false,
 		}
 
-		minimax.MiniMax(context.Background(), state, depth)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+		defer cancel()
+
+		r.MiniMax(ctx, state, depth)
 	}
 }
 
-func BenchmarkMiniMax1(b *testing.B) {
-	for i := range 5 {
-		b.Run(fmt.Sprintf("%d", i+1), func(b *testing.B) {
-			runMiniMax(b, i+1)
-		})
+func BenchmarkMiniMax(b *testing.B) {
+	runners := map[string]minimax.Runner{
+		"seq":     minimax.SequentialRunner,
+		"memopt":  minimax.MemOptConcurrentRunner,
+		"timeopt": minimax.TimeOptConcurrentRunner,
+	}
+
+	for i := range 8 {
+		for name, r := range runners {
+			b.Run(fmt.Sprintf("depth=%d,type=%s", i+1, name), func(b *testing.B) {
+				runMiniMax(b, i+1, r)
+			})
+		}
 	}
 }

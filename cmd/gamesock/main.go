@@ -51,7 +51,8 @@ func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	learner := NewDQLLearnerBot(conn)
-	bot := minimax.NewBot(4)
+
+	bot := minimax.NewBot(minimax.TimeOptConcurrentRunner, 4)
 	// bot := &bot.RandomBot{}
 
 	// c1, c2 := getRandomPair()

@@ -29,7 +29,7 @@ type miniMaxPlayerGenerator struct {
 }
 
 func (g miniMaxPlayerGenerator) Player(desc game.CharacterDescription) match.Player {
-	return minimax.NewBot(g.depth)
+	return minimax.NewBot(minimax.MemOptConcurrentRunner, g.depth)
 }
 
 type moveMLPlayerGenerator struct {

@@ -8,13 +8,17 @@ import (
 )
 
 type Bot struct {
+	runner    Runner
 	depth     int
 	cached    []int
 	lastState match.GameState
 }
 
-func NewBot(depth int) *Bot {
-	return &Bot{depth: depth}
+func NewBot(runner Runner, depth int) *Bot {
+	return &Bot{
+		runner: runner,
+		depth:  depth,
+	}
 }
 
 func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
@@ -30,7 +34,7 @@ func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 		return nil
 	}
 
-	res, err := MiniMax(ctx, state.Clone(), b.depth)
+	res, err := b.runner.MiniMax(ctx, state.Clone(), b.depth)
 	if err != nil {
 		return err
 	}
