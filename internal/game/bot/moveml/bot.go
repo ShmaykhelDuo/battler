@@ -32,7 +32,7 @@ func (b *Bot) SendState(ctx context.Context, state match.GameState) error {
 	return nil
 }
 
-func (b *Bot) SendError(ctx context.Context) error {
+func (b *Bot) SendError(ctx context.Context, err error) error {
 	if len(b.actions) == 0 {
 		return errors.New("no actions left")
 	}

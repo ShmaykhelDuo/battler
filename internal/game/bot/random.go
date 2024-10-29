@@ -24,7 +24,7 @@ func (b *RandomBot) SendState(ctx context.Context, state match.GameState) error 
 	return nil
 }
 
-func (b *RandomBot) SendError(ctx context.Context) error {
+func (b *RandomBot) SendError(ctx context.Context, err error) error {
 	return nil
 }
 

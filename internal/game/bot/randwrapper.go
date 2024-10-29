@@ -45,11 +45,11 @@ func (b *RandomWrapperBot) SendState(ctx context.Context, state match.GameState)
 	return nil
 }
 
-func (b *RandomWrapperBot) SendError(ctx context.Context) error {
+func (b *RandomWrapperBot) SendError(ctx context.Context, err error) error {
 	if b.isRand {
 		return nil
 	}
-	return b.bot.SendError(ctx)
+	return b.bot.SendError(ctx, err)
 }
 
 func (b *RandomWrapperBot) SendEnd(ctx context.Context) error {

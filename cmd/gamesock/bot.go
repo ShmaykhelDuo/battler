@@ -44,7 +44,7 @@ func (b *DQLLearnerBot) SendState(ctx context.Context, state match.GameState) er
 	return b.send(state, false, false)
 }
 
-func (b *DQLLearnerBot) SendError(ctx context.Context) error {
+func (b *DQLLearnerBot) SendError(ctx context.Context, err error) error {
 	return b.send(b.state, false, true)
 }
 

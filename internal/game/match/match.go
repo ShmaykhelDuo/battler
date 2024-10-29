@@ -143,7 +143,7 @@ func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool
 				break
 			}
 
-			err = control.Player.SendError(ctx)
+			err = control.Player.SendError(ctx, err)
 			if err != nil {
 				return true, err
 			}

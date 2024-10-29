@@ -3,6 +3,7 @@ package match_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
@@ -24,8 +25,8 @@ func (p *FakePlayer) SendState(ctx context.Context, state match.GameState) error
 	return nil
 }
 
-func (p *FakePlayer) SendError(ctx context.Context) error {
-	return errors.New("got error in fake")
+func (p *FakePlayer) SendError(ctx context.Context, err error) error {
+	return fmt.Errorf("got error in fake: %w", err)
 }
 
 func (p *FakePlayer) SendEnd(ctx context.Context) error {
