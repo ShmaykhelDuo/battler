@@ -2,6 +2,13 @@ package ruby
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
+const (
+	SkillDanceIndex int = iota
+	SkillRageIndex
+	SkillStopIndex
+	SkillExecuteIndex
+)
+
 // Double all of your damage.
 // Lasts 2 turns.
 var SkillDance = game.SkillData{

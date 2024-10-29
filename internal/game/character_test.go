@@ -770,6 +770,18 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 	})
 }
 
+func TestCharacter_Clone(t *testing.T) {
+	t.Parallel()
+
+	data := game.CharacterData{}
+	c := game.NewCharacter(data)
+
+	clone := c.Clone()
+
+	assert.Equal(t, c, clone, "clone is equal")
+	assert.NotSame(t, c, clone, "different pointers")
+}
+
 var desc1 = game.EffectDescription{
 	Name: "1",
 }

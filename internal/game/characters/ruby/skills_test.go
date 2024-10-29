@@ -17,7 +17,7 @@ func TestSkillDance_Use(t *testing.T) {
 	data := game.CharacterData{}
 	opp := game.NewCharacter(data)
 
-	s := c.Skills()[0]
+	s := c.Skills()[ruby.SkillDanceIndex]
 
 	turnState := game.TurnState{}
 	err := s.Use(opp, turnState)
@@ -73,7 +73,7 @@ func TestSkillRage_Use(t *testing.T) {
 			c := game.NewCharacter(ruby.CharacterRuby)
 			opp := game.NewCharacter(tt.oppData)
 
-			s := c.Skills()[1]
+			s := c.Skills()[ruby.SkillRageIndex]
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
 
@@ -106,7 +106,7 @@ func TestSkillStop_Use(t *testing.T) {
 	data := game.CharacterData{}
 	opp := game.NewCharacter(data)
 
-	s := c.Skills()[2]
+	s := c.Skills()[ruby.SkillStopIndex]
 
 	turnState := game.TurnState{}
 	err := s.Use(opp, turnState)
@@ -180,7 +180,7 @@ func TestSkillExecute_Use(t *testing.T) {
 				c.AddEffect(eff)
 			}
 
-			s := c.Skills()[3]
+			s := c.Skills()[ruby.SkillExecuteIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)

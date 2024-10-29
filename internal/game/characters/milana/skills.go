@@ -2,6 +2,13 @@ package milana
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
+const (
+	SkillRoyalMoveIndex int = iota
+	SkillComposureIndex
+	SkillMintMistIndex
+	SkillPrideIndex
+)
+
 // Deal 12 Green damage and add that to Stolen HP.
 // With Mint Mist, deal 20 Green damage instead.
 var SkillRoyalMove = game.SkillData{

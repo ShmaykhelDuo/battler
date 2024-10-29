@@ -3,6 +3,7 @@ package moveml
 import (
 	"fmt"
 
+	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 )
 
@@ -17,19 +18,21 @@ func NewState(state match.GameState) State {
 		First: state.TurnState.IsGoingFirst,
 	}
 
-	ourAdd := 0
-	oppAdd := 1
-	if !s.First {
-		oppAdd = 0
-		ourAdd = 1
-	}
 	for i := range 10 {
-		if i*2+ourAdd < len(state.SkillLog) {
-			s.Skills = append(s.Skills, state.SkillLog[i*2+ourAdd].SkillIndex)
+		turn := game.TurnState{
+			TurnNum:      i,
+			IsGoingFirst: s.First,
+		}
+		if skills, ok := state.SkillLog[turn]; ok {
+			s.Skills = append(s.Skills, skills[0])
 		}
 
-		if i*2+oppAdd < len(state.SkillLog) {
-			s.OppSkills = append(s.OppSkills, state.SkillLog[i*2+oppAdd].SkillIndex)
+		turn = game.TurnState{
+			TurnNum:      i,
+			IsGoingFirst: !s.First,
+		}
+		if skills, ok := state.SkillLog[turn]; ok {
+			s.OppSkills = append(s.OppSkills, skills[0])
 		}
 	}
 	return s

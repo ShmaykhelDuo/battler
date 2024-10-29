@@ -4,6 +4,13 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/game"
 )
 
+const (
+	SkillRunIndex int = iota
+	SkillWeakenIndex
+	SkillSpeedIndex
+	SkillStabIndex
+)
+
 // Your opponent's next attack will deal 5 less damage. Gain a Green Token.
 var SkillRun = game.SkillData{
 	Desc: game.SkillDescription{

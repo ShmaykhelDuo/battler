@@ -2,6 +2,13 @@ package structure
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
+const (
+	SkillEShockIndex int = iota
+	SkillIBoostIndex
+	SkillSLayersIndex
+	SkillLastChanceIndex
+)
+
 // Deal Cyan damage. Base damage is 5, gets to 10, 15 and 20 when boosted by I Boost.
 var SkillEShock = game.SkillData{
 	Desc: game.SkillDescription{

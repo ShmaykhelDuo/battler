@@ -15,6 +15,6 @@ func BenchmarkCloneCharacter(b *testing.B) {
 	c.AddEffect(euphoria.NewEffectEuphoricSource(13))
 
 	for i := 0; i < b.N; i++ {
-		game.CloneCharacter(c)
+		c.Clone()
 	}
 }

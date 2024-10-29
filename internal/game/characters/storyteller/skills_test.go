@@ -53,7 +53,7 @@ func TestSkillYourNumber_Use(t *testing.T) {
 			c := game.NewCharacter(storyteller.CharacterStoryteller)
 			opp := game.NewCharacter(tt.oppData)
 
-			s := c.Skills()[0]
+			s := c.Skills()[storyteller.SkillYourNumberIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -110,7 +110,7 @@ func TestSkillYourColour_IsAvailable(t *testing.T) {
 				oppS.Use(c, tt.oppturnState)
 			}
 
-			s := c.Skills()[1]
+			s := c.Skills()[storyteller.SkillYourColourIndex]
 
 			isAvailable := s.IsAvailable(opp, tt.turnState)
 			assert.Equal(t, tt.isAvailable, isAvailable)
@@ -184,7 +184,7 @@ func TestSkillYourColour_Use(t *testing.T) {
 			oppPrevSkill := game.NewSkill(opp, oppPrevSkillData)
 			oppPrevSkill.Use(c, tt.oppPrevturnState)
 
-			s := c.Skills()[1]
+			s := c.Skills()[storyteller.SkillYourColourIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -287,7 +287,7 @@ func TestSkillYourDream_Use(t *testing.T) {
 			c.SetMaxHP(tt.maxHP)
 			opp.Damage(c, tt.dmg, tt.colour)
 
-			s := c.Skills()[2]
+			s := c.Skills()[storyteller.SkillYourDreamIndex]
 
 			err := s.Use(opp, tt.turnState)
 			require.NoError(t, err)
@@ -305,7 +305,7 @@ func TestSkillMyStory_Use(t *testing.T) {
 	data := game.CharacterData{}
 	opp := game.NewCharacter(data)
 
-	s := c.Skills()[3]
+	s := c.Skills()[storyteller.SkillMyStoryIndex]
 
 	turnState := game.TurnState{
 		TurnNum: 8,
