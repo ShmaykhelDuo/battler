@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ShmaykhelDuo/battler/internal/bot"
+	"github.com/ShmaykhelDuo/battler/internal/bot/minimax"
+	"github.com/ShmaykhelDuo/battler/internal/bot/moveml"
 	"github.com/ShmaykhelDuo/battler/internal/game"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot/minimax"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot/moveml"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/ruby"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"

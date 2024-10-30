@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
-	"encoding/csv"
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
-	"strconv"
 
+	"github.com/ShmaykhelDuo/battler/internal/bot/minimax"
+	"github.com/ShmaykhelDuo/battler/internal/bot/ml"
+	"github.com/ShmaykhelDuo/battler/internal/bot/ml/formats"
 	"github.com/ShmaykhelDuo/battler/internal/game"
+	"github.com/ShmaykhelDuo/battler/internal/game/match"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -26,17 +27,20 @@ func main() {
 }
 
 func run() error {
-	outputFile := flag.String("o", "", "output file name")
+	fullOutputFile := flag.String("outfull", "", "full state output file name")
+	movesOutputFile := flag.String("outmoves", "", "moves output file name")
 	charNumber := flag.Int("c", 0, "character number")
 	oppNumber := flag.Int("opp", 0, "opponent number")
-	bufSize := flag.Int("buf", 100, "channel buffer size")
 	depth := flag.Int("d", 10, "depth")
 	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "write memory profile to `file`")
 	flag.Parse()
 
-	if *outputFile == "" {
-		return errors.New("output file name required")
+	if *fullOutputFile == "" {
+		return errors.New("full output file name required")
+	}
+	if *movesOutputFile == "" {
+		return errors.New("moves output file name required")
 	}
 	if *charNumber == 0 || *oppNumber == 0 {
 		return errors.New("character and opponent numbers required")
@@ -51,9 +55,6 @@ func run() error {
 		return errors.New("invalid opponent number")
 	}
 
-	if *bufSize < 0 {
-		return errors.New("invalid buffer size")
-	}
 	if *depth <= 0 {
 		return errors.New("invalid depth")
 	}
@@ -73,58 +74,43 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
 
-	f, err := os.Create(*outputFile)
-	if err != nil {
-		return fmt.Errorf("create: %w", err)
-	}
-	defer f.Close()
-
-	data := make(chan []int, *bufSize)
-	out := make(chan Out, *bufSize)
+	var res1, res2 []minimax.Entry
 
 	eg, egCtx := errgroup.WithContext(ctx)
 
-	d1 := make(chan []bool)
-	d2 := make(chan []bool)
-
 	eg.Go(func() error {
-		err := writeData(egCtx, f, data)
-		if err != nil {
-			return fmt.Errorf("write: %w", err)
-		}
-		return nil
-	})
-	eg.Go(func() error {
-		err := convertOut(egCtx, out, data)
-		if err != nil {
-			return fmt.Errorf("convert: %w", err)
-		}
-		return nil
-	})
-	eg.Go(func() error {
-		err := runMiniMax(egCtx, data1, data2, *depth, true, out)
-		close(d1)
+		var err error
+		res1, err = runMiniMax(egCtx, data1, data2, *depth, true)
 		if err != nil {
 			return fmt.Errorf("minimax first: %w", err)
 		}
 		return nil
 	})
 	eg.Go(func() error {
-		err := runMiniMax(egCtx, data1, data2, *depth, false, out)
-		close(d2)
+		var err error
+		res2, err = runMiniMax(egCtx, data1, data2, *depth, false)
 		if err != nil {
 			return fmt.Errorf("minimax second: %w", err)
 		}
 		return nil
 	})
-	eg.Go(func() error {
-		<-d1
-		<-d2
-		close(out)
-		return nil
-	})
 
-	err = eg.Wait()
+	err := eg.Wait()
+	if err != nil {
+		return err
+	}
+
+	res := append(res1, res2...)
+
+	err = output(*fullOutputFile, res, formats.FullStateFormat{})
+	if err != nil {
+		return err
+	}
+
+	err = output(*movesOutputFile, res, formats.PrevMovesFormat{})
+	if err != nil {
+		return err
+	}
 
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
@@ -133,7 +119,7 @@ func run() error {
 		}
 		defer f.Close() // error handling omitted for example
 		runtime.GC()    // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(f); err != nil {
+		if err := pprof.Lookup("allocs").WriteTo(f, 0); err != nil {
 			return fmt.Errorf("could not write memory profile: %w", err)
 		}
 	}
@@ -141,62 +127,7 @@ func run() error {
 	return err
 }
 
-func writeData(ctx context.Context, out io.Writer, data <-chan []int) error {
-	w := csv.NewWriter(out)
-	defer func() {
-		w.Flush()
-		err := w.Error()
-		if err != nil {
-			log.Printf("flush: %v\n", err)
-		}
-	}()
-
-	err := w.Write(headerRow())
-	if err != nil {
-		return fmt.Errorf("write: %w", err)
-	}
-
-	for {
-		select {
-		case row, ok := <-data:
-			if !ok {
-				return nil
-			}
-
-			err := w.Write(toStringRow(row))
-			if err != nil {
-				return fmt.Errorf("write: %w", err)
-			}
-
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-	}
-}
-
-func headerRow() []string {
-	fields := []string{
-		"first",
-	}
-	for i := range 10 {
-		fields = append(fields, fmt.Sprintf("skill%d", i+1))
-	}
-	for i := range 10 {
-		fields = append(fields, fmt.Sprintf("oppskill%d", i+1))
-	}
-	fields = append(fields, "res")
-	return fields
-}
-
-func toStringRow(row []int) []string {
-	res := make([]string, len(row))
-	for i, v := range row {
-		res[i] = strconv.Itoa(v)
-	}
-	return res
-}
-
-func runMiniMax(ctx context.Context, data1, data2 game.CharacterData, depth int, goingFirst bool, out chan<- Out) error {
+func runMiniMax(ctx context.Context, data1, data2 game.CharacterData, depth int, goingFirst bool) ([]minimax.Entry, error) {
 	c1 := game.NewCharacter(data1)
 	c2 := game.NewCharacter(data2)
 	turnState := game.TurnState{
@@ -204,59 +135,35 @@ func runMiniMax(ctx context.Context, data1, data2 game.CharacterData, depth int,
 		IsGoingFirst: true,
 	}
 
-	_, _, res, err := MiniMax(ctx, c1, c2, turnState, 1, depth, !goingFirst, nil)
-
-	for _, o := range res {
-		out <- o
+	state := match.GameState{
+		Character:  c1,
+		Opponent:   c2,
+		TurnState:  turnState,
+		SkillsLeft: 1,
+		SkillLog:   make(match.SkillLog),
+		PlayerTurn: true,
+		AsOpp:      !goingFirst,
 	}
-	return err
+
+	res, err := minimax.MemOptConcurrentRunner.MiniMax(ctx, state, depth)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Entries, nil
 }
 
-func convertOut(ctx context.Context, in <-chan Out, out chan<- []int) error {
-	defer close(out)
-
-	for {
-		select {
-		case rec, ok := <-in:
-			if !ok {
-				return nil
-			}
-			select {
-			case out <- outToSlice(rec):
-			case <-ctx.Done():
-				return ctx.Err()
-			}
-
-		case <-ctx.Done():
-			return ctx.Err()
-		}
+func output(filename string, res []minimax.Entry, format ml.Format) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("create: %w", err)
 	}
-}
+	defer f.Close()
 
-func outToSlice(rec Out) []int {
-	intRec := make([]int, 22)
-	if rec.First {
-		intRec[0] = 1
+	err = ml.ExportDataset(f, res, format)
+	if err != nil {
+		return fmt.Errorf("export: %w", err)
 	}
-	ourAdd := 0
-	oppAdd := 1
-	if !rec.First {
-		oppAdd = 0
-		ourAdd = 1
-	}
-	for i := range 10 {
-		if i*2+ourAdd < len(rec.PrevMoves) {
-			intRec[1+i] = rec.PrevMoves[i*2+ourAdd]
-		} else {
-			intRec[1+i] = -1
-		}
 
-		if i*2+oppAdd < len(rec.PrevMoves) {
-			intRec[11+i] = rec.PrevMoves[i*2+oppAdd]
-		} else {
-			intRec[11+i] = -1
-		}
-	}
-	intRec[21] = rec.Strategy[0]
-	return intRec
+	return nil
 }
