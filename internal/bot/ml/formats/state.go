@@ -154,6 +154,7 @@ func GetMapState(in match.GameState) map[string]ml.Tensorable {
 
 	res["turnnum"] = ml.TensorableValue[int64]{Item: int64(in.TurnState.TurnNum)}
 	res["goingfirst"] = ml.TensorableValue[bool]{Item: in.TurnState.IsGoingFirst}
+	res["asopp"] = ml.TensorableValue[bool]{Item: in.AsOpp}
 
 	return res
 }

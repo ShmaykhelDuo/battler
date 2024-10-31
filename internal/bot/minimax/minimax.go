@@ -230,11 +230,13 @@ func (r Runner) accumulate(state match.GameState, skills []int, results []Result
 
 	res.Strategy[state.TurnState] = append([]int{selected}, res.Strategy[state.TurnState]...)
 
-	newEntry := Entry{
-		State:  state,
-		Result: res.Strategy,
+	if !worst {
+		newEntry := Entry{
+			State:  state,
+			Result: res.Strategy,
+		}
+		res.Entries = append(res.Entries, newEntry)
 	}
-	res.Entries = append(res.Entries, newEntry)
 
 	return res
 }

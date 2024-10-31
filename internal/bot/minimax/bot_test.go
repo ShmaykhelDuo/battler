@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/ShmaykhelDuo/battler/internal/bot/minimax"
 	"github.com/ShmaykhelDuo/battler/internal/game"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot/minimax"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/speed"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/storyteller"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"

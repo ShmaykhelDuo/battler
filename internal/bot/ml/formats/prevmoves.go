@@ -12,10 +12,11 @@ type PrevMovesFormat struct {
 }
 
 func (f PrevMovesFormat) Row(state match.GameState) map[string]ml.Tensorable {
-	isGoingFirst := state.TurnState.IsGoingFirst != state.AsOpp
+	isGoingFirst := state.TurnState.IsGoingFirst
 
 	res := map[string]ml.Tensorable{
-		"first": ml.TensorableValue[bool]{Item: isGoingFirst},
+		"first": ml.TensorableValue[bool]{Item: state.TurnState.IsGoingFirst},
+		"asopp": ml.TensorableValue[bool]{Item: state.AsOpp},
 	}
 
 	for turnNum := game.MinTurnNumber; turnNum <= game.MaxTurnNumber; turnNum++ {
