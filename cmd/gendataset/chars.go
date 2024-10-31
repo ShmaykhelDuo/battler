@@ -11,7 +11,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/z89"
 )
 
-var chars = map[int]game.CharacterData{
+var chars = map[int]*game.CharacterData{
 	1:   storyteller.CharacterStoryteller,
 	8:   z89.CharacterZ89,
 	9:   euphoria.CharacterEuphoria,

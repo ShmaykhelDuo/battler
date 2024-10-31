@@ -2,7 +2,7 @@ package z89
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
-var CharacterZ89 = game.CharacterData{
+var CharacterZ89 = &game.CharacterData{
 	Desc: game.CharacterDescription{
 		Name:   "Z89",
 		Number: 8,
@@ -22,7 +22,7 @@ var CharacterZ89 = game.CharacterData{
 		game.ColourBlack:  2,
 		game.ColourWhite:  -1,
 	},
-	SkillData: [4]game.SkillData{
+	SkillData: [4]*game.SkillData{
 		SkillScarcity,
 		SkillIndifference,
 		SkillGreenSphere,

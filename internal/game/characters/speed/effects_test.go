@@ -240,12 +240,12 @@ func TestEffectSpedUp_IsSkillAvailable(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		skill       game.SkillData
+		skill       *game.SkillData
 		isAvailable bool
 	}{
 		{
 			name: "Ultimate",
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: true,
 				},
@@ -254,7 +254,7 @@ func TestEffectSpedUp_IsSkillAvailable(t *testing.T) {
 		},
 		{
 			name: "NotUltimate",
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: false,
 				},
@@ -269,9 +269,7 @@ func TestEffectSpedUp_IsSkillAvailable(t *testing.T) {
 
 			eff := speed.EffectSpedUp{}
 
-			data := game.CharacterData{}
-			c := game.NewCharacter(data)
-			s := game.NewSkill(c, tt.skill)
+			s := game.NewSkill(tt.skill)
 
 			isAvailable := eff.IsSkillAvailable(s)
 			assert.Equal(t, tt.isAvailable, isAvailable)

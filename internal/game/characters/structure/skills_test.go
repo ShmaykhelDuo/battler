@@ -14,13 +14,13 @@ func TestSkillEShock_Use(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		oppData game.CharacterData
+		oppData *game.CharacterData
 		effs    []game.Effect
 		hp      int
 	}{
 		{
 			name: "NotBoosted",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourCyan: -1,
@@ -30,7 +30,7 @@ func TestSkillEShock_Use(t *testing.T) {
 		},
 		{
 			name: "BoostedOnce",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourCyan: -1,
@@ -43,7 +43,7 @@ func TestSkillEShock_Use(t *testing.T) {
 		},
 		{
 			name: "BoostedThrice",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourCyan: -1,
@@ -68,7 +68,7 @@ func TestSkillEShock_Use(t *testing.T) {
 			}
 
 			s := c.Skills()[structure.SkillEShockIndex]
-			err := s.Use(opp, game.TurnState{})
+			err := s.Use(c, opp, game.TurnState{})
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())
@@ -109,14 +109,14 @@ func TestSkillIBoost_IsAvailable(t *testing.T) {
 			t.Parallel()
 
 			c := game.NewCharacter(structure.CharacterStructure)
-			opp := game.NewCharacter(game.CharacterData{})
+			opp := game.NewCharacter(&game.CharacterData{})
 
 			for _, e := range tt.effs {
 				c.AddEffect(e)
 			}
 
 			s := c.Skills()[structure.SkillIBoostIndex]
-			isAvailable := s.IsAvailable(opp, game.TurnState{})
+			isAvailable := s.IsAvailable(c, opp, game.TurnState{})
 			assert.Equal(t, tt.isAvailable, isAvailable)
 		})
 	}
@@ -155,14 +155,14 @@ func TestSkillIBoost_Use(t *testing.T) {
 			t.Parallel()
 
 			c := game.NewCharacter(structure.CharacterStructure)
-			opp := game.NewCharacter(game.CharacterData{})
+			opp := game.NewCharacter(&game.CharacterData{})
 
 			for _, e := range tt.effs {
 				c.AddEffect(e)
 			}
 
 			s := c.Skills()[structure.SkillIBoostIndex]
-			err := s.Use(opp, game.TurnState{})
+			err := s.Use(c, opp, game.TurnState{})
 			require.NoError(t, err)
 
 			boost, ok := game.CharacterEffect[*structure.EffectIBoost](c, structure.EffectDescIBoost)
@@ -213,14 +213,14 @@ func TestSkillSLayers_Use(t *testing.T) {
 			t.Parallel()
 
 			c := game.NewCharacter(structure.CharacterStructure)
-			opp := game.NewCharacter(game.CharacterData{})
+			opp := game.NewCharacter(&game.CharacterData{})
 
 			for _, e := range tt.effs {
 				c.AddEffect(e)
 			}
 
 			s := c.Skills()[structure.SkillSLayersIndex]
-			err := s.Use(opp, game.TurnState{})
+			err := s.Use(c, opp, game.TurnState{})
 			require.NoError(t, err)
 
 			layers, ok := game.CharacterEffect[structure.EffectSLayers](c, structure.EffectDescSLayers)
@@ -236,12 +236,12 @@ func TestSkillLastChance_Use(t *testing.T) {
 	t.Parallel()
 
 	c := game.NewCharacter(structure.CharacterStructure)
-	opp := game.NewCharacter(game.CharacterData{})
+	opp := game.NewCharacter(&game.CharacterData{})
 
 	turnState := game.TurnState{TurnNum: 7}
 
 	s := c.Skills()[structure.SkillLastChanceIndex]
-	err := s.Use(opp, turnState)
+	err := s.Use(c, opp, turnState)
 	require.NoError(t, err)
 
 	eff, ok := game.CharacterEffect[structure.EffectLastChance](c, structure.EffectDescLastChance)

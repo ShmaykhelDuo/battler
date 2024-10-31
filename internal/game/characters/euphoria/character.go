@@ -2,7 +2,7 @@ package euphoria
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
-var CharacterEuphoria = game.CharacterData{
+var CharacterEuphoria = &game.CharacterData{
 	Desc: game.CharacterDescription{
 		Name:   "Euphoria",
 		Number: 9,
@@ -22,7 +22,7 @@ var CharacterEuphoria = game.CharacterData{
 		game.ColourBlack:  0,
 		game.ColourWhite:  0,
 	},
-	SkillData: [4]game.SkillData{
+	SkillData: [4]*game.SkillData{
 		SkillAmpleness,
 		SkillExuberance,
 		SkillPinkSphere,

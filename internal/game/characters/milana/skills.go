@@ -11,7 +11,7 @@ const (
 
 // Deal 12 Green damage and add that to Stolen HP.
 // With Mint Mist, deal 20 Green damage instead.
-var SkillRoyalMove = game.SkillData{
+var SkillRoyalMove = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Royal Move",
 		IsUltimate: false,
@@ -37,7 +37,7 @@ var SkillRoyalMove = game.SkillData{
 
 // Spend some Stolen HP to heal yourself for up to 20.
 // With Mint Mist, heal up to 30.
-var SkillComposure = game.SkillData{
+var SkillComposure = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Composure",
 		IsUltimate: false,
@@ -78,7 +78,7 @@ var SkillComposure = game.SkillData{
 // Your Royal Move and Composure become stronger.
 // Lasts 2 turns.
 // Cooldown: 2.
-var SkillMintMist = game.SkillData{
+var SkillMintMist = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Mint Mist",
 		IsUltimate: false,
@@ -92,7 +92,7 @@ var SkillMintMist = game.SkillData{
 
 // Spend all of your Stolen HP to deal as much Cyan damage.
 // Unlocks on turn 8.
-var SkillPride = game.SkillData{
+var SkillPride = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Pride",
 		IsUltimate: true,

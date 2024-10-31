@@ -57,13 +57,13 @@ func TestEffectUltimateSlow_ModifySkillUnlockTurn(t *testing.T) {
 	tests := []struct {
 		name          string
 		increaseCount int
-		skill         game.SkillData
+		skill         *game.SkillData
 		unlockTurn    int
 	}{
 		{
 			name:          "UltimateInitial",
 			increaseCount: 0,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: true,
 				},
@@ -74,7 +74,7 @@ func TestEffectUltimateSlow_ModifySkillUnlockTurn(t *testing.T) {
 		{
 			name:          "UltimateTwice",
 			increaseCount: 2,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: true,
 				},
@@ -85,7 +85,7 @@ func TestEffectUltimateSlow_ModifySkillUnlockTurn(t *testing.T) {
 		{
 			name:          "NotUltimateInitial",
 			increaseCount: 0,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: false,
 				},
@@ -96,7 +96,7 @@ func TestEffectUltimateSlow_ModifySkillUnlockTurn(t *testing.T) {
 		{
 			name:          "NotUltimateTwice",
 			increaseCount: 2,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: false,
 				},
@@ -110,7 +110,7 @@ func TestEffectUltimateSlow_ModifySkillUnlockTurn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			data := game.CharacterData{}
+			data := &game.CharacterData{}
 			opp := game.NewCharacter(data)
 
 			e := z89.NewEffectUltimateSlow()
@@ -120,9 +120,9 @@ func TestEffectUltimateSlow_ModifySkillUnlockTurn(t *testing.T) {
 				e.Increase()
 			}
 
-			s := game.NewSkill(opp, tt.skill)
+			s := game.NewSkill(tt.skill)
 
-			assert.Equal(t, tt.unlockTurn, s.UnlockTurn())
+			assert.Equal(t, tt.unlockTurn, s.UnlockTurn(opp))
 		})
 	}
 }

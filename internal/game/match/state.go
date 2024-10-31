@@ -47,3 +47,26 @@ func (s GameState) Clone() GameState {
 		AsOpp:      s.AsOpp,
 	}
 }
+
+func (s GameState) CloneWithSkill(i int) GameState {
+	if s.AsOpp {
+		return GameState{
+			Character:  s.Character.CloneWithoutSkills(),
+			Opponent:   s.Opponent.CloneWithSkill(i),
+			TurnState:  s.TurnState,
+			SkillsLeft: s.SkillsLeft,
+			SkillLog:   s.SkillLog.Clone(),
+			PlayerTurn: s.PlayerTurn,
+			AsOpp:      s.AsOpp,
+		}
+	}
+	return GameState{
+		Character:  s.Character.CloneWithSkill(i),
+		Opponent:   s.Opponent.CloneWithoutSkills(),
+		TurnState:  s.TurnState,
+		SkillsLeft: s.SkillsLeft,
+		SkillLog:   s.SkillLog.Clone(),
+		PlayerTurn: s.PlayerTurn,
+		AsOpp:      s.AsOpp,
+	}
+}

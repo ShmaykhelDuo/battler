@@ -196,7 +196,7 @@ func toStringRow(row []int) []string {
 	return res
 }
 
-func runMiniMax(ctx context.Context, data1, data2 game.CharacterData, depth int, goingFirst bool, out chan<- Out) error {
+func runMiniMax(ctx context.Context, data1, data2 *game.CharacterData, depth int, goingFirst bool, out chan<- Out) error {
 	c1 := game.NewCharacter(data1)
 	c2 := game.NewCharacter(data2)
 	turnState := game.TurnState{

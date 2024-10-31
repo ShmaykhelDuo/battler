@@ -10,7 +10,7 @@ const (
 )
 
 // Deal Cyan damage. Base damage is 5, gets to 10, 15 and 20 when boosted by I Boost.
-var SkillEShock = game.SkillData{
+var SkillEShock = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "E-Shock",
 		IsUltimate: false,
@@ -30,7 +30,7 @@ var SkillEShock = game.SkillData{
 
 // Boost your S Layers threshold by 5 and E-Shock damage by 5.
 // Can only be used three times in a match.
-var SkillIBoost = game.SkillData{
+var SkillIBoost = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "I Boost",
 		IsUltimate: false,
@@ -58,7 +58,7 @@ var SkillIBoost = game.SkillData{
 // Next turn, your opponent can't damage you unless they deal more than a certain threshold.
 // Thresholds are 5, 10, 15 and 20.
 // Gain 1 Defense against all colours but Black.
-var SkillSLayers = game.SkillData{
+var SkillSLayers = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "S Layers",
 		IsUltimate: false,
@@ -79,7 +79,7 @@ var SkillSLayers = game.SkillData{
 // If you survive your opponent's next turn, fully heal.
 // Unlocks on turn 7.
 // Can only be used once per match.
-var SkillLastChance = game.SkillData{
+var SkillLastChance = &game.SkillData{
 	Desc:       game.SkillDescription{},
 	Cooldown:   10,
 	UnlockTurn: 7,

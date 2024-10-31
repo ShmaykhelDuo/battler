@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/bot/minimax"
@@ -21,8 +20,8 @@ func TestMiniMax(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		c        game.CharacterData
-		opp      game.CharacterData
+		c        *game.CharacterData
+		opp      *game.CharacterData
 		depth    int
 		score    int
 		strategy match.SkillLog
@@ -89,15 +88,15 @@ func ExampleRunner_MiniMax() {
 	c := game.NewCharacter(ruby.CharacterRuby)
 	opp := game.NewCharacter(milana.CharacterMilana)
 
-	opp.Skills()[milana.SkillRoyalMoveIndex].Use(c, game.TurnState{
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(opp, c, game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: true,
 	})
-	c.Skills()[ruby.SkillDanceIndex].Use(opp, game.TurnState{
+	c.Skills()[ruby.SkillDanceIndex].Use(c, opp, game.TurnState{
 		TurnNum:      1,
 		IsGoingFirst: false,
 	})
-	opp.Skills()[milana.SkillMintMistIndex].Use(c, game.TurnState{
+	opp.Skills()[milana.SkillMintMistIndex].Use(opp, c, game.TurnState{
 		TurnNum:      2,
 		IsGoingFirst: true,
 	})
@@ -126,8 +125,8 @@ func ExampleRunner_MiniMax() {
 }
 
 func runMiniMax(b *testing.B, depth int, r minimax.Runner) {
-	c := game.NewCharacter(storyteller.CharacterStoryteller)
-	opp := game.NewCharacter(ruby.CharacterRuby)
+	c := game.NewCharacter(ruby.CharacterRuby)
+	opp := game.NewCharacter(milana.CharacterMilana)
 
 	turnState := game.TurnState{
 		TurnNum:      1,
@@ -148,10 +147,7 @@ func runMiniMax(b *testing.B, depth int, r minimax.Runner) {
 			AsOpp:      false,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
-		defer cancel()
-
-		r.MiniMax(ctx, state, depth)
+		r.MiniMax(context.Background(), state, depth)
 	}
 }
 
@@ -162,7 +158,7 @@ func BenchmarkMiniMax(b *testing.B) {
 		"timeopt": minimax.TimeOptConcurrentRunner,
 	}
 
-	for i := range 8 {
+	for i := range 11 {
 		for name, r := range runners {
 			b.Run(fmt.Sprintf("depth=%d,type=%s", i+1, name), func(b *testing.B) {
 				runMiniMax(b, i+1, r)

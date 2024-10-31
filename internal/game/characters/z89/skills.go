@@ -11,7 +11,7 @@ const (
 
 // Deal 12 Black damage, then set opponent's max HP to their current HP.
 // Cooldown 1.
-var SkillScarcity = game.SkillData{
+var SkillScarcity = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Scarcity",
 		IsUltimate: false,
@@ -28,7 +28,7 @@ var SkillScarcity = game.SkillData{
 // Can't be delayed later than their 10th turn.
 // Cooldown 2.
 // Unlocks on turn 2.
-var SkillIndifference = game.SkillData{
+var SkillIndifference = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Indifference",
 		IsUltimate: false,
@@ -49,7 +49,7 @@ var SkillIndifference = game.SkillData{
 }
 
 // Deal 15 - (opponent's max HP - opponent's current HP) green damage.
-var SkillGreenSphere = game.SkillData{
+var SkillGreenSphere = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Green Sphere",
 		IsUltimate: false,
@@ -63,7 +63,7 @@ var SkillGreenSphere = game.SkillData{
 
 // Deal 40 - (opponent's max HP - 70) Blue damage.
 // Unlocks on turn 9.
-var SkillDespondency = game.SkillData{
+var SkillDespondency = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Despondency",
 		IsUltimate: true,
@@ -79,7 +79,7 @@ var SkillDespondency = game.SkillData{
 
 func hasOpponentUltimateUnlocked(opp *game.Character, turnState game.TurnState) bool {
 	unlockCtx := game.TurnState{
-		TurnNum:      opp.Skills()[3].UnlockTurn(),
+		TurnNum:      opp.Skills()[3].UnlockTurn(opp),
 		IsGoingFirst: true,
 	}
 	return turnState.IsAfter(unlockCtx)

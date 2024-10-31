@@ -15,10 +15,10 @@ const SkillCount = 4
 
 // CharacterData is a list of features of a character.
 type CharacterData struct {
-	SkillData [SkillCount]SkillData // array of character's skills' descriptions
-	Desc      CharacterDescription  // character's description
-	DefaultHP int                   // character's HP on the beginning of the match
-	Defences  map[Colour]int        // map of the character's defences by colour
+	SkillData [SkillCount]*SkillData // array of character's skills' descriptions
+	Desc      CharacterDescription   // character's description
+	DefaultHP int                    // character's HP on the beginning of the match
+	Defences  map[Colour]int         // map of the character's defences by colour
 }
 
 // DefenceModifier modifies a character's defences.
@@ -78,26 +78,24 @@ type Expirable interface {
 // Character is a representation of a character in a match.
 type Character struct {
 	skills        [SkillCount]*Skill
-	desc          CharacterDescription
+	data          *CharacterData
 	hp            int
 	maxHP         int
-	defences      map[Colour]int
 	effects       map[EffectDescription]Effect
 	lastUsedSkill *Skill
 }
 
 // NewCharacter returns a new character composed using provided data.
-func NewCharacter(data CharacterData) *Character {
+func NewCharacter(data *CharacterData) *Character {
 	c := &Character{
-		desc:     data.Desc,
-		hp:       data.DefaultHP,
-		maxHP:    data.DefaultHP,
-		defences: data.Defences,
-		effects:  make(map[EffectDescription]Effect),
+		data:    data,
+		hp:      data.DefaultHP,
+		maxHP:   data.DefaultHP,
+		effects: make(map[EffectDescription]Effect),
 	}
 
 	for i := range SkillCount {
-		c.skills[i] = NewSkill(c, data.SkillData[i])
+		c.skills[i] = NewSkill(data.SkillData[i])
 	}
 
 	return c
@@ -105,7 +103,7 @@ func NewCharacter(data CharacterData) *Character {
 
 // Desc returns the character's description.
 func (c *Character) Desc() CharacterDescription {
-	return c.desc
+	return c.data.Desc
 }
 
 // HP returns the character's current HP.
@@ -121,7 +119,7 @@ func (c *Character) MaxHP() int {
 // Defences returns a map of the character's defences for each colour.
 // Defence is a modifier which is subtracted from damage of specific colour.
 func (c *Character) Defences() map[Colour]int {
-	defs := maps.Clone(c.defences)
+	defs := maps.Clone(c.data.Defences)
 
 	for _, e := range c.effects {
 		mod, ok := e.(DefenceModifier)
@@ -294,13 +292,45 @@ func (c *Character) Clone() *Character {
 	for i, s := range c.skills {
 		clonedSkill := &Skill{}
 		*clonedSkill = *s
-		clonedSkill.c = cloned
 		cloned.skills[i] = clonedSkill
 
 		if c.lastUsedSkill == s {
 			cloned.lastUsedSkill = clonedSkill
 		}
 	}
+
+	cloned.effects = make(map[EffectDescription]Effect, len(c.effects))
+	for i, e := range c.effects {
+		cloned.effects[i] = e.Clone()
+	}
+	return cloned
+}
+
+// Clones returns a deep clone of the character.
+func (c *Character) CloneWithSkill(i int) *Character {
+	cloned := &Character{}
+	*cloned = *c
+
+	s := c.skills[i]
+	clonedSkill := &Skill{}
+	*clonedSkill = *s
+	cloned.skills[i] = clonedSkill
+
+	if c.lastUsedSkill == s {
+		cloned.lastUsedSkill = clonedSkill
+	}
+
+	cloned.effects = make(map[EffectDescription]Effect, len(c.effects))
+	for i, e := range c.effects {
+		cloned.effects[i] = e.Clone()
+	}
+	return cloned
+}
+
+// Clones returns a deep clone of the character.
+func (c *Character) CloneWithoutSkills() *Character {
+	cloned := &Character{}
+	*cloned = *c
 
 	cloned.effects = make(map[EffectDescription]Effect, len(c.effects))
 	for i, e := range c.effects {
