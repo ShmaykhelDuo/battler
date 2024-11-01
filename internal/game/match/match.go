@@ -137,7 +137,7 @@ func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool
 
 			// log.Printf("Player %s has selected skill %d\n", c.Desc().Name, i)
 
-			err = c.Character.Skills()[i].Use(opp.Character, turnState)
+			err = c.Character.Skills()[i].Use(c.Character, opp.Character, turnState)
 			if err == nil {
 				m.skillLog[turnState] = append(m.skillLog[turnState], i)
 				break

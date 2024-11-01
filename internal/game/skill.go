@@ -36,51 +36,39 @@ var ErrSkillNotAvailable = errors.New("skill is not available")
 
 // Skill is a representation of a skill of a character in a match.
 type Skill struct {
-	desc            SkillDescription
-	cooldown        int
-	unlockTurn      int
-	prevUsedTurn    int
-	useFunc         func(c, opp *Character, turnState TurnState)
-	availableFunc   func(c, opp *Character, turnState TurnState) bool
-	appropriateFunc func(c, opp *Character, turnState TurnState) bool
-	c               *Character
+	data         *SkillData
+	prevUsedTurn int
 }
 
 // NewSkill returns a new skill composed using provided character and data.
-func NewSkill(c *Character, data SkillData) *Skill {
+func NewSkill(data *SkillData) *Skill {
 	return &Skill{
-		desc:            data.Desc,
-		cooldown:        data.Cooldown,
-		unlockTurn:      data.UnlockTurn,
-		useFunc:         data.Use,
-		availableFunc:   data.IsAvailable,
-		appropriateFunc: data.IsAppropriate,
-		c:               c,
+		data: data,
 	}
 }
 
 // Desc returns the skill's description.
 func (s *Skill) Desc() SkillDescription {
-	return s.desc
+	return s.data.Desc
 }
 
 // Cooldown returns the skill's cooldown.
 // Returns 0 when no cooldown is applicable to the skill.
 func (s *Skill) Cooldown() int {
-	return s.cooldown
+	return s.data.Cooldown
 }
 
 // UnlockTurn returns the turn number when the skill is to be unlocked.
 // Returns 0 when skill is unlocked from the beginning of the game.
 // The value can be modified by the character's effects.
-func (s *Skill) UnlockTurn() int {
-	turn := s.unlockTurn
+func (s *Skill) UnlockTurn(c *Character) int {
+	turn := s.data.UnlockTurn
 
 	if turn == 0 {
 		return 0
 	}
 
-	for _, e := range s.c.Effects() {
+	for _, e := range c.Effects() {
 		mod, ok := e.(SkillUnlockTurnModifier)
 		if ok {
 			turn = mod.ModifySkillUnlockTurn(s, turn)
@@ -100,20 +88,20 @@ func (s *Skill) UnlockTurn() int {
 
 // IsAvailable reports whether the skill is available.
 // Unlock turn number, cooldown and effects are taken into account.
-func (s *Skill) IsAvailable(opp *Character, turnState TurnState) bool {
-	if turnState.TurnNum < s.UnlockTurn() {
+func (s *Skill) IsAvailable(c, opp *Character, turnState TurnState) bool {
+	if turnState.TurnNum < s.UnlockTurn(c) {
 		return false
 	}
 
-	if s.prevUsedTurn != 0 && turnState.TurnNum <= s.prevUsedTurn+s.cooldown {
+	if s.prevUsedTurn != 0 && turnState.TurnNum <= s.prevUsedTurn+s.data.Cooldown {
 		return false
 	}
 
-	if s.availableFunc != nil && !s.availableFunc(s.c, opp, turnState) {
+	if s.data.IsAvailable != nil && !s.data.IsAvailable(c, opp, turnState) {
 		return false
 	}
 
-	for _, e := range s.c.Effects() {
+	for _, e := range c.Effects() {
 		filter, ok := e.(SkillAvailabilityFilter)
 		if ok && !filter.IsSkillAvailable(s) {
 			return false
@@ -125,26 +113,26 @@ func (s *Skill) IsAvailable(opp *Character, turnState TurnState) bool {
 
 // Use executes the skill's action.
 // Returns [ErrSkillNotAvailable] when the skill is not available for use.
-func (s *Skill) Use(opp *Character, turnState TurnState) error {
-	if !s.IsAvailable(opp, turnState) {
+func (s *Skill) Use(c, opp *Character, turnState TurnState) error {
+	if !s.IsAvailable(c, opp, turnState) {
 		return ErrSkillNotAvailable
 	}
 
-	s.useFunc(s.c, opp, turnState)
+	s.data.Use(c, opp, turnState)
 
-	s.c.removeExpiredEffects(turnState)
+	c.removeExpiredEffects(turnState)
 	opp.removeExpiredEffects(turnState)
 
 	s.prevUsedTurn = turnState.TurnNum
-	s.c.lastUsedSkill = s
+	c.lastUsedSkill = s
 
 	return nil
 }
 
-func (s *Skill) IsAppropriate(opp *Character, turnState TurnState) bool {
-	if !s.IsAvailable(opp, turnState) {
+func (s *Skill) IsAppropriate(c, opp *Character, turnState TurnState) bool {
+	if !s.IsAvailable(c, opp, turnState) {
 		return false
 	}
 
-	return s.appropriateFunc == nil || s.appropriateFunc(s.c, opp, turnState)
+	return s.data.IsAppropriate == nil || s.data.IsAppropriate(c, opp, turnState)
 }

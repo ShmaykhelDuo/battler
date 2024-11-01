@@ -14,12 +14,12 @@ import (
 )
 
 type eloScoring struct {
-	c1, c2  game.CharacterData
+	c1, c2  *game.CharacterData
 	players map[string]playerGenerator
 	ratings map[string]int
 }
 
-func newEloScoring(c1, c2 game.CharacterData, players map[string]playerGenerator) *eloScoring {
+func newEloScoring(c1, c2 *game.CharacterData, players map[string]playerGenerator) *eloScoring {
 	s := &eloScoring{
 		c1:      c1,
 		c2:      c2,

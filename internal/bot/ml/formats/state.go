@@ -37,11 +37,11 @@ func UpdateMapDefence(def map[game.Colour]int, m map[string]ml.Tensorable, prefi
 	}
 }
 
-func UpdateMapSkill(s *game.Skill, opp *game.Character, turnState game.TurnState, m map[string]ml.Tensorable, prefix string) {
+func UpdateMapSkill(s *game.Skill, c, opp *game.Character, turnState game.TurnState, m map[string]ml.Tensorable, prefix string) {
 	m[prefix+"_colour"] = ml.TensorableValue[string]{Item: colourMap[s.Desc().Colour]}
 	m[prefix+"_cooldown"] = ml.TensorableValue[int64]{Item: int64(s.Cooldown())}
-	m[prefix+"_unlock_turn"] = ml.TensorableValue[int64]{Item: int64(s.UnlockTurn())}
-	m[prefix+"_is_available"] = ml.TensorableValue[bool]{Item: s.IsAvailable(opp, turnState)}
+	m[prefix+"_unlock_turn"] = ml.TensorableValue[int64]{Item: int64(s.UnlockTurn(c))}
+	m[prefix+"_is_available"] = ml.TensorableValue[bool]{Item: s.IsAvailable(c, opp, turnState)}
 }
 
 type effectsState struct {
@@ -140,7 +140,7 @@ func UpdateMapChar(c *game.Character, opp *game.Character, turnState game.TurnSt
 
 	for i := range 4 {
 		p := fmt.Sprintf("%s_skill%d", prefix, i)
-		UpdateMapSkill(s[i], opp, turnState, m, p)
+		UpdateMapSkill(s[i], c, opp, turnState, m, p)
 	}
 
 	m[prefix+"_lastusedskill"] = ml.TensorableValue[int64]{Item: int64(slices.Index(s[:], c.LastUsedSkill()))}

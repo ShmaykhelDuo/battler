@@ -2,7 +2,7 @@ package storyteller
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
-var CharacterStoryteller = game.CharacterData{
+var CharacterStoryteller = &game.CharacterData{
 	Desc: game.CharacterDescription{
 		Name:   "Storyteller",
 		Number: 1,
@@ -22,7 +22,7 @@ var CharacterStoryteller = game.CharacterData{
 		game.ColourBlack:  -2,
 		game.ColourWhite:  1,
 	},
-	SkillData: [4]game.SkillData{
+	SkillData: [4]*game.SkillData{
 		SkillYourNumber,
 		SkillYourColour,
 		SkillYourDream,

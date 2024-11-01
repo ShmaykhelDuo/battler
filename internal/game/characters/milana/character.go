@@ -2,7 +2,7 @@ package milana
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
-var CharacterMilana = game.CharacterData{
+var CharacterMilana = &game.CharacterData{
 	Desc: game.CharacterDescription{
 		Name:   "Milana",
 		Number: 51,
@@ -22,7 +22,7 @@ var CharacterMilana = game.CharacterData{
 		game.ColourBlack:  -2,
 		game.ColourWhite:  2,
 	},
-	SkillData: [4]game.SkillData{
+	SkillData: [4]*game.SkillData{
 		SkillRoyalMove,
 		SkillComposure,
 		SkillMintMist,

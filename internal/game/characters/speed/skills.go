@@ -12,7 +12,7 @@ const (
 )
 
 // Your opponent's next attack will deal 5 less damage. Gain a Green Token.
-var SkillRun = game.SkillData{
+var SkillRun = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Run",
 		IsUltimate: false,
@@ -38,7 +38,7 @@ var SkillRun = game.SkillData{
 }
 
 // Reduce your opponent's defense to Green by 1. Gain a Black Token.
-var SkillWeaken = game.SkillData{
+var SkillWeaken = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Weaken",
 		IsUltimate: false,
@@ -57,7 +57,7 @@ var SkillWeaken = game.SkillData{
 }
 
 // Next turn, you'll use two skills but not your ultimate. Gain a Green Token.
-var SkillSpeed = game.SkillData{
+var SkillSpeed = &game.SkillData{
 	Desc:       game.SkillDescription{},
 	Cooldown:   0,
 	UnlockTurn: 0,
@@ -79,7 +79,7 @@ var SkillSpeed = game.SkillData{
 }
 
 // For each of your tokens, deal 6 Green&Black damage.
-var SkillStab = game.SkillData{
+var SkillStab = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Stab",
 		IsUltimate: true,

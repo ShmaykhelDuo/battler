@@ -32,7 +32,7 @@ func runSkill(t *testing.T, skillIndex int, effs []game.Effect, turnState game.T
 
 	c = game.NewCharacter(speed.CharacterSpeed)
 
-	data := game.CharacterData{}
+	data := &game.CharacterData{}
 	opp = game.NewCharacter(data)
 
 	for _, e := range effs {
@@ -41,7 +41,7 @@ func runSkill(t *testing.T, skillIndex int, effs []game.Effect, turnState game.T
 
 	s := c.Skills()[skillIndex]
 
-	err := s.Use(opp, turnState)
+	err := s.Use(c, opp, turnState)
 	require.NoError(t, err)
 
 	return
@@ -204,14 +204,14 @@ func TestSkillStab_Use(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		oppData   game.CharacterData
+		oppData   *game.CharacterData
 		effs      []game.Effect
 		turnState game.TurnState
 		hp        int
 	}{
 		{
 			name: "Opponent1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourGreen: -2,
@@ -226,7 +226,7 @@ func TestSkillStab_Use(t *testing.T) {
 		},
 		{
 			name: "Opponent2",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 114,
 				Defences: map[game.Colour]int{
 					game.ColourGreen: 1,
@@ -254,7 +254,7 @@ func TestSkillStab_Use(t *testing.T) {
 
 			s := c.Skills()[speed.SkillStabIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())

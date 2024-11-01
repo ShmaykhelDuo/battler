@@ -14,7 +14,7 @@ const (
 )
 
 // Deal 10 + the remainder of your opponent's number divided by 7 Orange damage.
-var SkillYourNumber = game.SkillData{
+var SkillYourNumber = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Your Number",
 		IsUltimate: false,
@@ -29,7 +29,7 @@ var SkillYourNumber = game.SkillData{
 // Next turn, your opponent can't use the skills of the same colour they used last. Deal 15 damage of that colour.
 // Unlocks when your opponent uses a skill.
 // Cooldown: 1.
-var SkillYourColour = game.SkillData{
+var SkillYourColour = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Your Colour",
 		IsUltimate: false,
@@ -48,7 +48,7 @@ var SkillYourColour = game.SkillData{
 
 // Heal for (your max HP - your opponent's number) / your turn number.
 // If your opponent's number is more than 83, subtract a flat number as if it was 83.
-var SkillYourDream = game.SkillData{
+var SkillYourDream = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Your Dream",
 		IsUltimate: false,
@@ -76,7 +76,7 @@ func yourDreamHeal(c *game.Character, opp *game.Character, turnState game.TurnSt
 // Next turn, you decide which skills your opponent uses.
 // Unlocks on turn 7.
 // Cooldown 1.
-var SkillMyStory = game.SkillData{
+var SkillMyStory = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "My Story",
 		IsUltimate: true,

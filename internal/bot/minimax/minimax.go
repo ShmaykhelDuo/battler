@@ -108,7 +108,7 @@ func getSkills(state match.GameState, filterAppropriate bool) []int {
 
 	if filterAppropriate {
 		for i, s := range playC.Skills() {
-			if s.IsAppropriate(playOpp, state.TurnState) {
+			if s.IsAppropriate(playC, playOpp, state.TurnState) {
 				moves = append(moves, i)
 			}
 		}
@@ -119,7 +119,7 @@ func getSkills(state match.GameState, filterAppropriate bool) []int {
 	}
 
 	for i, s := range playC.Skills() {
-		if s.IsAvailable(playOpp, state.TurnState) {
+		if s.IsAvailable(playC, playOpp, state.TurnState) {
 			moves = append(moves, i)
 		}
 	}
@@ -146,7 +146,7 @@ func (r Runner) handleSkillsConcurrent(ctx context.Context, state match.GameStat
 		default:
 			eg.Go(func() error {
 				var err error
-				skillResults[i], err = r.handleSkill(egCtx, state.Clone(), skillNum, depth)
+				skillResults[i], err = r.handleSkill(egCtx, state, skillNum, depth)
 				return err
 			})
 		}
@@ -169,7 +169,7 @@ func (r Runner) handleSkillsSequential(ctx context.Context, state match.GameStat
 			return nil, ctx.Err()
 		default:
 			var err error
-			skillResults[i], err = r.handleSkill(ctx, state.Clone(), skillNum, depth)
+			skillResults[i], err = r.handleSkill(ctx, state, skillNum, depth)
 			if err != nil {
 				return nil, err
 			}
@@ -180,6 +180,8 @@ func (r Runner) handleSkillsSequential(ctx context.Context, state match.GameStat
 }
 
 func (r Runner) handleSkill(ctx context.Context, state match.GameState, skillNum int, depth int) (res Result, err error) {
+	state = state.CloneWithSkill(skillNum)
+
 	var clonedPlayC, clonedPlayOpp *game.Character
 	if state.AsOpp {
 		clonedPlayC = state.Opponent
@@ -192,9 +194,9 @@ func (r Runner) handleSkill(ctx context.Context, state match.GameState, skillNum
 	turnState := state.TurnState
 
 	clonedS := clonedPlayC.Skills()[skillNum]
-	clonedS.Use(clonedPlayOpp, turnState)
+	clonedS.Use(clonedPlayC, clonedPlayOpp, turnState)
 
-	state.SkillLog[turnState] = append(state.SkillLog[turnState], skillNum)
+	state.SkillLog.Append(turnState, skillNum)
 	state.SkillsLeft--
 
 	return r.MiniMax(ctx, state, depth)

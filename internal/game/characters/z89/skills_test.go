@@ -14,13 +14,13 @@ func TestSkillScarcity(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		oppData   game.CharacterData
+		oppData   *game.CharacterData
 		turnState game.TurnState
 		hp        int
 	}{
 		{
 			name: "Opponent1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 33,
 				},
@@ -33,7 +33,7 @@ func TestSkillScarcity(t *testing.T) {
 		},
 		{
 			name: "Opponent2",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 9,
 				},
@@ -55,7 +55,7 @@ func TestSkillScarcity(t *testing.T) {
 
 			s := c.Skills()[z89.SkillScarcityIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "HP")
@@ -78,15 +78,15 @@ func TestSkillIndifference_Use(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		oppData   game.CharacterData
+		oppData   *game.CharacterData
 		effs      []game.Effect
 		turnState game.TurnState
 		effAmount int
 	}{
 		{
 			name: "NoEffectNotUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -100,8 +100,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 		},
 		{
 			name: "NoEffectAlreadyUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -115,8 +115,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 		},
 		{
 			name: "NoEffectJustBeforeUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -133,8 +133,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 		},
 		{
 			name: "NoEffectJustAfterUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -151,8 +151,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 		},
 		{
 			name: "WithEffectNotUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -169,8 +169,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 		},
 		{
 			name: "WithEffectUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -187,8 +187,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 		},
 		{
 			name: "WithEffectJustBeforeUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -208,8 +208,8 @@ func TestSkillIndifference_Use(t *testing.T) {
 		},
 		{
 			name: "WithEffectJustAfterUnlocked",
-			oppData: game.CharacterData{
-				SkillData: [4]game.SkillData{
+			oppData: &game.CharacterData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -242,7 +242,7 @@ func TestSkillIndifference_Use(t *testing.T) {
 
 			s := c.Skills()[z89.SkillIndifferenceIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.effAmount, ultimateSlowAmount(opp), "ultimate slow amount")
@@ -255,7 +255,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		oppData    game.CharacterData
+		oppData    *game.CharacterData
 		prevDmg    int
 		prevColour game.Colour
 		turnState  game.TurnState
@@ -263,7 +263,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 	}{
 		{
 			name: "Opponent1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 33,
 				},
@@ -276,7 +276,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 		},
 		{
 			name: "Opponent2",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 9,
 				},
@@ -292,7 +292,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 		},
 		{
 			name: "Opponent3",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 51,
 				},
@@ -319,7 +319,7 @@ func TestSkillGreenSphere_Use(t *testing.T) {
 
 			s := c.Skills()[z89.SkillGreenSphereIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())
@@ -332,14 +332,14 @@ func TestSkillDespondency_Use(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		oppData   game.CharacterData
+		oppData   *game.CharacterData
 		maxHP     int
 		turnState game.TurnState
 		hp        int
 	}{
 		{
 			name: "Opponent1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 33,
 				},
@@ -354,7 +354,7 @@ func TestSkillDespondency_Use(t *testing.T) {
 		},
 		{
 			name: "Opponent2",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 9,
 				},
@@ -369,7 +369,7 @@ func TestSkillDespondency_Use(t *testing.T) {
 		},
 		{
 			name: "Opponent3",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 51,
 				},
@@ -396,7 +396,7 @@ func TestSkillDespondency_Use(t *testing.T) {
 
 			s := c.Skills()[z89.SkillDespondencyIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP())

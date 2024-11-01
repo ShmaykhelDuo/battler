@@ -2,7 +2,7 @@ package structure
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
-var CharacterStructure = game.CharacterData{
+var CharacterStructure = &game.CharacterData{
 	Desc: game.CharacterDescription{
 		Name:   "Structure",
 		Number: 119,
@@ -22,7 +22,7 @@ var CharacterStructure = game.CharacterData{
 		game.ColourBlack:  -3,
 		game.ColourWhite:  1,
 	},
-	SkillData: [4]game.SkillData{
+	SkillData: [4]*game.SkillData{
 		SkillEShock,
 		SkillIBoost,
 		SkillSLayers,

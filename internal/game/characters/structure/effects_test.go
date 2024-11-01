@@ -173,7 +173,7 @@ func TestEffectLastChance_OnTurnEnd(t *testing.T) {
 			t.Parallel()
 
 			c := game.NewCharacter(structure.CharacterStructure)
-			opp := game.NewCharacter(game.CharacterData{})
+			opp := game.NewCharacter(&game.CharacterData{})
 
 			opp.Damage(c, tt.prevDmg, game.ColourNone)
 

@@ -127,7 +127,7 @@ func run() error {
 	return err
 }
 
-func runMiniMax(ctx context.Context, data1, data2 game.CharacterData, depth int, goingFirst bool) ([]minimax.Entry, error) {
+func runMiniMax(ctx context.Context, data1, data2 *game.CharacterData, depth int, goingFirst bool) ([]minimax.Entry, error) {
 	c1 := game.NewCharacter(data1)
 	c2 := game.NewCharacter(data2)
 	turnState := game.TurnState{

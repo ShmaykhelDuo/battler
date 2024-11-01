@@ -11,7 +11,7 @@ const (
 
 // Increases Euphoric Source and everyone's max HP by 12.
 // Cooldown: 1.
-var SkillAmpleness = game.SkillData{
+var SkillAmpleness = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Ampleness",
 		IsUltimate: false,
@@ -29,7 +29,7 @@ var SkillAmpleness = game.SkillData{
 // Also, your opponent's ultimate unlocks 1 turn earlier.
 // If it already is unlocked, add 20 instead.
 // Cooldown 2.
-var SkillExuberance = game.SkillData{
+var SkillExuberance = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Exuberance",
 		IsUltimate: false,
@@ -39,7 +39,7 @@ var SkillExuberance = game.SkillData{
 	Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		amount := 20
 
-		if !isSkillUnlocked(turnState, opp.Skills()[3]) {
+		if !isSkillUnlocked(turnState, opp, opp.Skills()[3]) {
 			amount = 10
 			increaseUltimateEarly(opp)
 		}
@@ -51,7 +51,7 @@ var SkillExuberance = game.SkillData{
 }
 
 // Deal 12 Pink damage. Also, increase everyone's max HP by 12.
-var SkillPinkSphere = game.SkillData{
+var SkillPinkSphere = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Pink Sphere",
 		IsUltimate: false,
@@ -66,7 +66,7 @@ var SkillPinkSphere = game.SkillData{
 // Heal everyone by the amount in Euphoric Source at the end each turn.
 // Every turn, Source gets depleted by 9. Lasts until the end of the game.
 // Starting turn: 4.
-var SkillEuphoria = game.SkillData{
+var SkillEuphoria = &game.SkillData{
 	Desc: game.SkillDescription{
 		Name:       "Euphoria",
 		IsUltimate: true,
@@ -94,12 +94,12 @@ func increaseEuphoricSource(c *game.Character, amount int) {
 	c.AddEffect(NewEffectEuphoricSource(amount))
 }
 
-func isSkillUnlocked(turnState game.TurnState, s *game.Skill) bool {
-	if turnState.TurnNum == s.UnlockTurn() {
+func isSkillUnlocked(turnState game.TurnState, c *game.Character, s *game.Skill) bool {
+	if turnState.TurnNum == s.UnlockTurn(c) {
 		return !turnState.IsGoingFirst
 	}
 
-	return turnState.TurnNum > s.UnlockTurn()
+	return turnState.TurnNum > s.UnlockTurn(c)
 }
 
 func increaseUltimateEarly(opp *game.Character) {

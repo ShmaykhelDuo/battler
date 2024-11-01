@@ -54,7 +54,7 @@ func TestMatch(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		char1, char2   game.CharacterData
+		char1, char2   *game.CharacterData
 		moves1, moves2 []int
 		invertedOrder  bool
 		result         match.Result
