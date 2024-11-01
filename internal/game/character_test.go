@@ -773,13 +773,107 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 func TestCharacter_Clone(t *testing.T) {
 	t.Parallel()
 
-	data := &game.CharacterData{}
-	c := game.NewCharacter(data)
+	t.Run("basic", func(t *testing.T) {
+		t.Parallel()
 
-	clone := c.Clone()
+		data := &game.CharacterData{}
+		c := game.NewCharacter(data)
 
-	assert.Equal(t, c, clone, "clone is equal")
-	assert.NotSame(t, c, clone, "different pointers")
+		clone := c.Clone()
+
+		assert.Equal(t, c, clone, "clone is equal")
+		assert.NotSame(t, c, clone, "different pointers")
+	})
+
+	t.Run("not affected by anything", func(t *testing.T) {
+		t.Parallel()
+
+		data := &game.CharacterData{
+			DefaultHP: 100,
+			Defences: map[game.Colour]int{
+				game.ColourGreen: 1,
+				game.ColourBlack: 2,
+			},
+			SkillData: [4]*game.SkillData{
+				2: {
+					Cooldown: 2,
+					Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+						c.SetMaxHP(50)
+						opp.Damage(c, 20, game.ColourBlack)
+						c.Heal(5)
+						c.AddEffect(controlEffect{takenControl: true})
+					},
+				},
+			},
+		}
+		c := game.NewCharacter(data)
+		opp := game.NewCharacter(data)
+
+		cloneC := c.Clone()
+		cloneOpp := opp.Clone()
+
+		cloneC.Skills()[2].Use(cloneC, cloneOpp, game.NewTurnState(4))
+
+		assert.Equal(t, 100, c.HP(), "hp")
+		assert.Equal(t, 100, c.MaxHP(), "maxhp")
+		assert.Nil(t, c.LastUsedSkill(), "lastusedskill")
+		assert.Empty(t, c.Effects(), "effects")
+		assert.False(t, c.IsControlledByOpp(), "controlledbyopp")
+		assert.True(t, c.Skills()[2].IsAvailable(c, opp, game.NewTurnState(5)))
+	})
+}
+
+func TestCharacter_CloneWithSkill(t *testing.T) {
+	t.Parallel()
+
+	t.Run("basic", func(t *testing.T) {
+		t.Parallel()
+
+		data := &game.CharacterData{}
+		c := game.NewCharacter(data)
+
+		clone := c.Clone()
+
+		assert.Equal(t, c, clone, "clone is equal")
+		assert.NotSame(t, c, clone, "different pointers")
+	})
+
+	t.Run("not affected by anything", func(t *testing.T) {
+		t.Parallel()
+
+		data := &game.CharacterData{
+			DefaultHP: 100,
+			Defences: map[game.Colour]int{
+				game.ColourGreen: 1,
+				game.ColourBlack: 2,
+			},
+			SkillData: [4]*game.SkillData{
+				2: {
+					Cooldown: 2,
+					Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+						c.SetMaxHP(50)
+						opp.Damage(c, 20, game.ColourBlack)
+						c.Heal(5)
+						c.AddEffect(controlEffect{takenControl: true})
+					},
+				},
+			},
+		}
+		c := game.NewCharacter(data)
+		opp := game.NewCharacter(data)
+
+		cloneC := c.CloneWithSkill(2)
+		cloneOpp := opp.CloneWithoutSkills()
+
+		cloneC.Skills()[2].Use(cloneC, cloneOpp, game.NewTurnState(4))
+
+		assert.Equal(t, 100, c.HP(), "hp")
+		assert.Equal(t, 100, c.MaxHP(), "maxhp")
+		assert.Nil(t, c.LastUsedSkill(), "lastusedskill")
+		assert.Empty(t, c.Effects(), "effects")
+		assert.False(t, c.IsControlledByOpp(), "controlledbyopp")
+		assert.True(t, c.Skills()[2].IsAvailable(c, opp, game.NewTurnState(5)))
+	})
 }
 
 var desc1 = game.EffectDescription{

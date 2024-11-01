@@ -1,6 +1,7 @@
 package match
 
 import (
+	"maps"
 	"slices"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
@@ -11,13 +12,12 @@ type SkillLog map[game.TurnState][]int
 
 // Clones returns a deep clone of the log.
 func (l SkillLog) Clone() SkillLog {
-	res := make(SkillLog, len(l))
+	return maps.Clone(l)
+}
 
-	for state, skills := range l {
-		res[state] = slices.Clone(skills)
-	}
-
-	return res
+func (l SkillLog) Append(turn game.TurnState, skill int) {
+	turnLog := slices.Clone(l[turn])
+	l[turn] = append(turnLog, skill)
 }
 
 // GameState is a representation of a state of a game.

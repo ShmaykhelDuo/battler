@@ -124,6 +124,146 @@ func ExampleRunner_MiniMax() {
 	r.MiniMax(context.Background(), state, 8)
 }
 
+func TestExampleRunner3_MiniMax(t *testing.T) {
+	c := game.NewCharacter(ruby.CharacterRuby)
+	opp := game.NewCharacter(milana.CharacterMilana)
+
+	turnState := game.TurnState{
+		TurnNum:      1,
+		IsGoingFirst: true,
+	}
+
+	state := match.GameState{
+		Character:  c,
+		Opponent:   opp,
+		TurnState:  turnState,
+		SkillsLeft: 1,
+		SkillLog:   make(match.SkillLog),
+		PlayerTurn: true,
+		AsOpp:      false,
+	}
+
+	r := minimax.Runner{}
+	res, _ := r.MiniMax(context.Background(), state, 6)
+
+	e := res.Entries[0]
+	s := e.State
+	a := s.Character.Skills()[3].IsAvailable(s.Character, s.Opponent, s.TurnState)
+	assert.True(t, a)
+}
+
+func TestExampleRunner2_MiniMax(t *testing.T) {
+	c := game.NewCharacter(ruby.CharacterRuby)
+	opp := game.NewCharacter(milana.CharacterMilana)
+
+	c.Skills()[ruby.SkillDanceIndex].Use(c, opp, game.TurnState{
+		TurnNum:      1,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(opp, c, game.TurnState{
+		TurnNum:      1,
+		IsGoingFirst: false,
+	})
+
+	// 2
+	c.Skills()[ruby.SkillRageIndex].Use(c, opp, game.TurnState{
+		TurnNum:      2,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(opp, c, game.TurnState{
+		TurnNum:      2,
+		IsGoingFirst: false,
+	})
+
+	// 3
+	c.Skills()[ruby.SkillRageIndex].Use(c, opp, game.TurnState{
+		TurnNum:      3,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(opp, c, game.TurnState{
+		TurnNum:      3,
+		IsGoingFirst: false,
+	})
+
+	// 4
+	c.Skills()[ruby.SkillDanceIndex].Use(c, opp, game.TurnState{
+		TurnNum:      4,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(opp, c, game.TurnState{
+		TurnNum:      4,
+		IsGoingFirst: false,
+	})
+
+	// 5
+	c.Skills()[ruby.SkillRageIndex].Use(c, opp, game.TurnState{
+		TurnNum:      5,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillComposureIndex].Use(opp, c, game.TurnState{
+		TurnNum:      5,
+		IsGoingFirst: false,
+	})
+
+	// 6
+	c.Skills()[ruby.SkillRageIndex].Use(c, opp, game.TurnState{
+		TurnNum:      6,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillComposureIndex].Use(opp, c, game.TurnState{
+		TurnNum:      6,
+		IsGoingFirst: false,
+	})
+
+	// 7
+	c.Skills()[ruby.SkillDanceIndex].Use(c, opp, game.TurnState{
+		TurnNum:      7,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(opp, c, game.TurnState{
+		TurnNum:      7,
+		IsGoingFirst: false,
+	})
+
+	// 8
+	c.Skills()[ruby.SkillRageIndex].Use(c, opp, game.TurnState{
+		TurnNum:      8,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillComposureIndex].Use(opp, c, game.TurnState{
+		TurnNum:      8,
+		IsGoingFirst: false,
+	})
+
+	// 9
+	c.Skills()[ruby.SkillRageIndex].Use(c, opp, game.TurnState{
+		TurnNum:      9,
+		IsGoingFirst: true,
+	})
+	opp.Skills()[milana.SkillRoyalMoveIndex].Use(opp, c, game.TurnState{
+		TurnNum:      9,
+		IsGoingFirst: false,
+	})
+
+	turnState := game.TurnState{
+		TurnNum:      10,
+		IsGoingFirst: true,
+	}
+
+	state := match.GameState{
+		Character:  c,
+		Opponent:   opp,
+		TurnState:  turnState,
+		SkillsLeft: 1,
+		SkillLog:   make(match.SkillLog),
+		PlayerTurn: true,
+		AsOpp:      false,
+	}
+
+	r := minimax.SequentialRunner
+	r.MiniMax(context.Background(), state, 11)
+}
+
 func runMiniMax(b *testing.B, depth int, r minimax.Runner) {
 	c := game.NewCharacter(ruby.CharacterRuby)
 	opp := game.NewCharacter(milana.CharacterMilana)
@@ -158,7 +298,7 @@ func BenchmarkMiniMax(b *testing.B) {
 		"timeopt": minimax.TimeOptConcurrentRunner,
 	}
 
-	for i := range 11 {
+	for i := range 5 {
 		for name, r := range runners {
 			b.Run(fmt.Sprintf("depth=%d,type=%s", i+1, name), func(b *testing.B) {
 				runMiniMax(b, i+1, r)

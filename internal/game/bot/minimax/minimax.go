@@ -146,7 +146,7 @@ func (r Runner) handleSkillsConcurrent(ctx context.Context, state match.GameStat
 		default:
 			eg.Go(func() error {
 				var err error
-				skillResults[i], err = r.handleSkill(egCtx, state.CloneWithSkill(i), skillNum, depth)
+				skillResults[i], err = r.handleSkill(egCtx, state, skillNum, depth)
 				return err
 			})
 		}
@@ -169,7 +169,7 @@ func (r Runner) handleSkillsSequential(ctx context.Context, state match.GameStat
 			return nil, ctx.Err()
 		default:
 			var err error
-			skillResults[i], err = r.handleSkill(ctx, state.CloneWithSkill(i), skillNum, depth)
+			skillResults[i], err = r.handleSkill(ctx, state, skillNum, depth)
 			if err != nil {
 				return nil, err
 			}
@@ -180,6 +180,8 @@ func (r Runner) handleSkillsSequential(ctx context.Context, state match.GameStat
 }
 
 func (r Runner) handleSkill(ctx context.Context, state match.GameState, skillNum int, depth int) (res Result, err error) {
+	state = state.CloneWithSkill(skillNum)
+
 	var clonedPlayC, clonedPlayOpp *game.Character
 	if state.AsOpp {
 		clonedPlayC = state.Opponent
@@ -194,7 +196,7 @@ func (r Runner) handleSkill(ctx context.Context, state match.GameState, skillNum
 	clonedS := clonedPlayC.Skills()[skillNum]
 	clonedS.Use(clonedPlayC, clonedPlayOpp, turnState)
 
-	state.SkillLog[turnState] = append(state.SkillLog[turnState], skillNum)
+	state.SkillLog.Append(turnState, skillNum)
 	state.SkillsLeft--
 
 	return r.MiniMax(ctx, state, depth)
