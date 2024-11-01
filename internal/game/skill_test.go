@@ -50,10 +50,10 @@ func (e skillAvailabilityFilterEffect) IsSkillAvailable(s *game.Skill) bool {
 func TestNewSkill(t *testing.T) {
 	t.Parallel()
 
-	charData := game.CharacterData{}
+	charData := &game.CharacterData{}
 	c := game.NewCharacter(charData)
 
-	skillData := game.SkillData{
+	skillData := &game.SkillData{
 		Desc: game.SkillDescription{
 			Name:       "Simple",
 			IsUltimate: false,
@@ -64,7 +64,7 @@ func TestNewSkill(t *testing.T) {
 		Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
 		},
 	}
-	s := game.NewSkill(c, skillData)
+	s := game.NewSkill(skillData)
 
 	wantDesc := game.SkillDescription{
 		Name:       "Simple",
@@ -77,7 +77,7 @@ func TestNewSkill(t *testing.T) {
 	assert.Equal(t, wantCooldown, s.Cooldown(), "cooldown")
 
 	wantUnlockTurn := 5
-	assert.Equal(t, wantUnlockTurn, s.UnlockTurn(), "unlock turn")
+	assert.Equal(t, wantUnlockTurn, s.UnlockTurn(c), "unlock turn")
 }
 
 func TestSkill_UnlockTurn(t *testing.T) {
@@ -85,13 +85,13 @@ func TestSkill_UnlockTurn(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		data       game.SkillData
+		data       *game.SkillData
 		effs       []game.Effect
 		unlockTurn int
 	}{
 		{
 			name: "Absent",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 0,
 			},
 			effs:       []game.Effect{},
@@ -99,7 +99,7 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		},
 		{
 			name: "Present",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 2,
 			},
 			effs:       []game.Effect{},
@@ -107,7 +107,7 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		},
 		{
 			name: "AbsentDelay",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 0,
 			},
 			effs: []game.Effect{
@@ -117,7 +117,7 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		},
 		{
 			name: "PresentDelayInBounds",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 2,
 			},
 			effs: []game.Effect{
@@ -127,7 +127,7 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		},
 		{
 			name: "PresentDelayOutOfBounds",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 8,
 			},
 			effs: []game.Effect{
@@ -137,7 +137,7 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		},
 		{
 			name: "AbsentSpeedUp",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 0,
 			},
 			effs: []game.Effect{
@@ -147,7 +147,7 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		},
 		{
 			name: "PresentSpeedUpInBounds",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 5,
 			},
 			effs: []game.Effect{
@@ -157,7 +157,7 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		},
 		{
 			name: "PresentSpeedUpToOutOfBounds",
-			data: game.SkillData{
+			data: &game.SkillData{
 				UnlockTurn: 2,
 			},
 			effs: []game.Effect{
@@ -171,23 +171,23 @@ func TestSkill_UnlockTurn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			charData := game.CharacterData{}
+			charData := &game.CharacterData{}
 			c := game.NewCharacter(charData)
 
 			for _, e := range tt.effs {
 				c.AddEffect(e)
 			}
 
-			s := game.NewSkill(c, tt.data)
+			s := game.NewSkill(tt.data)
 
-			assert.Equal(t, tt.unlockTurn, s.UnlockTurn())
+			assert.Equal(t, tt.unlockTurn, s.UnlockTurn(c))
 		})
 	}
 }
 
 var skillAvailabilityTests = []struct {
 	name        string
-	data        game.SkillData
+	data        *game.SkillData
 	wasUsed     bool
 	prevUseCtx  game.TurnState
 	effs        []game.Effect
@@ -196,7 +196,7 @@ var skillAvailabilityTests = []struct {
 }{
 	{
 		name: "Basic",
-		data: game.SkillData{},
+		data: &game.SkillData{},
 		turnState: game.TurnState{
 			TurnNum: 0,
 		},
@@ -204,7 +204,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "NotUnlocked",
-		data: game.SkillData{
+		data: &game.SkillData{
 			UnlockTurn: 2,
 		},
 		turnState: game.TurnState{
@@ -214,7 +214,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "JustUnlocked",
-		data: game.SkillData{
+		data: &game.SkillData{
 			UnlockTurn: 2,
 		},
 		turnState: game.TurnState{
@@ -224,7 +224,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "CooldownNotPassed",
-		data: game.SkillData{
+		data: &game.SkillData{
 			Cooldown: 2,
 			Use:      func(c, opp *game.Character, turnState game.TurnState) {},
 		},
@@ -239,7 +239,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "CooldownJustPassed",
-		data: game.SkillData{
+		data: &game.SkillData{
 			Cooldown: 2,
 			Use:      func(c, opp *game.Character, turnState game.TurnState) {},
 		},
@@ -254,7 +254,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "ConditionNotFulfilled",
-		data: game.SkillData{
+		data: &game.SkillData{
 			IsAvailable: func(c *game.Character, opp *game.Character, turnState game.TurnState) bool {
 				return false
 			},
@@ -266,7 +266,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "ConditionFulfilled",
-		data: game.SkillData{
+		data: &game.SkillData{
 			IsAvailable: func(c *game.Character, opp *game.Character, turnState game.TurnState) bool {
 				return true
 			},
@@ -278,7 +278,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "BlockedByEffect",
-		data: game.SkillData{},
+		data: &game.SkillData{},
 		effs: []game.Effect{
 			skillAvailabilityFilterEffect{isAvailable: false},
 		},
@@ -289,7 +289,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "NotBlockedByEffect",
-		data: game.SkillData{},
+		data: &game.SkillData{},
 		effs: []game.Effect{
 			skillAvailabilityFilterEffect{isAvailable: true},
 		},
@@ -300,7 +300,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "NotUnlockedWithTurnModification",
-		data: game.SkillData{
+		data: &game.SkillData{
 			UnlockTurn: 2,
 		},
 		effs: []game.Effect{
@@ -313,7 +313,7 @@ var skillAvailabilityTests = []struct {
 	},
 	{
 		name: "JustUnlockedWithTurnModification",
-		data: game.SkillData{
+		data: &game.SkillData{
 			UnlockTurn: 2,
 		},
 		effs: []game.Effect{
@@ -334,22 +334,22 @@ func TestSkill_IsAvailable(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			charData := game.CharacterData{}
+			charData := &game.CharacterData{}
 			c := game.NewCharacter(charData)
-			opp := game.NewCharacter((charData))
+			opp := game.NewCharacter(charData)
 
 			for _, e := range tt.effs {
 				c.AddEffect(e)
 			}
 
-			s := game.NewSkill(c, tt.data)
+			s := game.NewSkill(tt.data)
 
 			if tt.wasUsed {
-				err := s.Use(opp, tt.prevUseCtx)
+				err := s.Use(c, opp, tt.prevUseCtx)
 				require.NoError(t, err)
 			}
 
-			assert.Equal(t, tt.isAvailable, s.IsAvailable(opp, tt.turnState))
+			assert.Equal(t, tt.isAvailable, s.IsAvailable(c, opp, tt.turnState))
 		})
 	}
 }
@@ -365,9 +365,9 @@ func TestSkill_Use(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
-				charData := game.CharacterData{}
+				charData := &game.CharacterData{}
 				c := game.NewCharacter(charData)
-				opp := game.NewCharacter((charData))
+				opp := game.NewCharacter(charData)
 
 				for _, e := range tt.effs {
 					c.AddEffect(e)
@@ -381,14 +381,14 @@ func TestSkill_Use(t *testing.T) {
 					gotOpp = opp
 					gotturnState = turnState
 				}
-				s := game.NewSkill(c, data)
+				s := game.NewSkill(data)
 
 				if tt.wasUsed {
-					err := s.Use(opp, tt.prevUseCtx)
+					err := s.Use(c, opp, tt.prevUseCtx)
 					require.NoError(t, err)
 				}
 
-				err := s.Use(opp, tt.turnState)
+				err := s.Use(c, opp, tt.turnState)
 
 				if tt.isAvailable {
 					require.NoError(t, err)
@@ -405,9 +405,9 @@ func TestSkill_Use(t *testing.T) {
 	t.Run("RemovesExpiredEffects", func(t *testing.T) {
 		t.Parallel()
 
-		charData := game.CharacterData{}
+		charData := &game.CharacterData{}
 		c := game.NewCharacter(charData)
-		opp := game.NewCharacter((charData))
+		opp := game.NewCharacter(charData)
 
 		eff := gametest.NewEffectExpirable(false)
 		c.AddEffect(eff)
@@ -415,15 +415,15 @@ func TestSkill_Use(t *testing.T) {
 		oppEff := gametest.NewEffectExpirable(false)
 		opp.AddEffect(oppEff)
 
-		data := game.SkillData{
+		data := &game.SkillData{
 			Use: func(c, opp *game.Character, turnState game.TurnState) {
 				eff.Expire()
 				oppEff.Expire()
 			},
 		}
-		s := game.NewSkill(c, data)
+		s := game.NewSkill(data)
 
-		s.Use(opp, game.TurnState{})
+		s.Use(c, opp, game.TurnState{})
 
 		_, found := game.CharacterEffect[*gametest.EffectExpirable](c, gametest.EffectDescExpirable)
 		assert.False(t, found, "effect after expiry")

@@ -23,7 +23,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		oppData      game.CharacterData
+		oppData      *game.CharacterData
 		effs         []game.Effect
 		turnState    game.TurnState
 		hp           int
@@ -31,7 +31,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 	}{
 		{
 			name: "Basic",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourGreen: -2,
@@ -42,7 +42,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 		},
 		{
 			name: "HasStolenHP",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourGreen: -2,
@@ -56,7 +56,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 		},
 		{
 			name: "HasMintMist",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourGreen: -2,
@@ -83,7 +83,7 @@ func TestSkillRoyalMove_Use(t *testing.T) {
 
 			s := c.Skills()[milana.SkillRoyalMoveIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "opponent's HP")
@@ -146,7 +146,7 @@ func TestSkillComposure_Use(t *testing.T) {
 			t.Parallel()
 
 			c := game.NewCharacter(milana.CharacterMilana)
-			opp := game.NewCharacter(game.CharacterData{})
+			opp := game.NewCharacter(&game.CharacterData{})
 
 			opp.Damage(c, tt.prevDmg, game.ColourNone)
 
@@ -155,7 +155,7 @@ func TestSkillComposure_Use(t *testing.T) {
 			}
 
 			s := c.Skills()[milana.SkillComposureIndex]
-			err := s.Use(opp, game.TurnState{})
+			err := s.Use(c, opp, game.TurnState{})
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, c.HP(), "HP")
@@ -168,10 +168,10 @@ func TestSkillMintMist_Use(t *testing.T) {
 	t.Parallel()
 
 	c := game.NewCharacter(milana.CharacterMilana)
-	opp := game.NewCharacter(game.CharacterData{})
+	opp := game.NewCharacter(&game.CharacterData{})
 
 	s := c.Skills()[milana.SkillMintMistIndex]
-	err := s.Use(opp, game.TurnState{})
+	err := s.Use(c, opp, game.TurnState{})
 	require.NoError(t, err)
 
 	eff, ok := game.CharacterEffect[milana.EffectMintMist](c, milana.EffectDescMintMist)
@@ -185,13 +185,13 @@ func TestSkillPride_Use(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		oppData game.CharacterData
+		oppData *game.CharacterData
 		effs    []game.Effect
 		hp      int
 	}{
 		{
 			name: "1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourCyan: -1,
@@ -204,7 +204,7 @@ func TestSkillPride_Use(t *testing.T) {
 		},
 		{
 			name: "2",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourCyan: -1,
@@ -230,7 +230,7 @@ func TestSkillPride_Use(t *testing.T) {
 
 			s := c.Skills()[milana.SkillPrideIndex]
 
-			err := s.Use(opp, game.TurnState{TurnNum: 8})
+			err := s.Use(c, opp, game.TurnState{TurnNum: 8})
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "opponent's HP")

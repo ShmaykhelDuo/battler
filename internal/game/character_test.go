@@ -11,7 +11,7 @@ import (
 func TestNewCharacter(t *testing.T) {
 	t.Parallel()
 
-	data := game.CharacterData{
+	data := &game.CharacterData{
 		Desc: game.CharacterDescription{
 			Name:   "Simple",
 			Number: 0,
@@ -70,13 +70,13 @@ func TestCharacter_Defences(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		data     game.CharacterData
+		data     *game.CharacterData
 		effs     []game.Effect
 		defences map[game.Colour]int
 	}{
 		{
 			name: "Basic",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				Defences: map[game.Colour]int{
 					game.ColourWhite: 1,
 					game.ColourBlack: -1,
@@ -89,7 +89,7 @@ func TestCharacter_Defences(t *testing.T) {
 		},
 		{
 			name: "EffectModified",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				Defences: map[game.Colour]int{
 					game.ColourWhite: 1,
 					game.ColourBlack: -1,
@@ -135,8 +135,8 @@ func (e descriptionEffect) Desc() game.EffectDescription {
 func TestCharacter_LastUsedSkill(t *testing.T) {
 	t.Parallel()
 
-	data := game.CharacterData{
-		SkillData: [4]game.SkillData{
+	data := &game.CharacterData{
+		SkillData: [4]*game.SkillData{
 			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
 			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
 			{Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {}},
@@ -153,7 +153,7 @@ func TestCharacter_LastUsedSkill(t *testing.T) {
 			TurnNum: i + 1,
 		}
 
-		s.Use(opp, turnState)
+		s.Use(c, opp, turnState)
 
 		assert.Same(t, s, c.LastUsedSkill(), "after skill #%d", i+1)
 	}
@@ -210,7 +210,7 @@ func TestCharacter_IsControlledByOpp(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := game.NewCharacter(game.CharacterData{})
+			c := game.NewCharacter(&game.CharacterData{})
 
 			for _, e := range tt.effs {
 				c.AddEffect(e)
@@ -265,7 +265,7 @@ func TestCharacter_SkillsPerTurn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := game.NewCharacter(game.CharacterData{})
+			c := game.NewCharacter(&game.CharacterData{})
 
 			for _, e := range tt.effs {
 				c.AddEffect(e)
@@ -281,14 +281,14 @@ func TestCharacter_SetMaxHP(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		data    game.CharacterData
+		data    *game.CharacterData
 		prevDmg int
 		maxHP   int
 		hp      int
 	}{
 		{
 			name: "Basic",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg: 25,
@@ -297,7 +297,7 @@ func TestCharacter_SetMaxHP(t *testing.T) {
 		},
 		{
 			name: "BelowHP",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg: 15,
@@ -390,7 +390,7 @@ func TestCharacter_AddEffect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			data := game.CharacterData{}
+			data := &game.CharacterData{}
 			c := game.NewCharacter(data)
 
 			for _, e := range tt.effs {
@@ -451,7 +451,7 @@ func TestCharacter_Damage(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		data    game.CharacterData
+		data    *game.CharacterData
 		effs    []game.Effect
 		oppEffs []game.Effect
 		dmg     int
@@ -461,7 +461,7 @@ func TestCharacter_Damage(t *testing.T) {
 	}{
 		{
 			name: "Basic",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			dmg:    40,
@@ -470,7 +470,7 @@ func TestCharacter_Damage(t *testing.T) {
 		},
 		{
 			name: "Kill",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			dmg:    120,
@@ -479,7 +479,7 @@ func TestCharacter_Damage(t *testing.T) {
 		},
 		{
 			name: "Negative",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			dmg:    -10,
@@ -488,7 +488,7 @@ func TestCharacter_Damage(t *testing.T) {
 		},
 		{
 			name: "PositiveDefence",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 				Defences: map[game.Colour]int{
 					game.ColourViolet: 3,
@@ -501,7 +501,7 @@ func TestCharacter_Damage(t *testing.T) {
 		},
 		{
 			name: "NegativeDefence",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 				Defences: map[game.Colour]int{
 					game.ColourViolet: -3,
@@ -514,7 +514,7 @@ func TestCharacter_Damage(t *testing.T) {
 		},
 		{
 			name: "ModifiedDefence",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 				Defences: map[game.Colour]int{
 					game.ColourViolet: 2,
@@ -533,7 +533,7 @@ func TestCharacter_Damage(t *testing.T) {
 		},
 		{
 			name: "AttEffectModification",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			effs: []game.Effect{
@@ -545,7 +545,7 @@ func TestCharacter_Damage(t *testing.T) {
 		},
 		{
 			name: "OppEffectModification",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			oppEffs: []game.Effect{
@@ -583,7 +583,7 @@ func TestCharacter_Damage(t *testing.T) {
 func TestChararcter_Kill(t *testing.T) {
 	t.Parallel()
 
-	data := game.CharacterData{
+	data := &game.CharacterData{
 		DefaultHP: 100,
 	}
 	c := game.NewCharacter(data)
@@ -617,7 +617,7 @@ func TestCharacter_Heal(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		data    game.CharacterData
+		data    *game.CharacterData
 		effs    []game.Effect
 		prevDmg int
 		heal    int
@@ -626,7 +626,7 @@ func TestCharacter_Heal(t *testing.T) {
 	}{
 		{
 			name: "Basic",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg: 40,
@@ -636,7 +636,7 @@ func TestCharacter_Heal(t *testing.T) {
 		},
 		{
 			name: "Full",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg: 40,
@@ -646,7 +646,7 @@ func TestCharacter_Heal(t *testing.T) {
 		},
 		{
 			name: "Negative",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg: 40,
@@ -656,7 +656,7 @@ func TestCharacter_Heal(t *testing.T) {
 		},
 		{
 			name: "Forbidden",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			effs: []game.Effect{
@@ -669,7 +669,7 @@ func TestCharacter_Heal(t *testing.T) {
 		},
 		{
 			name: "NotForbidden",
-			data: game.CharacterData{
+			data: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			effs: []game.Effect{
@@ -731,7 +731,7 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 	t.Run("EffectOnTurnEndExecutes", func(t *testing.T) {
 		t.Parallel()
 
-		data := game.CharacterData{}
+		data := &game.CharacterData{}
 		c := game.NewCharacter(data)
 		opp := game.NewCharacter(data)
 
@@ -752,7 +752,7 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 	t.Run("RemovesExpiredEffects", func(t *testing.T) {
 		t.Parallel()
 
-		data := game.CharacterData{}
+		data := &game.CharacterData{}
 		c := game.NewCharacter(data)
 		opp := game.NewCharacter(data)
 
@@ -773,13 +773,107 @@ func TestCharacter_OnTurnEnd(t *testing.T) {
 func TestCharacter_Clone(t *testing.T) {
 	t.Parallel()
 
-	data := game.CharacterData{}
-	c := game.NewCharacter(data)
+	t.Run("basic", func(t *testing.T) {
+		t.Parallel()
 
-	clone := c.Clone()
+		data := &game.CharacterData{}
+		c := game.NewCharacter(data)
 
-	assert.Equal(t, c, clone, "clone is equal")
-	assert.NotSame(t, c, clone, "different pointers")
+		clone := c.Clone()
+
+		assert.Equal(t, c, clone, "clone is equal")
+		assert.NotSame(t, c, clone, "different pointers")
+	})
+
+	t.Run("not affected by anything", func(t *testing.T) {
+		t.Parallel()
+
+		data := &game.CharacterData{
+			DefaultHP: 100,
+			Defences: map[game.Colour]int{
+				game.ColourGreen: 1,
+				game.ColourBlack: 2,
+			},
+			SkillData: [4]*game.SkillData{
+				2: {
+					Cooldown: 2,
+					Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+						c.SetMaxHP(50)
+						opp.Damage(c, 20, game.ColourBlack)
+						c.Heal(5)
+						c.AddEffect(controlEffect{takenControl: true})
+					},
+				},
+			},
+		}
+		c := game.NewCharacter(data)
+		opp := game.NewCharacter(data)
+
+		cloneC := c.Clone()
+		cloneOpp := opp.Clone()
+
+		cloneC.Skills()[2].Use(cloneC, cloneOpp, game.NewTurnState(4))
+
+		assert.Equal(t, 100, c.HP(), "hp")
+		assert.Equal(t, 100, c.MaxHP(), "maxhp")
+		assert.Nil(t, c.LastUsedSkill(), "lastusedskill")
+		assert.Empty(t, c.Effects(), "effects")
+		assert.False(t, c.IsControlledByOpp(), "controlledbyopp")
+		assert.True(t, c.Skills()[2].IsAvailable(c, opp, game.NewTurnState(5)))
+	})
+}
+
+func TestCharacter_CloneWithSkill(t *testing.T) {
+	t.Parallel()
+
+	t.Run("basic", func(t *testing.T) {
+		t.Parallel()
+
+		data := &game.CharacterData{}
+		c := game.NewCharacter(data)
+
+		clone := c.Clone()
+
+		assert.Equal(t, c, clone, "clone is equal")
+		assert.NotSame(t, c, clone, "different pointers")
+	})
+
+	t.Run("not affected by anything", func(t *testing.T) {
+		t.Parallel()
+
+		data := &game.CharacterData{
+			DefaultHP: 100,
+			Defences: map[game.Colour]int{
+				game.ColourGreen: 1,
+				game.ColourBlack: 2,
+			},
+			SkillData: [4]*game.SkillData{
+				2: {
+					Cooldown: 2,
+					Use: func(c *game.Character, opp *game.Character, turnState game.TurnState) {
+						c.SetMaxHP(50)
+						opp.Damage(c, 20, game.ColourBlack)
+						c.Heal(5)
+						c.AddEffect(controlEffect{takenControl: true})
+					},
+				},
+			},
+		}
+		c := game.NewCharacter(data)
+		opp := game.NewCharacter(data)
+
+		cloneC := c.CloneWithSkill(2)
+		cloneOpp := opp.CloneWithoutSkills()
+
+		cloneC.Skills()[2].Use(cloneC, cloneOpp, game.NewTurnState(4))
+
+		assert.Equal(t, 100, c.HP(), "hp")
+		assert.Equal(t, 100, c.MaxHP(), "maxhp")
+		assert.Nil(t, c.LastUsedSkill(), "lastusedskill")
+		assert.Empty(t, c.Effects(), "effects")
+		assert.False(t, c.IsControlledByOpp(), "controlledbyopp")
+		assert.True(t, c.Skills()[2].IsAvailable(c, opp, game.NewTurnState(5)))
+	})
 }
 
 var desc1 = game.EffectDescription{
@@ -836,7 +930,7 @@ func (e effectType3) Clone() game.Effect {
 func TestCharacterEffect(t *testing.T) {
 	t.Parallel()
 
-	c := game.NewCharacter(game.CharacterData{})
+	c := game.NewCharacter(&game.CharacterData{})
 
 	eff1 := &effectType1{}
 	eff2 := &effectType2{}

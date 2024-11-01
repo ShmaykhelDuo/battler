@@ -52,7 +52,7 @@ func MiniMax(ctx context.Context, c, opp *game.Character, turnState game.TurnSta
 	}
 	appropriate := make([]bool, 4)
 	for i, s := range playC.Skills() {
-		appropriate[i] = s.IsAppropriate(playOpp, turnState)
+		appropriate[i] = s.IsAppropriate(playC, playOpp, turnState)
 	}
 	filterAppropriate := appropriate[0] || appropriate[1] || appropriate[2] || appropriate[3]
 
@@ -70,7 +70,7 @@ func MiniMax(ctx context.Context, c, opp *game.Character, turnState game.TurnSta
 
 		skillScores[i] = score
 
-		if !s.IsAvailable(playOpp, turnState) {
+		if !s.IsAvailable(playC, playOpp, turnState) {
 			continue
 		}
 		if filterAppropriate && !worst && !appropriate[i] {
@@ -90,7 +90,7 @@ func MiniMax(ctx context.Context, c, opp *game.Character, turnState game.TurnSta
 		}
 
 		clonedS := clonedPlayC.Skills()[i]
-		clonedS.Use(clonedPlayOpp, turnState)
+		clonedS.Use(clonedPlayC, clonedPlayOpp, turnState)
 
 		moves := slices.Clone(prevMoves)
 		moves = append(moves, i)

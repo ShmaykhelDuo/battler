@@ -2,7 +2,7 @@ package ruby
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
-var CharacterRuby = game.CharacterData{
+var CharacterRuby = &game.CharacterData{
 	Desc: game.CharacterDescription{
 		Name:   "Ruby",
 		Number: 10,
@@ -22,7 +22,7 @@ var CharacterRuby = game.CharacterData{
 		game.ColourBlack:  0,
 		game.ColourWhite:  0,
 	},
-	SkillData: [4]game.SkillData{
+	SkillData: [4]*game.SkillData{
 		SkillDance,
 		SkillRage,
 		SkillStop,

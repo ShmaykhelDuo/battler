@@ -71,14 +71,14 @@ type SkillState struct {
 	IsAvailable int
 }
 
-func NewSkillState(s *game.Skill, opp *game.Character, turnState game.TurnState) SkillState {
+func NewSkillState(s *game.Skill, c, opp *game.Character, turnState game.TurnState) SkillState {
 	res := SkillState{
 		Colour:     int(s.Desc().Colour),
 		Cooldown:   s.Cooldown(),
-		UnlockTurn: s.UnlockTurn(),
+		UnlockTurn: s.UnlockTurn(c),
 	}
 
-	if s.IsAvailable(opp, turnState) {
+	if s.IsAvailable(c, opp, turnState) {
 		res.IsAvailable = 1
 	}
 
@@ -205,7 +205,7 @@ func NewCharState(c *game.Character, opp *game.Character, turnState game.TurnSta
 	s := c.Skills()
 
 	for i := range 4 {
-		res.Skills[i] = NewSkillState(s[i], opp, turnState)
+		res.Skills[i] = NewSkillState(s[i], c, opp, turnState)
 	}
 
 	res.LastUsedSkill = slices.Index(s[:], c.LastUsedSkill())

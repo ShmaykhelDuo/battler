@@ -14,13 +14,13 @@ func TestSkillDance_Use(t *testing.T) {
 
 	c := game.NewCharacter(ruby.CharacterRuby)
 
-	data := game.CharacterData{}
+	data := &game.CharacterData{}
 	opp := game.NewCharacter(data)
 
 	s := c.Skills()[ruby.SkillDanceIndex]
 
 	turnState := game.TurnState{}
-	err := s.Use(opp, turnState)
+	err := s.Use(c, opp, turnState)
 	require.NoError(t, err)
 
 	eff, ok := game.CharacterEffect[ruby.EffectDoubleDamage](c, ruby.EffectDescDoubleDamage)
@@ -34,13 +34,13 @@ func TestSkillRage_Use(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		oppData   game.CharacterData
+		oppData   *game.CharacterData
 		turnState game.TurnState
 		oppHP     int
 	}{
 		{
 			name: "Opponent1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 111,
 				Defences: map[game.Colour]int{
 					game.ColourRed: -1,
@@ -53,7 +53,7 @@ func TestSkillRage_Use(t *testing.T) {
 		},
 		{
 			name: "Opponent2",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 119,
 				Defences: map[game.Colour]int{
 					game.ColourRed: -1,
@@ -74,7 +74,7 @@ func TestSkillRage_Use(t *testing.T) {
 			opp := game.NewCharacter(tt.oppData)
 
 			s := c.Skills()[ruby.SkillRageIndex]
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.oppHP, opp.HP())
@@ -103,13 +103,13 @@ func TestSkillStop_Use(t *testing.T) {
 
 	c := game.NewCharacter(ruby.CharacterRuby)
 
-	data := game.CharacterData{}
+	data := &game.CharacterData{}
 	opp := game.NewCharacter(data)
 
 	s := c.Skills()[ruby.SkillStopIndex]
 
 	turnState := game.TurnState{}
-	err := s.Use(opp, turnState)
+	err := s.Use(c, opp, turnState)
 	require.NoError(t, err)
 
 	assertEffectCannotHeal(t, c, turnState, false, "character")
@@ -121,7 +121,7 @@ func TestSkillExecute_Use(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		oppData   game.CharacterData
+		oppData   *game.CharacterData
 		prevDmg   int
 		effs      []game.Effect
 		turnState game.TurnState
@@ -129,7 +129,7 @@ func TestSkillExecute_Use(t *testing.T) {
 	}{
 		{
 			name: "AboveThreshold",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 111,
 			},
 			prevDmg: 99,
@@ -137,7 +137,7 @@ func TestSkillExecute_Use(t *testing.T) {
 		},
 		{
 			name: "BelowThreshold",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 111,
 			},
 			prevDmg: 100,
@@ -145,7 +145,7 @@ func TestSkillExecute_Use(t *testing.T) {
 		},
 		{
 			name: "AboveThresholdWithCannotHeal",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 111,
 			},
 			effs: []game.Effect{
@@ -156,7 +156,7 @@ func TestSkillExecute_Use(t *testing.T) {
 		},
 		{
 			name: "BelowThresholdWithCannotHeal",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 111,
 			},
 			effs: []game.Effect{
@@ -182,7 +182,7 @@ func TestSkillExecute_Use(t *testing.T) {
 
 			s := c.Skills()[ruby.SkillExecuteIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, opp.HP(), "opponent's HP")

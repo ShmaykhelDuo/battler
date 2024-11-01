@@ -13,7 +13,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/z89"
 )
 
-var chars = []game.CharacterData{
+var chars = []*game.CharacterData{
 	storyteller.CharacterStoryteller,
 	z89.CharacterZ89,
 	euphoria.CharacterEuphoria,

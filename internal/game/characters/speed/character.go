@@ -2,7 +2,7 @@ package speed
 
 import "github.com/ShmaykhelDuo/battler/internal/game"
 
-var CharacterSpeed = game.CharacterData{
+var CharacterSpeed = &game.CharacterData{
 	Desc: game.CharacterDescription{
 		Name:   "Speed",
 		Number: 33,
@@ -22,7 +22,7 @@ var CharacterSpeed = game.CharacterData{
 		game.ColourBlack:  2,
 		game.ColourWhite:  -2,
 	},
-	SkillData: [4]game.SkillData{
+	SkillData: [4]*game.SkillData{
 		SkillRun,
 		SkillWeaken,
 		SkillSpeed,

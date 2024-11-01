@@ -85,13 +85,13 @@ func TestEffectUltimateEarly_ModifySkillUnlockTurn(t *testing.T) {
 	tests := []struct {
 		name          string
 		increaseCount int
-		skill         game.SkillData
+		skill         *game.SkillData
 		unlockTurn    int
 	}{
 		{
 			name:          "UltimateInitial",
 			increaseCount: 0,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: true,
 				},
@@ -102,7 +102,7 @@ func TestEffectUltimateEarly_ModifySkillUnlockTurn(t *testing.T) {
 		{
 			name:          "UltimateTwice",
 			increaseCount: 2,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: true,
 				},
@@ -113,7 +113,7 @@ func TestEffectUltimateEarly_ModifySkillUnlockTurn(t *testing.T) {
 		{
 			name:          "NotUltimateInitial",
 			increaseCount: 0,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: false,
 				},
@@ -124,7 +124,7 @@ func TestEffectUltimateEarly_ModifySkillUnlockTurn(t *testing.T) {
 		{
 			name:          "NotUltimateTwice",
 			increaseCount: 2,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					IsUltimate: false,
 				},
@@ -138,7 +138,7 @@ func TestEffectUltimateEarly_ModifySkillUnlockTurn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			data := game.CharacterData{}
+			data := &game.CharacterData{}
 			opp := game.NewCharacter(data)
 
 			e := euphoria.NewEffectUltimateEarly()
@@ -148,9 +148,9 @@ func TestEffectUltimateEarly_ModifySkillUnlockTurn(t *testing.T) {
 				e.Increase()
 			}
 
-			s := game.NewSkill(opp, tt.skill)
+			s := game.NewSkill(tt.skill)
 
-			assert.Equal(t, tt.unlockTurn, s.UnlockTurn())
+			assert.Equal(t, tt.unlockTurn, s.UnlockTurn(opp))
 		})
 	}
 }
@@ -160,7 +160,7 @@ func TestEffectEuphoricHeal_OnTurnEnd(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		oppData      game.CharacterData
+		oppData      *game.CharacterData
 		prevDmg      int
 		oppPrevDmg   int
 		effs         []game.Effect
@@ -172,7 +172,7 @@ func TestEffectEuphoricHeal_OnTurnEnd(t *testing.T) {
 	}{
 		{
 			name: "Basic",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg:    25,
@@ -186,7 +186,7 @@ func TestEffectEuphoricHeal_OnTurnEnd(t *testing.T) {
 		},
 		{
 			name: "Ending",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg:    25,
@@ -199,7 +199,7 @@ func TestEffectEuphoricHeal_OnTurnEnd(t *testing.T) {
 		},
 		{
 			name: "None",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
 			},
 			prevDmg:    25,

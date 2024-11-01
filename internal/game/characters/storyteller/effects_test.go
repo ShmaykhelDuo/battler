@@ -14,13 +14,13 @@ func TestEffectCannotUse_IsSkillAvailable(t *testing.T) {
 	tests := []struct {
 		name        string
 		colour      game.Colour
-		skill       game.SkillData
+		skill       *game.SkillData
 		isAvailable bool
 	}{
 		{
 			name:   "ColoursMatch",
 			colour: game.ColourViolet,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					Colour: game.ColourViolet,
 				},
@@ -30,7 +30,7 @@ func TestEffectCannotUse_IsSkillAvailable(t *testing.T) {
 		{
 			name:   "ColoursNotMatch",
 			colour: game.ColourViolet,
-			skill: game.SkillData{
+			skill: &game.SkillData{
 				Desc: game.SkillDescription{
 					Colour: game.ColourGreen,
 				},
@@ -45,9 +45,7 @@ func TestEffectCannotUse_IsSkillAvailable(t *testing.T) {
 
 			e := storyteller.NewEffectCannotUse(game.TurnState{}, tt.colour)
 
-			data := game.CharacterData{}
-			c := game.NewCharacter(data)
-			s := game.NewSkill(c, tt.skill)
+			s := game.NewSkill(tt.skill)
 
 			isAvailable := e.IsSkillAvailable(s)
 			assert.Equal(t, tt.isAvailable, isAvailable)

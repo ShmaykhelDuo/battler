@@ -14,7 +14,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 
 	tests := []struct {
 		name                 string
-		oppData              game.CharacterData
+		oppData              *game.CharacterData
 		initMaxHP            int
 		initOppMaxHP         int
 		effs                 []game.Effect
@@ -25,7 +25,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 	}{
 		{
 			name: "Opponent1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 33,
 				},
@@ -39,7 +39,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 		},
 		{
 			name: "Opponent2",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				Desc: game.CharacterDescription{
 					Number: 51,
 				},
@@ -72,7 +72,7 @@ func TestSkillAmpleness_Use(t *testing.T) {
 
 			s := c.Skills()[euphoria.SkillAmplenessIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.maxHP, c.MaxHP(), "maximum HP")
@@ -97,7 +97,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 
 	tests := []struct {
 		name                 string
-		oppData              game.CharacterData
+		oppData              *game.CharacterData
 		effs                 []game.Effect
 		oppEffs              []game.Effect
 		turnState            game.TurnState
@@ -109,9 +109,9 @@ func TestSkillExuberance_Use(t *testing.T) {
 	}{
 		{
 			name: "UltimateNotUnlockedNoEuphoricSource",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
-				SkillData: [4]game.SkillData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -129,9 +129,9 @@ func TestSkillExuberance_Use(t *testing.T) {
 		},
 		{
 			name: "UltimateNotUnlockedHasEuphoricSource",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
-				SkillData: [4]game.SkillData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -152,9 +152,9 @@ func TestSkillExuberance_Use(t *testing.T) {
 		},
 		{
 			name: "UltimateNotUnlockedNoEuphoricSourceEarly",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
-				SkillData: [4]game.SkillData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -175,9 +175,9 @@ func TestSkillExuberance_Use(t *testing.T) {
 		},
 		{
 			name: "UltimateUnlockedNoEuphoricSource",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
-				SkillData: [4]game.SkillData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -194,9 +194,9 @@ func TestSkillExuberance_Use(t *testing.T) {
 		},
 		{
 			name: "UltimateJustBeforeUnlockedNoEuphoricSource",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
-				SkillData: [4]game.SkillData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -217,9 +217,9 @@ func TestSkillExuberance_Use(t *testing.T) {
 		},
 		{
 			name: "UltimateJustAfterUnlockedNoEuphoricSource",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 100,
-				SkillData: [4]game.SkillData{
+				SkillData: [4]*game.SkillData{
 					3: {
 						Desc: game.SkillDescription{
 							IsUltimate: true,
@@ -256,7 +256,7 @@ func TestSkillExuberance_Use(t *testing.T) {
 
 			s := c.Skills()[euphoria.SkillExuberanceIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.hp, c.HP(), "HP")
@@ -273,7 +273,7 @@ func TestSkillPinkSphere_Use(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		oppData   game.CharacterData
+		oppData   *game.CharacterData
 		turnState game.TurnState
 		oppHP     int
 		maxHP     int
@@ -281,7 +281,7 @@ func TestSkillPinkSphere_Use(t *testing.T) {
 	}{
 		{
 			name: "Opponent1",
-			oppData: game.CharacterData{
+			oppData: &game.CharacterData{
 				DefaultHP: 113,
 			},
 			oppHP:    101,
@@ -299,7 +299,7 @@ func TestSkillPinkSphere_Use(t *testing.T) {
 
 			s := c.Skills()[euphoria.SkillPinkSphereIndex]
 
-			err := s.Use(opp, tt.turnState)
+			err := s.Use(c, opp, tt.turnState)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.oppHP, opp.HP(), "opponent's HP")
@@ -314,13 +314,13 @@ func TestSkillEuphoria_Use(t *testing.T) {
 
 	c := game.NewCharacter(euphoria.CharacterEuphoria)
 
-	data := game.CharacterData{}
+	data := &game.CharacterData{}
 	opp := game.NewCharacter(data)
 
 	s := c.Skills()[euphoria.SkillEuphoriaIndex]
 
 	turnState := game.TurnState{TurnNum: 4}
-	err := s.Use(opp, turnState)
+	err := s.Use(c, opp, turnState)
 	require.NoError(t, err)
 
 	_, ok := game.CharacterEffect[euphoria.EffectEuphoricHeal](c, euphoria.EffectDescEuphoricHeal)
