@@ -1,12 +1,19 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/ShmaykhelDuo/battler/internal/bot"
-	"github.com/ShmaykhelDuo/battler/internal/bot/minimax"
-	"github.com/ShmaykhelDuo/battler/internal/bot/moveml"
+	"github.com/ShmaykhelDuo/battler/internal/bot/alphabeta2"
+	"github.com/ShmaykhelDuo/battler/internal/bot/ml"
+	mlbot "github.com/ShmaykhelDuo/battler/internal/bot/ml/bot"
+	"github.com/ShmaykhelDuo/battler/internal/bot/ml/formats"
+	"github.com/ShmaykhelDuo/battler/internal/bot/ml/model"
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/ruby"
@@ -29,47 +36,123 @@ type miniMaxPlayerGenerator struct {
 }
 
 func (g miniMaxPlayerGenerator) Player(desc game.CharacterDescription) match.Player {
-	return minimax.NewBot(minimax.MemOptConcurrentRunner, g.depth)
+	// return minimax.NewBot(minimax.MemOptConcurrentRunner, g.depth)
+	return alphabeta2.NewBot(g.depth)
 }
 
-type moveMLPlayerGenerator struct {
-	models map[game.CharacterDescription]*moveml.Model
+type modelPlayerGenerator struct {
+	models map[game.CharacterDescription]*model.Model
 }
 
-func (g moveMLPlayerGenerator) Player(desc game.CharacterDescription) match.Player {
-	return moveml.NewBot(g.models[desc])
+func (g modelPlayerGenerator) Player(desc game.CharacterDescription) match.Player {
+	return mlbot.NewBot(g.models[desc])
+}
+
+type modelDesc struct {
+	prefix string
+	format ml.Format
 }
 
 func main() {
-	rubyModel, err := moveml.LoadModel("../../../ml/models/ruby-vs-milana")
-	if err != nil {
-		log.Fatalf("failed to load Ruby model: %v\n", err)
+	modelRoot := "ml/models"
+
+	modelNames := map[string]modelDesc{
+		"ruby-vs-milana-val20": modelDesc{
+			prefix: "serve_",
+			format: formats.FullStateCringeFormat{},
+		},
+		"ruby-vs-milana-noval": modelDesc{
+			prefix: "serve_",
+			format: formats.FullStateCringeFormat{},
+		},
+		"ruby-vs-milana-dqn": modelDesc{
+			prefix: "action_0_observation_",
+			format: formats.FullStateFormat{},
+		},
+		"milana-vs-ruby-val20": modelDesc{
+			prefix: "serve_",
+			format: formats.FullStateCringeFormat{},
+		},
+		"milana-vs-ruby-noval": modelDesc{
+			prefix: "serve_",
+			format: formats.FullStateCringeFormat{},
+		},
+		"milana-vs-ruby-dqn": modelDesc{
+			prefix: "action_0_observation_",
+			format: formats.FullStateFormat{},
+		},
 	}
 
-	milanaModel, err := moveml.LoadModel("../../../ml/models/milana-vs-ruby")
-	if err != nil {
-		log.Fatalf("failed to load Milana model: %v\n", err)
+	models := make(map[string]*model.Model)
+	for name, desc := range modelNames {
+		path := filepath.Join(modelRoot, name)
+		var err error
+		models[name], err = model.LoadModel(path, desc.format, desc.prefix)
+		if err != nil {
+			log.Fatalf("failed to load model %s from %s: %v", name, path, err)
+		}
 	}
 
 	players := map[string]playerGenerator{
-		"random":   randomPlayerGenerator{},
-		"minimax3": miniMaxPlayerGenerator{depth: 3},
-		"minimax5": miniMaxPlayerGenerator{depth: 5},
-		"minimax7": miniMaxPlayerGenerator{depth: 7},
-		// "minimax8": miniMaxPlayerGenerator{depth: 8},
-		"ml": moveMLPlayerGenerator{
-			models: map[game.CharacterDescription]*moveml.Model{
-				ruby.CharacterRuby.Desc:     rubyModel,
-				milana.CharacterMilana.Desc: milanaModel,
+		"random":    randomPlayerGenerator{},
+		"minimax2":  miniMaxPlayerGenerator{depth: 2},
+		"minimax4":  miniMaxPlayerGenerator{depth: 4},
+		"minimax6":  miniMaxPlayerGenerator{depth: 6},
+		"minimax8":  miniMaxPlayerGenerator{depth: 8},
+		"minimax10": miniMaxPlayerGenerator{depth: 10},
+		"mlval20": modelPlayerGenerator{
+			models: map[game.CharacterDescription]*model.Model{
+				ruby.CharacterRuby.Desc:     models["ruby-vs-milana-val20"],
+				milana.CharacterMilana.Desc: models["milana-vs-ruby-val20"],
+			},
+		},
+		"mlnoval": modelPlayerGenerator{
+			models: map[game.CharacterDescription]*model.Model{
+				ruby.CharacterRuby.Desc:     models["ruby-vs-milana-noval"],
+				milana.CharacterMilana.Desc: models["milana-vs-ruby-noval"],
+			},
+		},
+		"mldqn": modelPlayerGenerator{
+			models: map[game.CharacterDescription]*model.Model{
+				ruby.CharacterRuby.Desc:     models["ruby-vs-milana-dqn"],
+				milana.CharacterMilana.Desc: models["milana-vs-ruby-dqn"],
 			},
 		},
 	}
 
-	s := newEloScoring(ruby.CharacterRuby, milana.CharacterMilana, players)
-	err = s.run(25)
-	if err != nil {
-		log.Fatal(err)
+	var res []map[string]int
+
+	for range 10 {
+		s := newEloScoring(ruby.CharacterRuby, milana.CharacterMilana, players)
+		err := s.run(5)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		res = append(res, s.ratings)
 	}
 
-	fmt.Printf("Result: %v\n", s.ratings)
+	fmt.Printf("%v\n", res)
+
+	f, err := os.Create("ratings.csv")
+	if err != nil {
+		log.Fatalf("rip file: %v", err)
+	}
+	defer f.Close()
+
+	p := make([]string, 0, len(players))
+	for k := range players {
+		p = append(p, k)
+	}
+
+	w := csv.NewWriter(f)
+	w.Write(p)
+	for _, row := range res {
+		r := make([]string, len(p))
+		for i, k := range p {
+			r[i] = strconv.Itoa(row[k])
+		}
+		w.Write(r)
+	}
+	w.Flush()
 }

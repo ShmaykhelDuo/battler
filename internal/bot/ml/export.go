@@ -31,7 +31,7 @@ func ExportDataset(out io.Writer, data []minimax.Entry, format Format) error {
 		}
 
 		res := format.Row(e.State)
-		res["result"] = TensorableValue[int64]{int64(e.Result[e.State.TurnState][0])}
+		res["result"] = e.Result[e.State.TurnState][0]
 		err := enc.Encode(res)
 		if err != nil {
 			return fmt.Errorf("encode: %w", err)

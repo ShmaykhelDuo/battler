@@ -3,7 +3,6 @@ package formats
 import (
 	"fmt"
 
-	"github.com/ShmaykhelDuo/battler/internal/bot/ml"
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 )
@@ -11,12 +10,12 @@ import (
 type PrevMovesFormat struct {
 }
 
-func (f PrevMovesFormat) Row(state match.GameState) map[string]ml.Tensorable {
+func (f PrevMovesFormat) Row(state match.GameState) map[string]any {
 	isGoingFirst := state.TurnState.IsGoingFirst
 
-	res := map[string]ml.Tensorable{
-		"first": ml.TensorableValue[bool]{Item: state.TurnState.IsGoingFirst},
-		"asopp": ml.TensorableValue[bool]{Item: state.AsOpp},
+	res := map[string]any{
+		"first": state.TurnState.IsGoingFirst,
+		"asopp": state.AsOpp,
 	}
 
 	for turnNum := game.MinTurnNumber; turnNum <= game.MaxTurnNumber; turnNum++ {
@@ -38,7 +37,7 @@ func (f PrevMovesFormat) Row(state match.GameState) map[string]ml.Tensorable {
 	return res
 }
 
-func (f PrevMovesFormat) setTurn(turnState game.TurnState, state match.GameState) ml.Tensorable {
+func (f PrevMovesFormat) setTurn(turnState game.TurnState, state match.GameState) []int64 {
 	skills, ok := state.SkillLog[turnState]
 	if ok {
 		val := make([]int64, len(skills))
@@ -46,8 +45,8 @@ func (f PrevMovesFormat) setTurn(turnState game.TurnState, state match.GameState
 			val[i] = int64(s)
 		}
 
-		return ml.TensorableSlice[int64]{Items: val}
+		return val
 	}
 
-	return ml.TensorableSlice[int64]{Items: []int64{}}
+	return []int64{}
 }

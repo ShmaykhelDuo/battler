@@ -3,6 +3,7 @@ module github.com/ShmaykhelDuo/battler
 go 1.22.4
 
 require (
+	github.com/go-python/gopy v0.4.10
 	github.com/gorilla/mux v1.8.1
 	github.com/stretchr/testify v1.9.0
 )

@@ -28,6 +28,7 @@ type Match struct {
 	p1, p2        CharacterPlayer
 	invertedOrder bool
 	skillLog      SkillLog
+	end           bool
 }
 
 // New creates a new match.
@@ -74,11 +75,13 @@ func (m *Match) Run(ctx context.Context) error {
 		return err
 	}
 
+	m.end = true
+
 	return nil
 }
 
 func (m *Match) Result() (Result, error) {
-	if !m.isEnd() {
+	if !m.end {
 		return ResultDraw, ErrMatchNotEnded
 	}
 
