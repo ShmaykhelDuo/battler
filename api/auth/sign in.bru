@@ -1,0 +1,18 @@
+meta {
+  name: sign in
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/signin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "testuser2",
+    "password": "testpassword2"
+  }
+}
