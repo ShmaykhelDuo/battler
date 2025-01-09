@@ -18,6 +18,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/repository/auth/session"
 	"github.com/ShmaykhelDuo/battler/internal/repository/auth/user"
 	authservice "github.com/ShmaykhelDuo/battler/internal/service/auth"
+	"github.com/ShmaykhelDuo/battler/web"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/sync/errgroup"
 )
@@ -102,6 +103,8 @@ func constructDependencies(ctx context.Context) (http.Handler, error) {
 
 	mux := http.NewServeMux()
 	mux.Handle("/auth/", http.StripPrefix("/auth", authhandler.Mux(authHandler)))
+
+	mux.Handle("/web/", http.StripPrefix("/web", http.FileServerFS(web.FS)))
 
 	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), nil
 }
