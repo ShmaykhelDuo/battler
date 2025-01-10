@@ -15,6 +15,10 @@ type TransactionManager struct {
 	conn TransactionableConnection
 }
 
+func NewTransactionManager(conn TransactionableConnection) *TransactionManager {
+	return &TransactionManager{conn: conn}
+}
+
 func (tm *TransactionManager) Transact(ctx context.Context, isolation db.TxIsolation, f func(context.Context) error) error {
 	opts := pgx.TxOptions{
 		IsoLevel: pgxTxIsolation(isolation),
