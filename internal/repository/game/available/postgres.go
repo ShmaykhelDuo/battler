@@ -70,3 +70,15 @@ func (r *PostgresRepository) AddCharacters(ctx context.Context, userID uuid.UUID
 
 	return nil
 }
+
+func (r *PostgresRepository) AreAllAvailable(ctx context.Context, userID uuid.UUID, numbers []int) (bool, error) {
+	sql := "SELECT count(*) FROM available_characters WHERE user_id = $1 AND number = ANY ($2);"
+
+	var count int
+	err := r.db.Get(ctx, &count, sql, userID, numbers)
+	if err != nil {
+		return false, err
+	}
+
+	return count == len(numbers), nil
+}

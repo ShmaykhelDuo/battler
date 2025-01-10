@@ -1,11 +1,20 @@
 package game
 
-import service "github.com/ShmaykhelDuo/battler/internal/service/game"
+import (
+	service "github.com/ShmaykhelDuo/battler/internal/service/game"
+	"github.com/ShmaykhelDuo/battler/internal/service/match"
+	"github.com/gorilla/websocket"
+)
 
 type Handler struct {
-	s *service.Service
+	gameSvc  *service.Service
+	matchSvc *match.Service
+	upgrader websocket.Upgrader
 }
 
-func NewHandler(s *service.Service) *Handler {
-	return &Handler{s: s}
+func NewHandler(gameSvc *service.Service, matchSvc *match.Service) *Handler {
+	return &Handler{
+		gameSvc:  gameSvc,
+		matchSvc: matchSvc,
+	}
 }

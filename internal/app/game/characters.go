@@ -12,7 +12,7 @@ type Character struct {
 }
 
 func (h *Handler) Characters(w http.ResponseWriter, r *http.Request) {
-	chars, err := h.s.AvailableCharacters(r.Context())
+	chars, err := h.gameSvc.AvailableCharacters(r.Context())
 	if err != nil {
 		api.HandleError(w, fmt.Errorf("characters: %w", err))
 		return

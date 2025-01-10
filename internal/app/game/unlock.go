@@ -8,7 +8,7 @@ import (
 )
 
 func (h *Handler) UnlockInitialCharacters(w http.ResponseWriter, r *http.Request) {
-	err := h.s.UnlockInitialCharacters(r.Context())
+	err := h.gameSvc.UnlockInitialCharacters(r.Context())
 	if err != nil {
 		api.HandleError(w, fmt.Errorf("characters: %w", err))
 		return

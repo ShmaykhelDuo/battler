@@ -1,4 +1,4 @@
-package character
+package game
 
 type Character struct {
 	Number int

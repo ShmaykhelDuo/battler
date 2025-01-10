@@ -16,13 +16,16 @@ import (
 	authhttp "github.com/ShmaykhelDuo/battler/internal/pkg/auth/http"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/character"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/db/postgres"
+	"github.com/ShmaykhelDuo/battler/internal/pkg/matchmaker"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/passhash/bcrypt"
 	"github.com/ShmaykhelDuo/battler/internal/repository/auth/session"
 	"github.com/ShmaykhelDuo/battler/internal/repository/auth/user"
 	"github.com/ShmaykhelDuo/battler/internal/repository/game/available"
 	characterrepo "github.com/ShmaykhelDuo/battler/internal/repository/game/character"
+	connectionrepo "github.com/ShmaykhelDuo/battler/internal/repository/match/connection"
 	authservice "github.com/ShmaykhelDuo/battler/internal/service/auth"
 	"github.com/ShmaykhelDuo/battler/internal/service/game"
+	"github.com/ShmaykhelDuo/battler/internal/service/match"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/sync/errgroup"
 )
@@ -97,6 +100,7 @@ func constructDependencies(ctx context.Context) (http.Handler, error) {
 	sessionRepo := session.NewInMemoryRepository()
 	availableCharRepo := available.NewPostgresRepository(db)
 	characterRepo := characterrepo.NewGameRepository()
+	connectionRepo := connectionrepo.NewInMemoryRepository()
 
 	passwordHasher, err := bcrypt.NewPasswordHasher(10)
 	if err != nil {
@@ -108,8 +112,11 @@ func constructDependencies(ctx context.Context) (http.Handler, error) {
 	authService := authservice.NewService(userRepo, sessionRepo, passwordHasher)
 	authHandler := authhandler.NewHandler(authService)
 
+	matchmaker := matchmaker.New(characterRepo)
+
 	gameService := game.NewService(availableCharRepo, characterPicker, tm)
-	gameHandler := gamehandler.NewHandler(gameService)
+	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker)
+	gameHandler := gamehandler.NewHandler(gameService, matchService)
 
 	authMiddleware := authhttp.NewAuthMiddleware(sessionRepo)
 
