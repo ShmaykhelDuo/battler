@@ -38,6 +38,7 @@ func (c *Connection) State() <-chan match.GameState {
 }
 
 func (c *Connection) SendState(ctx context.Context, state match.GameState) error {
+	c.state = state
 	select {
 	case c.stateChan <- state:
 		return nil
@@ -99,4 +100,8 @@ func (c *Connection) RequestSkill(ctx context.Context) (int, error) {
 	case <-ctx.Done():
 		return 0, ctx.Err()
 	}
+}
+
+func (c *Connection) LastState() match.GameState {
+	return c.state
 }

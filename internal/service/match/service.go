@@ -20,7 +20,7 @@ type AvailableCharacterRepository interface {
 }
 
 type Matchmaker interface {
-	CreateMatch(ctx context.Context, conn match.Player, main, secondary int) error
+	MakeMatch(ctx context.Context, conn match.Player, main, secondary int) error
 }
 
 type Service struct {
@@ -63,7 +63,7 @@ func (s *Service) ConnectToNewMatch(ctx context.Context, userID uuid.UUID, main,
 		return nil, fmt.Errorf("create connection: %w", err)
 	}
 
-	err = s.mm.CreateMatch(ctx, conn, main, secondary)
+	err = s.mm.MakeMatch(ctx, conn, main, secondary)
 	if err != nil {
 		return nil, fmt.Errorf("matchmaker: %w", err)
 	}
