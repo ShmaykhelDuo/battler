@@ -45,7 +45,7 @@ func run() error {
 	h := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})
 	slog.SetDefault(slog.New(h))
 
-	mux, err := constructDependencies(ctx)
+	mux, mm, err := constructDependencies(ctx)
 	if err != nil {
 		return fmt.Errorf("construct dependencies: %w", err)
 	}
@@ -56,6 +56,14 @@ func run() error {
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		err := mm.Run(ctx)
+		if errors.Is(err, context.Canceled) {
+			return nil
+		}
+		return err
+	})
 
 	eg.Go(func() error {
 		err := serv.ListenAndServe()
@@ -85,12 +93,12 @@ func run() error {
 	return eg.Wait()
 }
 
-func constructDependencies(ctx context.Context) (http.Handler, error) {
+func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Matchmaker, error) {
 	connString := os.Getenv("DB_CONN")
 
 	pool, err := pgxpool.New(ctx, connString)
 	if err != nil {
-		return nil, fmt.Errorf("pgxpool: %w", err)
+		return nil, nil, fmt.Errorf("pgxpool: %w", err)
 	}
 
 	db := postgres.NewDB(pool)
@@ -104,7 +112,7 @@ func constructDependencies(ctx context.Context) (http.Handler, error) {
 
 	passwordHasher, err := bcrypt.NewPasswordHasher(10)
 	if err != nil {
-		return nil, fmt.Errorf("bcrypt: %w", err)
+		return nil, nil, fmt.Errorf("bcrypt: %w", err)
 	}
 
 	characterPicker := character.NewPicker(characterRepo)
@@ -124,5 +132,5 @@ func constructDependencies(ctx context.Context) (http.Handler, error) {
 	mux.Handle("/auth/", http.StripPrefix("/auth", authhandler.Mux(authHandler)))
 	mux.Handle("/game/", http.StripPrefix("/game", gamehandler.Mux(gameHandler)))
 
-	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), nil
+	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchmaker, nil
 }

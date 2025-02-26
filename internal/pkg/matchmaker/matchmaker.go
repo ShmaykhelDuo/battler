@@ -17,19 +17,29 @@ type CharacterRepository interface {
 
 type Matchmaker struct {
 	cr CharacterRepository
+	in chan [2]match.CharacterPlayer
 }
 
 func New(cr CharacterRepository) *Matchmaker {
 	return &Matchmaker{
 		cr: cr,
+		in: make(chan [2]match.CharacterPlayer),
 	}
 }
 
 func (m *Matchmaker) Run(ctx context.Context) error {
-	return nil
+	for {
+		select {
+		case players := <-m.in:
+			match := match.New(players[0], players[1], false)
+			go match.Run(ctx)
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
 }
 
-func (m *Matchmaker) CreateMatch(ctx context.Context, conn match.Player, main, secondary int) error {
+func (m *Matchmaker) MakeMatch(ctx context.Context, conn match.Player, main, secondary int) error {
 	playerCharNum := main
 	botCharNum := m.selectBotCharacter()
 
@@ -57,10 +67,12 @@ func (m *Matchmaker) CreateMatch(ctx context.Context, conn match.Player, main, s
 		Player:    &bot.RandomBot{},
 	}
 
-	match := match.New(player, bot, false)
-
-	go match.Run(ctx)
-	return nil
+	select {
+	case m.in <- [2]match.CharacterPlayer{player, bot}:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (m *Matchmaker) selectBotCharacter() int {

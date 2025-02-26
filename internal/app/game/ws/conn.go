@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/ShmaykhelDuo/battler/internal/app/game/ws/gamestate"
 	"github.com/ShmaykhelDuo/battler/internal/model/api"
+	"github.com/ShmaykhelDuo/battler/internal/model/errs"
 	model "github.com/ShmaykhelDuo/battler/internal/model/game"
 	service "github.com/ShmaykhelDuo/battler/internal/service/match"
 	"github.com/google/uuid"
@@ -35,7 +37,7 @@ func (c *Conn) Handle(ctx context.Context) error {
 
 	err := c.initiate(ctx)
 	if err != nil {
-		return fmt.Errorf("initiate: %w", err)
+		return c.handleError(fmt.Errorf("initiate: %w", err))
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
@@ -52,27 +54,45 @@ func (c *Conn) Handle(ctx context.Context) error {
 }
 
 func (c *Conn) initiate(ctx context.Context) error {
+	slog.Debug("waiting for an initiate message")
 	msg, err := c.receiveMessage()
 	if err != nil {
 		return err
 	}
 
+	slog.Debug("received a message")
+
 	switch m := msg.(type) {
 	case MessageMatchRequest:
+		slog.Debug("connecting to new match")
 		c.conn, err = c.s.ConnectToNewMatch(ctx, c.userID, m.MainCharacter, m.SecondaryCharacter)
 		if err != nil {
-			return c.handleError(fmt.Errorf("new match: %w", err))
+			return fmt.Errorf("new match: %w", err)
 		}
 	case MessageMatchReconnect:
+		slog.Debug("reconnecting to match")
 		c.conn, err = c.s.ReconnectToMatch(ctx, c.userID)
 		if err != nil {
-			return c.handleError(fmt.Errorf("match reconnect: %w", err))
+			if errors.Is(err, errs.ErrNotFound) {
+				return api.Error{
+					Kind:    api.KindNotFound,
+					Message: "no match is in progress",
+				}
+			}
+			return fmt.Errorf("match reconnect: %w", err)
+		}
+		msg := MessageGameState{
+			State: gamestate.NewGameState(c.conn.LastState()),
+		}
+		err = c.sendMessage(msg)
+		if err != nil {
+			return err
 		}
 	default:
-		return c.handleError(api.Error{
+		return api.Error{
 			Kind:    api.KindInvalidRequest,
 			Message: "illegal initial request type",
-		})
+		}
 	}
 
 	return nil
@@ -80,6 +100,7 @@ func (c *Conn) initiate(ctx context.Context) error {
 
 func (c *Conn) handleSend(ctx context.Context) error {
 	for {
+		slog.Debug("conn send waiting")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -108,27 +129,36 @@ func (c *Conn) handleSend(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
+			c.ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(10*time.Second))
+			return nil
 		}
 	}
 }
 
 func (c *Conn) handleReceive(ctx context.Context) error {
 	for {
+		slog.Debug("conn receive waiting")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 			m, err := c.receiveMessage()
 			if err != nil {
+				var closeErr *websocket.CloseError
+				if errors.As(err, &closeErr) && closeErr.Code == websocket.CloseNormalClosure {
+					return nil
+				}
 				return err
 			}
 			switch msg := m.(type) {
 			case MessageMove:
+				slog.Debug("got a move", "msg", msg)
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
 				case c.conn.Skill() <- msg.Move:
 				}
+				slog.Debug("sent a move", "msg", msg)
 			default:
 				err := c.handleError(api.Error{
 					Kind:    api.KindInvalidRequest,
