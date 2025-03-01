@@ -1,0 +1,18 @@
+meta {
+  name: convert
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/money/conversion
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "currency_id": 2,
+    "amount": 2
+  }
+}

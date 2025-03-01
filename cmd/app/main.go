@@ -12,6 +12,8 @@ import (
 
 	authhandler "github.com/ShmaykhelDuo/battler/internal/app/auth"
 	gamehandler "github.com/ShmaykhelDuo/battler/internal/app/game"
+	moneyhandler "github.com/ShmaykhelDuo/battler/internal/app/money"
+	shophandler "github.com/ShmaykhelDuo/battler/internal/app/shop"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/api"
 	authhttp "github.com/ShmaykhelDuo/battler/internal/pkg/auth/http"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/character"
@@ -23,9 +25,14 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/repository/game/available"
 	characterrepo "github.com/ShmaykhelDuo/battler/internal/repository/game/character"
 	connectionrepo "github.com/ShmaykhelDuo/battler/internal/repository/match/connection"
+	balancerepo "github.com/ShmaykhelDuo/battler/internal/repository/money/balance"
+	currencyconversionrepo "github.com/ShmaykhelDuo/battler/internal/repository/money/conversion"
+	"github.com/ShmaykhelDuo/battler/internal/repository/shop/chest"
 	authservice "github.com/ShmaykhelDuo/battler/internal/service/auth"
 	"github.com/ShmaykhelDuo/battler/internal/service/game"
 	"github.com/ShmaykhelDuo/battler/internal/service/match"
+	"github.com/ShmaykhelDuo/battler/internal/service/money"
+	"github.com/ShmaykhelDuo/battler/internal/service/shop"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/sync/errgroup"
 )
@@ -106,9 +113,15 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 
 	userRepo := user.NewPostgresRepository(db)
 	sessionRepo := session.NewInMemoryRepository()
+
 	availableCharRepo := available.NewPostgresRepository(db)
 	characterRepo := characterrepo.NewGameRepository()
 	connectionRepo := connectionrepo.NewInMemoryRepository()
+
+	balanceRepo := balancerepo.NewPostgresRepository(db)
+	currencyConvRepo := currencyconversionrepo.NewPostgresRepository(db)
+
+	chestRepo := chest.NewRepository()
 
 	passwordHasher, err := bcrypt.NewPasswordHasher(10)
 	if err != nil {
@@ -123,14 +136,22 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	matchmaker := matchmaker.New(characterRepo)
 
 	gameService := game.NewService(availableCharRepo, characterPicker, tm)
-	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker)
+	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker, balanceRepo, tm)
 	gameHandler := gamehandler.NewHandler(gameService, matchService)
+
+	moneyService := money.NewService(balanceRepo, currencyConvRepo, tm)
+	moneyHandler := moneyhandler.NewHandler(moneyService)
+
+	shopService := shop.NewService(chestRepo, balanceRepo, characterPicker, availableCharRepo, tm)
+	shopHandler := shophandler.NewHandler(shopService)
 
 	authMiddleware := authhttp.NewAuthMiddleware(sessionRepo)
 
 	mux := http.NewServeMux()
 	mux.Handle("/auth/", http.StripPrefix("/auth", authhandler.Mux(authHandler)))
 	mux.Handle("/game/", http.StripPrefix("/game", gamehandler.Mux(gameHandler)))
+	mux.Handle("/money/", http.StripPrefix("/money", moneyhandler.Mux(moneyHandler)))
+	mux.Handle("/shop/", http.StripPrefix("/shop", shophandler.Mux(shopHandler)))
 
 	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchmaker, nil
 }
