@@ -13,6 +13,7 @@ import (
 	authhandler "github.com/ShmaykhelDuo/battler/internal/app/auth"
 	gamehandler "github.com/ShmaykhelDuo/battler/internal/app/game"
 	moneyhandler "github.com/ShmaykhelDuo/battler/internal/app/money"
+	shophandler "github.com/ShmaykhelDuo/battler/internal/app/shop"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/api"
 	authhttp "github.com/ShmaykhelDuo/battler/internal/pkg/auth/http"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/character"
@@ -26,10 +27,12 @@ import (
 	connectionrepo "github.com/ShmaykhelDuo/battler/internal/repository/match/connection"
 	balancerepo "github.com/ShmaykhelDuo/battler/internal/repository/money/balance"
 	currencyconversionrepo "github.com/ShmaykhelDuo/battler/internal/repository/money/conversion"
+	"github.com/ShmaykhelDuo/battler/internal/repository/shop/chest"
 	authservice "github.com/ShmaykhelDuo/battler/internal/service/auth"
 	"github.com/ShmaykhelDuo/battler/internal/service/game"
 	"github.com/ShmaykhelDuo/battler/internal/service/match"
 	"github.com/ShmaykhelDuo/battler/internal/service/money"
+	"github.com/ShmaykhelDuo/battler/internal/service/shop"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/sync/errgroup"
 )
@@ -118,6 +121,8 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	balanceRepo := balancerepo.NewPostgresRepository(db)
 	currencyConvRepo := currencyconversionrepo.NewPostgresRepository(db)
 
+	chestRepo := chest.NewRepository()
+
 	passwordHasher, err := bcrypt.NewPasswordHasher(10)
 	if err != nil {
 		return nil, nil, fmt.Errorf("bcrypt: %w", err)
@@ -137,12 +142,16 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	moneyService := money.NewService(balanceRepo, currencyConvRepo, tm)
 	moneyHandler := moneyhandler.NewHandler(moneyService)
 
+	shopService := shop.NewService(chestRepo, balanceRepo, characterPicker, availableCharRepo, tm)
+	shopHandler := shophandler.NewHandler(shopService)
+
 	authMiddleware := authhttp.NewAuthMiddleware(sessionRepo)
 
 	mux := http.NewServeMux()
 	mux.Handle("/auth/", http.StripPrefix("/auth", authhandler.Mux(authHandler)))
 	mux.Handle("/game/", http.StripPrefix("/game", gamehandler.Mux(gameHandler)))
 	mux.Handle("/money/", http.StripPrefix("/money", moneyhandler.Mux(moneyHandler)))
+	mux.Handle("/shop/", http.StripPrefix("/shop", shophandler.Mux(shopHandler)))
 
 	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchmaker, nil
 }

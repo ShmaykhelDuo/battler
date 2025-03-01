@@ -96,7 +96,7 @@ func (s *Service) ReconnectToMatch(ctx context.Context, userID uuid.UUID) (*mode
 }
 
 func (s *Service) matchEnd(ctx context.Context, userID uuid.UUID) error {
-	err := s.tm.Transact(ctx, db.TxIsolationDefault, func(ctx context.Context) error {
+	err := s.tm.Transact(ctx, db.TxIsolationRepeatableRead, func(ctx context.Context) error {
 		balance, err := s.br.CurrencyBalance(ctx, userID, money.CurrencyWhiteDust)
 		if err != nil {
 			return fmt.Errorf("get currency balance: %w", err)
