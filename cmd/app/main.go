@@ -11,6 +11,7 @@ import (
 	"time"
 
 	authhandler "github.com/ShmaykhelDuo/battler/internal/app/auth"
+	friendhandler "github.com/ShmaykhelDuo/battler/internal/app/friends"
 	gamehandler "github.com/ShmaykhelDuo/battler/internal/app/game"
 	moneyhandler "github.com/ShmaykhelDuo/battler/internal/app/money"
 	shophandler "github.com/ShmaykhelDuo/battler/internal/app/shop"
@@ -28,7 +29,9 @@ import (
 	balancerepo "github.com/ShmaykhelDuo/battler/internal/repository/money/balance"
 	currencyconversionrepo "github.com/ShmaykhelDuo/battler/internal/repository/money/conversion"
 	"github.com/ShmaykhelDuo/battler/internal/repository/shop/chest"
+	friendrepo "github.com/ShmaykhelDuo/battler/internal/repository/social/friends"
 	authservice "github.com/ShmaykhelDuo/battler/internal/service/auth"
+	"github.com/ShmaykhelDuo/battler/internal/service/friends"
 	"github.com/ShmaykhelDuo/battler/internal/service/game"
 	"github.com/ShmaykhelDuo/battler/internal/service/match"
 	"github.com/ShmaykhelDuo/battler/internal/service/money"
@@ -123,6 +126,8 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 
 	chestRepo := chest.NewRepository()
 
+	friendRepo := friendrepo.NewPostgresRepository(db)
+
 	passwordHasher, err := bcrypt.NewPasswordHasher(10)
 	if err != nil {
 		return nil, nil, fmt.Errorf("bcrypt: %w", err)
@@ -145,6 +150,9 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	shopService := shop.NewService(chestRepo, balanceRepo, characterPicker, availableCharRepo, tm)
 	shopHandler := shophandler.NewHandler(shopService)
 
+	friendService := friends.NewService(friendRepo)
+	friendHandler := friendhandler.NewHandler(friendService)
+
 	authMiddleware := authhttp.NewAuthMiddleware(sessionRepo)
 
 	mux := http.NewServeMux()
@@ -152,6 +160,7 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	mux.Handle("/game/", http.StripPrefix("/game", gamehandler.Mux(gameHandler)))
 	mux.Handle("/money/", http.StripPrefix("/money", moneyhandler.Mux(moneyHandler)))
 	mux.Handle("/shop/", http.StripPrefix("/shop", shophandler.Mux(shopHandler)))
+	mux.Handle("/friends/", http.StripPrefix("/friends", friendhandler.Mux(friendHandler)))
 
 	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchmaker, nil
 }
