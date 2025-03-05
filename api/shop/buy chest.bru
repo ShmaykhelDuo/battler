@@ -1,0 +1,15 @@
+meta {
+  name: buy chest
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/shop/chests/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 1
+}

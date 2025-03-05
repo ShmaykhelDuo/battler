@@ -2,12 +2,15 @@ package available
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/ShmaykhelDuo/battler/internal/model/errs"
 	model "github.com/ShmaykhelDuo/battler/internal/model/game"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/db/postgres"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Character struct {
@@ -65,6 +68,11 @@ func (r *PostgresRepository) AddCharacters(ctx context.Context, userID uuid.UUID
 
 	_, err := r.db.Exec(ctx, sql, args...)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == postgres.ErrCodeUniqueViolation {
+			return errs.ErrAlreadyExists
+		}
+
 		return err
 	}
 

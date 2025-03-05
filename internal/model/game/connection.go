@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
@@ -12,6 +13,7 @@ import (
 
 type Connection struct {
 	userID    uuid.UUID
+	endFunc   func(ctx context.Context, userID uuid.UUID) error
 	state     match.GameState
 	stateChan chan match.GameState
 	errorChan chan error
@@ -19,9 +21,10 @@ type Connection struct {
 	skillChan chan int
 }
 
-func NewConnection(userID uuid.UUID) *Connection {
+func NewConnection(userID uuid.UUID, endFunc func(ctx context.Context, userID uuid.UUID) error) *Connection {
 	return &Connection{
 		userID:    userID,
+		endFunc:   endFunc,
 		stateChan: make(chan match.GameState),
 		errorChan: make(chan error),
 		endChan:   make(chan any),
@@ -38,6 +41,7 @@ func (c *Connection) State() <-chan match.GameState {
 }
 
 func (c *Connection) SendState(ctx context.Context, state match.GameState) error {
+	c.state = state
 	select {
 	case c.stateChan <- state:
 		return nil
@@ -77,6 +81,11 @@ func (c *Connection) End() <-chan any {
 }
 
 func (c *Connection) SendEnd(ctx context.Context) error {
+	err := c.endFunc(ctx, c.userID)
+	if err != nil {
+		return fmt.Errorf("end func: %w", err)
+	}
+
 	select {
 	case c.endChan <- struct{}{}:
 		return nil
@@ -99,4 +108,8 @@ func (c *Connection) RequestSkill(ctx context.Context) (int, error) {
 	case <-ctx.Done():
 		return 0, ctx.Err()
 	}
+}
+
+func (c *Connection) LastState() match.GameState {
+	return c.state
 }
