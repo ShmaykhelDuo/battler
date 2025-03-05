@@ -38,6 +38,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/service/shop"
 	"github.com/ShmaykhelDuo/battler/web"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -115,8 +116,16 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	db := postgres.NewDB(pool)
 	tm := postgres.NewTransactionManager(pool)
 
+	cacheUrl := os.Getenv("CACHE_URL")
+	opts, err := redis.ParseURL(cacheUrl)
+	if err != nil {
+		return nil, nil, fmt.Errorf("redis parse url: %w", err)
+	}
+	redisCli := redis.NewClient(opts)
+
 	userRepo := user.NewPostgresRepository(db)
-	sessionRepo := session.NewInMemoryRepository()
+	// sessionRepo := session.NewInMemoryRepository()
+	sessionRepo := session.NewRedisRepository(redisCli)
 
 	availableCharRepo := available.NewPostgresRepository(db)
 	characterRepo := characterrepo.NewGameRepository()

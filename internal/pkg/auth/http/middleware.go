@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	model "github.com/ShmaykhelDuo/battler/internal/model/auth"
@@ -31,7 +32,7 @@ func (m *AuthMiddleware) Middleware(h http.Handler) http.Handler {
 			ctx := auth.ContextWithSession(r.Context(), session)
 			r = r.WithContext(ctx)
 		} else if !errors.Is(err, errs.ErrNotFound) {
-			api.HandleError(w, err)
+			api.HandleError(w, fmt.Errorf("get session: %w", err))
 			return
 		}
 
