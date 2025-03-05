@@ -1,4 +1,5 @@
 POSTGRES_URL := postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable
+REDIS_URL := redis://localhost:6379/0
 
 .PHONY: start-dev
 start-dev:
@@ -18,4 +19,4 @@ migrate-up:
 
 .PHONY: run
 run:
-	DB_CONN=$(POSTGRES_URL) go run ./cmd/app
+	DB_CONN=$(POSTGRES_URL) CACHE_URL=$(REDIS_URL) go run ./cmd/app
