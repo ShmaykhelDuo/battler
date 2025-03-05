@@ -15,3 +15,10 @@ function parseError(error) {
 
     return kinds[error.id];
 }
+
+async function handleError(response) {
+    const json = await response.json();
+    const message = parseError(json.error);
+
+    document.getElementById("error").innerText = message;
+}
