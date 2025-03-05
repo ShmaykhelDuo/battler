@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/web/styles.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="/web/auth/script.js"></script>
+    <script src="/web/game/characters.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <h1>Hello!</h1>
+    <button onclick="signout()">Sign out</button>
+    <div id="character-selection">
+        <div id="characters">
+            <button class="character-button">Z89</button>
+            <button class="character-button">Milana</button>
+        </div>
+        <div id="displayed-character">
+            <div id="character-name">Milana (51)</div>
+            <div id="character-rarity">SP</div>
+            <div id="character-misc">
+                <div hidden>Level: <span id="character-level">2</span></div>
+                <div hidden>Matches played: <span id="character-matches">4</span></div>
+                <div hidden>Matches won: <span id="character-matches-won">1 (25%)</span></div>
+                <div>Tags: <span id="character-tags">Durable, Heal, Nuke, Preventive</span></div>
+                <div hidden>Skill colours: <span id="character-colours">Green, White, White, Cyan</span></div>
+            </div>
+            <div id="character-skills">
+                <div class="skill">Royal Move</div>
+                <div class="skill">Composure</div>
+                <div class="skill">Mint Mist</div>
+                <div class="skill">Pride</div>
+            </div>
+            <div id="character-description">An overconfident spoiled princess.</div>
+        </div>
+    </div>
+    <div id="button-panel">
+        <div id="selection-panel">
+            <div class="selection-panel-col">
+                <button onclick="setAsMain()">Set as main</button>
+                <button onclick="setAsSecondary()">Set as secondary</button>
+            </div>
+            <div class="selection-panel-col">
+                <button onclick="clearSelection()">Clear set</button>
+                <button onclick="chooseRandom()">Choose random</button>
+            </div>
+        </div>
+        <div id="selected-panel">
+            <div class="selected-col">
+                <div>Main</div>
+                <div id="selected-main" class="selected-item selected-item-empty"></div>
+            </div>
+            <div class="selected-col">
+                <div>Secondary</div>
+                <div id="selected-secondary" class="selected-item selected-item-empty"></div>
+            </div>
+        </div>
+        <button id="battle-button" onclick="battle()" disabled="disabled">Battle</button>
+    </div>
+    <script>
+        fetchCharacters();
+    </script>
+</body>
+
+</html>

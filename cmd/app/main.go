@@ -36,6 +36,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/service/match"
 	"github.com/ShmaykhelDuo/battler/internal/service/money"
 	"github.com/ShmaykhelDuo/battler/internal/service/shop"
+	"github.com/ShmaykhelDuo/battler/web"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/sync/errgroup"
 )
@@ -161,6 +162,8 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	mux.Handle("/money/", http.StripPrefix("/money", moneyhandler.Mux(moneyHandler)))
 	mux.Handle("/shop/", http.StripPrefix("/shop", shophandler.Mux(shopHandler)))
 	mux.Handle("/friends/", http.StripPrefix("/friends", friendhandler.Mux(friendHandler)))
+
+	mux.Handle("/web/", http.StripPrefix("/web", http.FileServerFS(web.FS)))
 
 	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchmaker, nil
 }

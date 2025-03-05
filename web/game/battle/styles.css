@@ -1,0 +1,133 @@
+#battle {
+    display: flex;
+    flex-direction: row;
+    height: 550px;
+}
+
+.panel {
+    border-style: solid;
+    border-radius: 5px;
+    border-width: 3px;
+    border-color: rgb(50, 50, 50);
+    margin: -1.5px;
+    padding: 5px;
+}
+
+.character-panel {
+    width: 550px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.character-name {
+    font-size: 25px;
+}
+
+.character-hp {
+    font-size: 20px;
+}
+
+.effect {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+}
+
+.effect-name {
+    margin-right: 5px;
+    font-size: 15px;
+}
+
+.effect-state {
+    font-size: 25px;
+}
+
+.skills {
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    align-self: center;
+    margin-top: auto;
+    margin-bottom: 24px;
+}
+
+.skill {
+    border: none;
+    margin: 0 12px;
+    font-size: 50px;
+}
+
+.skill:hover {
+    filter: brightness(90%);
+    opacity: 90%;
+}
+
+.skill:active {
+    filter: brightness(80%);
+    opacity: 90%;
+}
+
+.skill-0 {
+    clip-path: path("M 5 0 L 57 40 Q 82 60 82 95 L 82 255 Q 82 265 77 260 L 25 220 Q 0 200 0 165 L 0 5 Q 0 0 5 0");
+    height: 265px;
+    width: 82px;
+    margin-bottom: 20px;
+}
+
+.skill-1 {
+    border-radius: 15px 15px 5px 40px;
+    height: 210px;
+    width: 132px;
+}
+
+.skill-2 {
+    border-radius: 15px 15px 40px 5px;
+    height: 210px;
+    width: 132px;
+}
+
+.skill-3 {
+    clip-path: path("M 77 0 L 25 40 Q 0 60 0 95 L 0 255 Q 0 265 5 260 L 57 220 Q 82 200 82 165 L 82 5 Q 82 0 77 0");
+    height: 265px;
+    width: 82px;
+    margin-bottom: 20px;
+}
+
+#middle-bar {
+    width: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+#middle-state {
+    height: 230px;
+    display: flex;
+    flex-direction: column;
+}
+
+#turn-number {
+    font-size: 25px;
+}
+
+#timer {
+    font-size: 25px;
+}
+
+#skill-log {
+    font-size: 20px;
+    margin-top: auto;
+    overflow: auto;
+}
+
+.skill-log-character {
+    text-align: left;
+}
+
+.skill-log-opponent {
+    text-align: right;
+}
+
+#middle-space {
+    flex-grow: 1;
+}
