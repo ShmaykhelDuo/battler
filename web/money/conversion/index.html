@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/web/styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/web/auth/script.js"></script>
+    <script src="/web/money/script.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <h1>Hello!</h1>
+    <button onclick="signout()">Sign out</button>
+
+    <div x-data="conversion()" x-init="init()">
+        <div id="balance">
+            <template x-for="(amount, currency) in balance.balance">
+                <div class="balance-item" x-text="amount"></div>
+            </template>
+        </div>
+
+        <template x-if="conversion">
+            <div>
+                <div id="result" x-text="JSON.stringify(conversion)"></div>
+
+                <template x-if="time_left > 0">
+                    <div id="time-left" x-text="time_left"></div>
+                </template>
+
+                <template x-if="time_left <= 0">
+                    <div id="claim">
+                        <button @click="claim()">Claim</button>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template x-if="! conversion">
+            <div id="convert">
+                <template x-for="(name, id) in currencies">
+                    <div x-id="['selected-currency-input']">
+                        <input type="radio" :id="$id('selected-currency-input')" :value="id"
+                            x-model.number="selected_currency">
+                        <label :for="$id('selected-currency-input')" x-text="name"></label>
+                    </div>
+                    <!-- <button @click="selected_currency = parseInt(id)" x-text="name"></button> -->
+                </template>
+                <input type="range" min="1" :max="balance.balance[selected_currency]" value="1" x-model.number="amount">
+                <span id="conversion-amount" x-text="amount"></span>
+                <button @click="convert()">Convert</button>
+            </div>
+        </template>
+    </div>
+</body>
+
+</html>

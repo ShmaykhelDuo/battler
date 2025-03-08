@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/web/styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/web/auth/script.js"></script>
+    <script src="/web/money/script.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <h1>Hello!</h1>
+    <button onclick="signout()">Sign out</button>
+
+    <div x-data="chests()" x-init="fetch()">
+        <div id="balance">
+            <template x-for="(amount, currency) in balance.balance">
+                <div class="balance-item" x-text="amount"></div>
+            </template>
+        </div>
+
+        <template x-for="chest in chests">
+            <div>
+                <p x-text="chest.name"></p>
+                <p x-text="chest.currency_id"></p>
+                <p x-text="chest.price"></p>
+                <button @click="buy(chest.id)" :disabled="chest.price > balance.balance[chest.currency_id]">Buy</button>
+            </div>
+        </template>
+    </div>
+</body>
+
+</html>
