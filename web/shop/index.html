@@ -3,6 +3,7 @@
 
 <head>
     <link rel="stylesheet" href="/web/styles.css">
+    <link rel="stylesheet" href="styles.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="/web/auth/script.js"></script>
     <script src="/web/money/script.js"></script>
@@ -10,24 +11,36 @@
 </head>
 
 <body>
-    <h1>Hello!</h1>
-    <button onclick="signout()">Sign out</button>
+    <div id="nav">
+        <div><a href="/web/game/characters">Play</a></div>
+        <div><a href="/web/money/conversion">Conversion</a></div>
+        <div><a href="/web/shop">Shop</a></div>
+        <div><a href="/web/friends">Friends</a></div>
+        <div><button onclick="signout()">Sign out</button></div>
+    </div>
 
-    <div x-data="chests()" x-init="fetch()">
+    <div id="main" x-data="chests()" x-init="init()">
         <div id="balance">
             <template x-for="(amount, currency) in balance.balance">
-                <div class="balance-item" x-text="amount"></div>
+                <div class="balance-item">
+                    <div class="balance-currency" x-text="currencies[currency]"></div>
+                    <div class="balance-amount" x-text="amount"></div>
+                </div>
             </template>
         </div>
 
-        <template x-for="chest in chests">
-            <div>
-                <p x-text="chest.name"></p>
-                <p x-text="chest.currency_id"></p>
-                <p x-text="chest.price"></p>
-                <button @click="buy(chest.id)" :disabled="chest.price > balance.balance[chest.currency_id]">Buy</button>
-            </div>
-        </template>
+        <div id="chests">
+            <template x-for="chest in chests">
+                <div class="chest">
+                    <div x-text="chest.name"></div>
+                    <div>
+                        <span x-text="currencies[chest.currency_id]"></span>
+                        <span x-text="chest.price"></span>
+                    </div>
+                    <button @click="buy(chest.id)" :disabled="chest.price > balance.balance[chest.currency_id]">Buy</button>
+                </div>
+            </template>
+        </div>
     </div>
 </body>
 

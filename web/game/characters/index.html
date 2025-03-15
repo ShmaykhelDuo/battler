@@ -4,64 +4,80 @@
 <head>
     <link rel="stylesheet" href="/web/styles.css">
     <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/web/lib/fitty.min.js"></script>
     <script src="/web/auth/script.js"></script>
     <script src="/web/game/characters.js"></script>
     <script src="script.js"></script>
 </head>
 
 <body>
-    <h1>Hello!</h1>
-    <button onclick="signout()">Sign out</button>
-    <div id="character-selection">
-        <div id="characters">
-            <button class="character-button">Z89</button>
-            <button class="character-button">Milana</button>
+    <div id="nav">
+        <div><a href="/web/game/characters">Play</a></div>
+        <div><a href="/web/money/conversion">Conversion</a></div>
+        <div><a href="/web/shop">Shop</a></div>
+        <div><a href="/web/friends">Friends</a></div>
+        <div><button onclick="signout()">Sign out</button></div>
+    </div>
+
+    <div id="main" x-data="characterSelection()" x-init="init()">
+        <div id="character-selection">
+            <div id="characters">
+                <template x-for="character in availableCharacters">
+                    <button class="character-button" x-text="character.name" @click="displayCharacter(character.number)"
+                        :style="{backgroundColor: character.colour}"></button>
+                </template>
+            </div>
+            <div id="displayed-character">
+                <div id="character-name" x-text="`${displayed.name} (${displayed.number})`"></div>
+                <div id="character-rarity" x-text="displayed.rarity"></div>
+                <div id="character-misc">
+                    <div hidden>Level: <span id="character-level">2</span></div>
+                    <div hidden>Matches played: <span id="character-matches">4</span></div>
+                    <div hidden>Matches won: <span id="character-matches-won">1 (25%)</span></div>
+                    <div>Tags: <span x-text="displayed.tags.join(', ')"></span></div>
+                    <div hidden>Skill colours: <span
+                            x-text="displayed.skills.map(skill => skill.colour).join(', ')"></span></div>
+                </div>
+                <div id="character-skills">
+                    <template x-for="skill in displayed.skills">
+                        <div class="skill" :style="{backgroundColor: skill.colour}" x-id="['skill']">
+                            <div :id="$id('skill')" x-text="skill.name" x-init="fitty(`#${$id('skill')}`)"></div>
+                        </div>
+                    </template>
+                </div>
+                <div hidden id="character-description">An overconfident spoiled princess.</div>
+            </div>
         </div>
-        <div id="displayed-character">
-            <div id="character-name">Milana (51)</div>
-            <div id="character-rarity">SP</div>
-            <div id="character-misc">
-                <div hidden>Level: <span id="character-level">2</span></div>
-                <div hidden>Matches played: <span id="character-matches">4</span></div>
-                <div hidden>Matches won: <span id="character-matches-won">1 (25%)</span></div>
-                <div>Tags: <span id="character-tags">Durable, Heal, Nuke, Preventive</span></div>
-                <div hidden>Skill colours: <span id="character-colours">Green, White, White, Cyan</span></div>
+        <div id="button-panel">
+            <div id="selection-panel">
+                <div class="selection-panel-col">
+                    <button @click="setAsMain()">Set as main</button>
+                    <button @click="setAsSecondary()">Set as secondary</button>
+                </div>
+                <div class="selection-panel-col">
+                    <button @click="clearSelection()">Clear set</button>
+                    <button @click="chooseRandom()">Choose random</button>
+                </div>
             </div>
-            <div id="character-skills">
-                <div class="skill">Royal Move</div>
-                <div class="skill">Composure</div>
-                <div class="skill">Mint Mist</div>
-                <div class="skill">Pride</div>
+            <div id="selected-panel">
+                <template x-for="(value, name) in {'Main': main, 'Secondary': secondary}">
+                    <div class="selected-col">
+                        <div x-text="name"></div>
+                        <template x-if="value != 0">
+                            <div id="selected-main" class="selected-item" :style="{backgroundColor: characters[value].colour}" x-id="['selection']">
+                                <div :id="$id('selection')" x-text="characters[value].name" x-init="fitty(`#${$id('selection')}`)"></div>
+                            </div>
+                        </template>
+                        <template x-if="value == 0">
+                            <div id="selected-main" class="selected-item selected-item-empty"></div>
+                        </template>
+                    </div>
+                </template>
             </div>
-            <div id="character-description">An overconfident spoiled princess.</div>
+            <button id="battle-button" @click="battle()" :disabled="main == 0 || secondary == 0">Battle</button>
         </div>
     </div>
-    <div id="button-panel">
-        <div id="selection-panel">
-            <div class="selection-panel-col">
-                <button onclick="setAsMain()">Set as main</button>
-                <button onclick="setAsSecondary()">Set as secondary</button>
-            </div>
-            <div class="selection-panel-col">
-                <button onclick="clearSelection()">Clear set</button>
-                <button onclick="chooseRandom()">Choose random</button>
-            </div>
-        </div>
-        <div id="selected-panel">
-            <div class="selected-col">
-                <div>Main</div>
-                <div id="selected-main" class="selected-item selected-item-empty"></div>
-            </div>
-            <div class="selected-col">
-                <div>Secondary</div>
-                <div id="selected-secondary" class="selected-item selected-item-empty"></div>
-            </div>
-        </div>
-        <button id="battle-button" onclick="battle()" disabled="disabled">Battle</button>
-    </div>
-    <script>
-        fetchCharacters();
-    </script>
 </body>
 
 </html>

@@ -1,6 +1,8 @@
 html {
     font-family: sans-serif;
-    background-color: rgb(230, 230, 230);
+    background-color: #e6e6e6;
+    color: #323232;
+    font-size: x-large;
 }
 
 button {
@@ -10,13 +12,60 @@ button {
     border: none;
     border-radius: 5px;
     font-size: 30px;
-    background-color: rgb(170, 170, 170);
+    background-color: #aaaaaa;
 }
 
 button:hover {
-    background-color: rgb(150, 150, 150);
+    filter: brightness(90%);
+    opacity: 90%;
 }
 
 button:active {
-    background-color: rgb(135, 135, 135);
+    filter: brightness(80%);
+    opacity: 90%;
+}
+
+/* button:hover {
+    background-color: #878787;
+}
+
+button:active {
+    background-color: #878787;
+} */
+
+input {
+    display: block;
+}
+
+input[type=text], input[type=password] {
+    min-width: 350px;
+    font-size: x-large;
+    border: 2px solid #aaaaaa;
+    border-radius: 5px;
+    margin: 3px;
+    padding-left: 20px;
+    padding-top: 5px;
+    padding-right: 2px;
+    padding-bottom: 5px;
+}
+
+#nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#main {
+    margin: auto;
+    width: 60%;
+    min-width: 20em;
+}
+
+#balance {
+    display: flex;
+    flex-direction: row;
+}
+
+.balance-item {
+    margin: 0.1em;
 }

@@ -4,107 +4,114 @@
 <head>
     <link rel="stylesheet" href="/web/styles.css">
     <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/web/lib/fitty.min.js"></script>
+    <script src="/web/lib/tinycolor.js"></script>
     <script src="/web/auth/script.js"></script>
     <script src="/web/game/characters.js"></script>
     <script src="script.js"></script>
 </head>
 
 <body>
-    <h1>Hello!</h1>
-    <button onclick="signout()">Sign out</button>
-    <div id="battle">
+    <div id="battle" x-data="battle()" x-init="init()">
         <div id="character-panel" class="panel character-panel">
             <div>
-                <div id="character-name" class="character-name">Milana (51)</div>
-                <div id="character-hp" class="character-hp">92/114 (80.7%)</div>
+                <div id="character-name" class="character-name"
+                    x-text="`${characters[state.character.number].name} (${state.character.number})`">Milana (51)</div>
+                <div id="character-hp" class="character-hp"
+                    x-text="`${state.character.hp}/${state.character.max_hp} (${(state.character.hp / state.character.max_hp * 100).toFixed(2)}%)`">
+                    92/114 (80.7%)</div>
                 <div id="character-effects" class="character-effects">
-                    <div class="effect">
-                        <div class="effect-name">Mint Mist</div>
-                        <div class="effect-state">1</div>
-                    </div>
-                    <div class="effect">
-                        <div class="effect-name">Stolen HP</div>
-                        <div class="effect-state">20</div>
-                    </div>
+                    <template x-for="effect in state.character.effects">
+                        <div class="effect">
+                            <div class="effect-name" x-text="effect.type">Mint Mist</div>
+                            <!-- <div class="effect-state">1</div> -->
+                        </div>
+                    </template>
                 </div>
             </div>
             <div id="character-image"></div>
             <div class="skills">
-                <button id="character-skill-0" class="skill skill-0" onclick="skill(0)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-74 -100 148 200">
-                        <text dy="-30" font-size="50px" text-anchor="middle" dominant-baseline="middle"
-                            transform="rotate(37.5,0,-30)">Royal</text>
-                        <text dy="30" font-size="50px" text-anchor="middle" dominant-baseline="middle"
-                            transform="rotate(37.5,0,30)">Move</text>
-                    </svg>
-                </button>
-                <button id="character-skill-1" class="skill skill-1" onclick="skill(1)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-130 -100 260 200">
-                        <text dy="0" font-size="50px" text-anchor="middle" dominant-baseline="middle">Composure</text>
-                    </svg>
-                </button>
-                <button id="character-skill-2" class="skill skill-2" onclick="skill(2)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-130 -100 260 200">
-                        <text dy="0" font-size="50px" text-anchor="middle" dominant-baseline="middle">Mint Mist</text>
-                    </svg>
-                </button>
-                <button id="character-skill-3" class="skill skill-3" onclick="skill(3)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-74 -100 148 200">
-                        <text dy="0" font-size="50px" text-anchor="middle" dominant-baseline="middle"
-                            transform="rotate(-37.5,0,0)">Pride</text>
-                    </svg>
-                </button>
+                <template x-for="(skill, skillNum) in characters[state.character.number].skills">
+                    <button :id="`character-skill-${skillNum}`" class="skill" :class="`skill-${skillNum}`"
+                        :style="{
+                            backgroundColor: skill.colour,
+                            color: tinycolor(skill.colour).getBrightness() > 64 ? '#323232' : '#AAAAAA'
+                        }" @click="doSkill(skillNum)" x-id="['skill-text']">
+                        <div class="skill-in">
+                            <div :id="$id('skill-text')" x-text="skill.name" x-init="fitty(`#${$id('skill-text')}`)"></div>
+                        </div>
+                    </button>
+                </template>
             </div>
         </div>
         <div id="middle-bar">
             <div id="middle-state" class="panel">
-                <div id="turn-number">Turn 5 [3]</div>
-                <div id="timer">5</div>
-                <div id="skill-log">
-                    <div class="skill-log-character skill-log-white">[E] Mint Mist</div>
-                    <div class="skill-log-opponent skill-log-red">[W] Rage</div>
-                    <div class="skill-log-character skill-log-green">[Q] Royal Move</div>
-                    <div class="skill-log-opponent skill-log-yellow">[Q] Dance</div>
+                <div id="turn-number"
+                    x-text="`Turn ${2 * state.turn.number - state.turn.first} [${state.turn.number}]`"></div>
+                <!-- <div id="timer">5</div> -->
+                <div id="skill-log" x-data="{ isGoingFirst: ((state.player_turn != state.as_opp) == state.turn.first) }">
+                    <template x-for="entry in state.skill_log.turns">
+                        <div>
+                            <template x-if="entry.first"
+                                x-data="{character: ((state.player_turn != state.as_opp) == state.turn.first) ? characters[state.character.number] : characters[state.opponent.number]}">
+                                <div>
+                                    <template x-for="skillNum in entry.first">
+                                        <div :class="{ 'skill-log-character': ((state.player_turn != state.as_opp) == state.turn.first), 'skill-log-opponent': ! ((state.player_turn != state.as_opp) == state.turn.first) }"
+                                            x-data="{skill: character.skills[skillNum]}" :style="{color: skill.colour}"
+                                            x-text="`[${'QWER'[skillNum]}] ${skill.name}`"></div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template x-if="entry.second"
+                                x-data="{character: ((state.player_turn != state.as_opp) == state.turn.first) ? characters[state.opponent.number] : characters[state.character.number]}">
+                                <div>
+                                    <template x-for="skillNum in entry.second">
+                                        <div :class="{ 'skill-log-character': ! ((state.player_turn != state.as_opp) == state.turn.first), 'skill-log-opponent': ((state.player_turn != state.as_opp) == state.turn.first) }"
+                                            x-data="{skill: character.skills[skillNum]}" :style="{color: skill.colour}"
+                                            x-text="`[${'QWER'[skillNum]}] ${skill.name}`"></div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
                 </div>
             </div>
             <div id="middle-space" class="panel"></div>
         </div>
         <div id="opponent-panel" class="panel character-panel">
             <div>
-                <div id="opponent-name" class="character-name">Ruby (10)</div>
-                <div id="opponent-hp" class="character-hp">90/110 (81.8%)</div>
+                <div id="opponent-name" class="character-name"
+                    x-text="`${characters[state.opponent.number].name} (${state.opponent.number})`">Milana (51)</div>
+                <div id="opponent-hp" class="character-hp"
+                    x-text="`${state.opponent.hp}/${state.opponent.max_hp} (${(state.opponent.hp / state.opponent.max_hp * 100).toFixed(2)}%)`">
+                    92/114 (80.7%)</div>
                 <div id="opponent-effects" class="character-effects">
-                    <div class="effect">
-                        <div class="effect-name">Double Damage</div>
-                        <div class="effect-state">2</div>
-                    </div>
+                    <template x-for="effect in state.opponent.effects">
+                        <div class="effect">
+                            <div class="effect-name" x-text="effect.type">Mint Mist</div>
+                            <!-- <div class="effect-state">1</div> -->
+                        </div>
+                    </template>
                 </div>
             </div>
             <div id="opponent-image"></div>
             <div class="skills">
-                <button id="opponent-skill-0" class="skill skill-0" onclick="skill(0)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-74 -100 148 200">
-                        <text dy="0" font-size="50px" text-anchor="middle" dominant-baseline="middle"
-                            transform="rotate(37.5,0,0)">Dance</text>
-                    </svg>
-
-                </button>
-                <button id="opponent-skill-1" class="skill skill-1" onclick="skill(1)">Rage</button>
-                <button id="opponent-skill-2" class="skill skill-2" onclick="skill(2)">Stop</button>
-                <button id="opponent-skill-3" class="skill skill-3" onclick="skill(3)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-74 -100 148 200">
-                        <text dy="0" font-size="50px" text-anchor="middle" dominant-baseline="middle"
-                            transform="rotate(-37.5,0,0)">.Execute</text>
-                    </svg>
-
-                </button>
+                <template x-for="(skill, skillNum) in characters[state.opponent.number].skills">
+                    <button :id="`opponent-skill-${skillNum}`" class="skill" :class="`skill-${skillNum}`"
+                        :style="{
+                            backgroundColor: skill.colour,
+                            color: tinycolor(skill.colour).getBrightness() > 64 ? '#323232' : '#AAAAAA'
+                        }" @click="doSkill(skillNum)" x-id="['skill-text']">
+                        <div class="skill-in">
+                            <div :id="$id('skill-text')" x-text="skill.name" x-init="fitty(`#${$id('skill-text')}`)">
+                            </div>
+                        </div>
+                    </button>
+                </template>
             </div>
         </div>
     </div>
-    <div id="state"></div>
-    <script>
-        battle();
-    </script>
 </body>
 
 </html>

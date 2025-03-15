@@ -4,7 +4,8 @@ function conversion() {
         conversion: null,
         selected_currency: 1,
         amount: 1,
-        time_left: 0,
+        seconds_left: 0,
+        progress: 0.0,
 
         init() {
             this.balance.init();
@@ -57,31 +58,44 @@ function conversion() {
             if (!response.ok) {
                 return;
             }
-        
+
             this.conversion = null;
             this.balance.update(await response.json())
         },
 
-        secondsLeft() {
+        timeLeft() {
             const now = new Date().getTime();
-            const distance = new Date(this.conversion.finishes_at).getTime() - now;
-            return Math.ceil(distance / 1000);
+            return new Date(this.conversion.finishes_at).getTime() - now;
+        },
+
+        totalDuration() {
+            return new Date(this.conversion.finishes_at).getTime() - new Date(this.conversion.started_at).getTime();
         },
 
         countdown() {
-            this.time_left = this.secondsLeft();
-            if (this.time_left < 0) {
-                this.time_left = 0;
+            const timeLeft = this.timeLeft();
+            if (timeLeft < 0) {
+                this.seconds_left = 0;
+                this.progress = 100.0;
                 return
             }
 
+            this.seconds_left = Math.ceil(timeLeft / 1000);
+            const totalDuration = this.totalDuration();
+            this.progress = 100 * (totalDuration - timeLeft) / totalDuration;
+
             let x = setInterval(() => {
-                this.time_left = this.secondsLeft();
-        
-                if (this.time_left <= 0) {
+                const timeLeft = this.timeLeft();
+
+                if (timeLeft < 0) {
                     clearInterval(x);
+                    return;
                 }
-            }, 1000);
+
+                this.seconds_left = Math.ceil(timeLeft / 1000);
+                const totalDuration = this.totalDuration();
+                this.progress = 100 * (totalDuration - timeLeft) / totalDuration;
+            }, 10);
         },
     }
 }
