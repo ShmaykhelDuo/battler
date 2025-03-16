@@ -7,8 +7,8 @@ import (
 	"math/rand/v2"
 	"time"
 
+	"github.com/ShmaykhelDuo/battler/internal/bot"
 	"github.com/ShmaykhelDuo/battler/internal/game"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 )
 
