@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/web/styles.css">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/web/auth/script.js"></script>
+    <script src="/web/money/script.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <div id="nav">
+        <div><a href="/web/game/characters">Play</a></div>
+        <div><a href="/web/money/conversion">Conversion</a></div>
+        <div><a href="/web/shop">Shop</a></div>
+        <div><a href="/web/friends">Friends</a></div>
+        <div><button onclick="signout()">Sign out</button></div>
+    </div>
+
+    <div id="main" x-data="conversion()" x-init="init()">
+        <div id="balance">
+            <template x-for="(amount, currency) in balance.balance">
+                <div class="balance-item">
+                    <div class="balance-currency" x-text="currencies[currency]"></div>
+                    <div class="balance-amount" x-text="amount"></div>
+                </div>
+            </template>
+        </div>
+
+        <div id="conversion">
+            <template x-if="conversion">
+                <div>
+                    <div>Conversion is in progress</div>
+    
+                    <div id="conversion-progress">
+                        <div id="conversion-progress-bar" :style="{ width: `${progress}%` }"></div>
+                    </div>
+
+                    <template x-if="seconds_left > 0">
+                        <div id="time-left" x-text="seconds_left"></div>
+                    </template>
+    
+                    <template x-if="seconds_left <= 0">
+                        <div id="claim">
+                            <button @click="claim()">Claim</button>
+                        </div>
+                    </template>
+                </div>
+            </template>
+    
+            <template x-if="! conversion">
+                <div id="convert">
+                    <div id="convert-currencies">
+                        <template x-for="(name, id) in currencies">
+                            <div x-id="['selected-currency-input']">
+                                <input type="radio" :id="$id('selected-currency-input')" :value="id"
+                                    x-model.number="selected_currency">
+                                <label :for="$id('selected-currency-input')" x-text="name"></label>
+                            </div>
+                            <!-- <button @click="selected_currency = parseInt(id)" x-text="name"></button> -->
+                        </template>
+                    </div>
+                    <div id="convert-amount">
+                        <div id="convert-amount-row">
+                            <input id="convert-amount-slider" type="range" min="1" :max="balance.balance[selected_currency]" value="1" x-model.number="amount">
+                            <span x-text="amount"></span>
+                        </div>
+                        
+                        <button @click="convert()">Convert</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</body>
+
+</html>

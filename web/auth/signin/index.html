@@ -2,15 +2,18 @@
 <html>
     <head>
         <link rel="stylesheet" href="/web/styles.css">
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script src="/web/error.js"></script>
         <script src="script.js"></script>
     </head>
     <body>
-        <div id="error"></div>
-        <form>
-            <input type="text" id="username">
-            <input type="password" id="password">
-            <input type="button" value="Sign in" onclick="signin()">
-        </form>
+        <div id="main" x-data="signinData()">
+            <div class="error" x-show="error !== null" x-text="error"></div>
+            <div>
+                <input type="text" x-model="username">
+                <input type="password" x-model="password">
+                <button @click="signin()">Sign in</button>
+            </div>
+        </div>
     </body>
 </html>

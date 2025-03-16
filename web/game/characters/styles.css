@@ -68,6 +68,7 @@
 .selected-col {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .selected-item {

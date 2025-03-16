@@ -18,7 +18,5 @@ function parseError(error) {
 
 async function handleError(response) {
     const json = await response.json();
-    const message = parseError(json.error);
-
-    document.getElementById("error").innerText = message;
+    return parseError(json.error);
 }

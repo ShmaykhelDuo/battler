@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/web/styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/web/auth/script.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <h1>Hello!</h1>
+    <button onclick="signout()">Sign out</button>
+
+    <div x-data="friends()" x-init="init()">
+        <div>
+            <template x-for="profile in friends">
+                <div>
+                    <p x-text="profile.username"></p>
+                    <button @click="removeFriendLink(profile.id)">Remove</button>
+                </div>
+            </template>
+        </div>
+
+        <div>
+            <template x-for="profile in outgoingRequests">
+                <div>
+                    <p x-text="profile.username"></p>
+                    <button @click="removeFriendLink(profile.id)">Cancel</button>
+                </div>
+            </template>
+        </div>
+
+        <div>
+            <template x-for="profile in incomingRequests">
+                <div>
+                    <p x-text="profile.username"></p>
+                    <button @click="addFriendLink(profile.id)">Accept</button>
+                </div>
+            </template>
+        </div>
+    </div>
+</body>
+
+</html>

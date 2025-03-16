@@ -1,25 +1,23 @@
-async function handleError(response) {
-    const json = await response.json();
-    const message = parseError(json.error);
+function signinData() {
+    return {
+        username: null,
+        password: null,
+        error: null,
 
-    document.getElementById("error").innerText = message;
-}
-
-async function signin() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    const response = await fetch("/auth/signin", {
-        method: "POST",
-        body: JSON.stringify({
-            username: username,
-            password: password
-        })
-    });
-    if (!response.ok) {
-        handleError(response);
-        return;
+        async signin() {
+            const response = await fetch("/auth/signin", {
+                method: "POST",
+                body: JSON.stringify({
+                    username: this.username,
+                    password: this.password
+                })
+            });
+            if (!response.ok) {
+                this.error = handleError(response)
+                return;
+            }
+        
+            window.location.href = "/web/";
+        }
     }
-
-    window.location.href = "/web/";
 }
