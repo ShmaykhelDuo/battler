@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ShmaykhelDuo/battler/internal/bot"
 	"github.com/ShmaykhelDuo/battler/internal/game"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot/minimax"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/ruby"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
@@ -22,7 +21,8 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// bot1 := moveml.NewBot(model)
-	bot1 := minimax.NewBot(minimax.TimeOptConcurrentRunner, 8)
+	// bot1 := minimax.NewBot(minimax.TimeOptConcurrentRunner, 8)
+	bot1 := &bot.RandomBot{}
 	// bot2 := minimax.NewBot(4)
 	bot2 := &bot.RandomBot{}
 

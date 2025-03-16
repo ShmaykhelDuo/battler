@@ -7,8 +7,8 @@ import (
 	"math/rand/v2"
 	"time"
 
+	"github.com/ShmaykhelDuo/battler/internal/bot/alphabeta2"
 	"github.com/ShmaykhelDuo/battler/internal/game"
-	"github.com/ShmaykhelDuo/battler/internal/game/bot"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 )
 
@@ -66,7 +66,7 @@ func (m *Matchmaker) Run(ctx context.Context) error {
 					charNum = player1Req.secondary
 				}
 
-				bot := &bot.RandomBot{}
+				bot := alphabeta2.NewBot(5)
 
 				err := m.createMatch(ctx, player1Req.conn, charNum, bot, botCharNum)
 				if err != nil {

@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/ShmaykhelDuo/battler/internal/game/bot/ml"
+	"github.com/ShmaykhelDuo/battler/internal/bot/ml/formats"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 )
 
 type stateMsg struct {
-	State  []int `json:"state"`
-	End    bool  `json:"end"`
-	Reward int   `json:"reward"`
+	State  any  `json:"state"`
+	End    bool `json:"end"`
+	Reward int  `json:"reward"`
 }
 
 type actionMsg struct {
@@ -81,7 +81,7 @@ func (b *DQLLearnerBot) send(state match.GameState, end bool, hasErr bool) error
 	}
 
 	sMsg := stateMsg{
-		State:  ml.NewStateV2(state).ToSlice(),
+		State:  formats.FullStateFormat{}.Row(state),
 		End:    end,
 		Reward: sendReward,
 	}
