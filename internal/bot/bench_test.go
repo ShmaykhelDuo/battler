@@ -138,6 +138,10 @@ func (c *collector) RequestSkill(ctx context.Context) (int, error) {
 	return c.bot.RequestSkill(ctx)
 }
 
+func (c *collector) GivenUp() <-chan any {
+	return nil
+}
+
 func states() []match.GameState {
 	var states []match.GameState
 

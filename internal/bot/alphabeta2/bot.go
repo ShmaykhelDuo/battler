@@ -51,3 +51,7 @@ func (b *Bot) RequestSkill(ctx context.Context) (int, error) {
 	b.skill = -1
 	return res, nil
 }
+
+func (b *Bot) GivenUp() <-chan any {
+	return nil
+}

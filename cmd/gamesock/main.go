@@ -71,22 +71,18 @@ func handleConnection(conn net.Conn) {
 	invertedOrder := rand.IntN(2) == 1
 	m := match.New(p1, p2, invertedOrder)
 
-	err := m.Run(context.Background())
-	if err != nil {
-		log.Printf("match: %v\n", err)
+	m.Run(context.Background())
+
+	reserr := <-m.Result()
+	if reserr.Err != nil {
+		log.Printf("match result: %v\n", reserr.Err)
 		return
 	}
 
-	res, err := m.Result()
-	if err != nil {
-		log.Printf("match result: %v\n", err)
-		return
-	}
-
-	switch res {
-	case match.ResultWonSecond:
+	switch reserr.Res.Player1.Status {
+	case match.ResultStatusLost:
 		fmt.Println("Lost")
-	case match.ResultWonFirst:
+	case match.ResultStatusWon:
 		fmt.Println("Won")
 	default:
 		fmt.Println("Draw")

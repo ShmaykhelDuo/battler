@@ -15,20 +15,36 @@ type CharacterPlayer struct {
 	Player    Player
 }
 
-type Result int
+type Result struct {
+	Player1 ResultPlayer
+	Player2 ResultPlayer
+}
+
+type ResultPlayer struct {
+	Status     ResultStatus
+	HasGivenUp bool
+}
+
+type ResultStatus int
 
 const (
-	ResultDraw      Result = 0
-	ResultWonFirst  Result = 1
-	ResultWonSecond Result = -1
+	ResultStatusUnknown ResultStatus = 0
+	ResultStatusWon     ResultStatus = 1
+	ResultStatusLost    ResultStatus = 2
+	ResultStatusDraw    ResultStatus = 3
 )
+
+type ResultError struct {
+	Res Result
+	Err error
+}
 
 // Match is a game between two characters.
 type Match struct {
 	p1, p2        CharacterPlayer
 	invertedOrder bool
 	skillLog      SkillLog
-	end           bool
+	result        chan ResultError
 }
 
 // New creates a new match.
@@ -46,12 +62,74 @@ func New(p1, p2 CharacterPlayer, invertedOrder bool) *Match {
 }
 
 // Run runs the match.
-func (m *Match) Run(ctx context.Context) error {
+func (m *Match) Run(ctx context.Context) {
+	done := make(chan ResultError)
+
+	turnsCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	go func() {
+		res, err := m.runTurns(turnsCtx)
+		done <- ResultError{
+			Res: res,
+			Err: err,
+		}
+		close(done)
+	}()
+
+	select {
+	case res := <-done:
+		m.result <- res
+	case <-m.p1.Player.GivenUp():
+		m.result <- ResultError{
+			Res: m.rightOrderResult(
+				ResultPlayer{
+					Status:     ResultStatusLost,
+					HasGivenUp: true,
+				},
+				ResultPlayer{
+					Status: ResultStatusWon,
+				},
+			),
+		}
+	case <-m.p2.Player.GivenUp():
+		m.result <- ResultError{
+			Res: m.rightOrderResult(
+				ResultPlayer{
+					Status: ResultStatusWon,
+				},
+				ResultPlayer{
+					Status:     ResultStatusLost,
+					HasGivenUp: true,
+				},
+			),
+		}
+	}
+}
+
+func (m *Match) Result() <-chan ResultError {
+	return m.result
+}
+
+func (m *Match) rightOrderResult(result1 ResultPlayer, result2 ResultPlayer) Result {
+	if m.invertedOrder {
+		return Result{
+			Player1: result2,
+			Player2: result1,
+		}
+	}
+
+	return Result{
+		Player1: result1,
+		Player2: result2,
+	}
+}
+
+func (m *Match) runTurns(ctx context.Context) (Result, error) {
 	var turnState game.TurnState
 	for turnState = game.StartTurnState(); turnState.TurnNum <= game.MaxTurnNumber; turnState = turnState.Next() {
 		end, err := m.runTurn(ctx, turnState)
 		if err != nil {
-			return err
+			return Result{}, err
 		}
 		if end {
 			break
@@ -60,45 +138,41 @@ func (m *Match) Run(ctx context.Context) error {
 
 	err := m.sendState(ctx, m.p1, m.p2, turnState.WithTurnEnd(), 0, false, false)
 	if err != nil {
-		return err
+		return Result{}, err
 	}
 	err = m.sendState(ctx, m.p2, m.p1, turnState.WithTurnEnd(), 0, false, false)
 	if err != nil {
-		return err
+		return Result{}, err
 	}
 	err = m.p1.Player.SendEnd(ctx)
 	if err != nil {
-		return err
+		return Result{}, err
 	}
 	err = m.p2.Player.SendEnd(ctx)
 	if err != nil {
-		return err
+		return Result{}, err
 	}
 
-	m.end = true
-
-	return nil
-}
-
-func (m *Match) Result() (Result, error) {
-	if !m.end {
-		return ResultDraw, ErrMatchNotEnded
-	}
-
-	hp1 := m.p1.Character.HP()
-	hp2 := m.p2.Character.HP()
-
-	if m.invertedOrder {
-		hp1, hp2 = hp2, hp1
-	}
-
-	if hp1 > hp2 {
-		return ResultWonFirst, nil
-	} else if hp1 < hp2 {
-		return ResultWonSecond, nil
+	var res1, res2 ResultStatus
+	if m.p1.Character.HP() > m.p2.Character.HP() {
+		res1 = ResultStatusWon
+		res2 = ResultStatusLost
+	} else if m.p1.Character.HP() < m.p2.Character.HP() {
+		res1 = ResultStatusLost
+		res2 = ResultStatusWon
 	} else {
-		return ResultDraw, nil
+		res1 = ResultStatusDraw
+		res2 = ResultStatusDraw
 	}
+
+	return m.rightOrderResult(
+		ResultPlayer{
+			Status: res1,
+		},
+		ResultPlayer{
+			Status: res2,
+		},
+	), nil
 }
 
 func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool, err error) {

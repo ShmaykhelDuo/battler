@@ -58,10 +58,10 @@ func (s *eloScoring) run(rounds int) error {
 				p1 := pair[0]
 				p2 := pair[1]
 
-				switch res[j] {
-				case match.ResultWonFirst:
+				switch res[j].Player1.Status {
+				case match.ResultStatusWon:
 					log.Printf("%s as %s won over %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
-				case match.ResultWonSecond:
+				case match.ResultStatusLost:
 					log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
 				default:
 					log.Printf("%s as %s drawed with %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
@@ -86,10 +86,10 @@ func (s *eloScoring) run(rounds int) error {
 
 			s.updateRatings(p1, p2, res[j])
 
-			switch res[j] {
-			case match.ResultWonFirst:
+			switch res[j].Player1.Status {
+			case match.ResultStatusWon:
 				log.Printf("%s as %s won over %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
-			case match.ResultWonSecond:
+			case match.ResultStatusLost:
 				log.Printf("%s as %s won over %s as %s.", p2, s.c2.Desc.Name, p1, s.c1.Desc.Name)
 			default:
 				log.Printf("%s as %s drawed with %s as %s.", p1, s.c1.Desc.Name, p2, s.c2.Desc.Name)
@@ -131,17 +131,14 @@ func (s *eloScoring) match(p1, p2 string) (match.Result, error) {
 	invertedOrder := rand.IntN(2) == 1
 	m := match.New(cp1, cp2, invertedOrder)
 
-	err := m.Run(context.Background())
-	if err != nil {
-		return 0, fmt.Errorf("match: %w", err)
+	m.Run(context.Background())
+
+	reserr := <-m.Result()
+	if reserr.Err != nil {
+		return match.Result{}, fmt.Errorf("match result: %w", reserr.Err)
 	}
 
-	res, err := m.Result()
-	if err != nil {
-		return 0, fmt.Errorf("match result: %w", err)
-	}
-
-	return res, nil
+	return reserr.Res, nil
 }
 
 func (s *eloScoring) updateRatings(p1, p2 string, res match.Result) {
@@ -155,11 +152,11 @@ func (s *eloScoring) updateRatings(p1, p2 string, res match.Result) {
 	e2 := q2 / (q1 + q2)
 
 	var s1, s2 float64
-	switch res {
-	case match.ResultWonFirst:
+	switch res.Player1.Status {
+	case match.ResultStatusWon:
 		s1 = 1.0
 		s2 = 0.0
-	case match.ResultWonSecond:
+	case match.ResultStatusLost:
 		s1 = 0.0
 		s2 = 1.0
 	default:

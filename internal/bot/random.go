@@ -36,3 +36,7 @@ func (b RandomBot) RequestSkill(ctx context.Context) (int, error) {
 	i := rand.IntN(len(b.available))
 	return b.available[i], nil
 }
+
+func (b RandomBot) GivenUp() <-chan any {
+	return nil
+}

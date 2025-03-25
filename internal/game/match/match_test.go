@@ -49,6 +49,10 @@ func (p *FakePlayer) RequestSkill(ctx context.Context) (int, error) {
 	return m, nil
 }
 
+func (p *FakePlayer) GivenUp() <-chan any {
+	return nil
+}
+
 func TestMatch(t *testing.T) {
 	t.Parallel()
 
@@ -86,9 +90,16 @@ func TestMatch(t *testing.T) {
 				milana.SkillRoyalMoveIndex,
 			},
 			invertedOrder: false,
-			result:        match.ResultWonFirst,
-			hp1:           29,
-			hp2:           -22,
+			result: match.Result{
+				Player1: match.ResultPlayer{
+					Status: match.ResultStatusWon,
+				},
+				Player2: match.ResultPlayer{
+					Status: match.ResultStatusLost,
+				},
+			},
+			hp1: 29,
+			hp2: -22,
 		},
 	}
 
@@ -109,12 +120,11 @@ func TestMatch(t *testing.T) {
 
 			m := match.New(cp1, cp2, tt.invertedOrder)
 
-			err := m.Run(context.Background())
-			require.NoError(t, err, "error")
+			go m.Run(context.Background())
 
-			res, err := m.Result()
-			require.NoError(t, err, "result error")
-			assert.Equal(t, tt.result, res)
+			reserr := <-m.Result()
+			require.NoError(t, reserr.Err, "error")
+			assert.Equal(t, tt.result, reserr.Res)
 
 			assert.Equal(t, tt.hp1, cp1.Character.HP(), "hp1")
 			assert.Equal(t, tt.hp2, cp2.Character.HP(), "hp2")
