@@ -55,6 +55,10 @@ func (b *Bot) RequestSkill(ctx context.Context) (int, error) {
 	return b.action, nil
 }
 
+func (b *Bot) GivenUp() <-chan any {
+	return nil
+}
+
 func getRandomAction(state match.GameState) int {
 	var available []int
 

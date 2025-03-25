@@ -110,6 +110,10 @@ func (c *Connection) RequestSkill(ctx context.Context) (int, error) {
 	}
 }
 
+func (c *Connection) GivenUp() <-chan any {
+	return nil
+}
+
 func (c *Connection) LastState() match.GameState {
 	return c.state
 }

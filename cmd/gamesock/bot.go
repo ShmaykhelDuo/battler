@@ -62,6 +62,10 @@ func (b *DQLLearnerBot) RequestSkill(ctx context.Context) (int, error) {
 	return msg.Action, nil
 }
 
+func (b *DQLLearnerBot) GivenUp() <-chan any {
+	return nil
+}
+
 func (b *DQLLearnerBot) send(state match.GameState, end bool, hasErr bool) error {
 	reward := state.Character.HP() - state.Opponent.HP()
 	// if end {

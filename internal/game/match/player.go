@@ -7,4 +7,5 @@ type Player interface {
 	SendError(ctx context.Context, err error) error
 	SendEnd(ctx context.Context) error
 	RequestSkill(ctx context.Context) (int, error)
+	GivenUp() <-chan any
 }

@@ -102,12 +102,7 @@ func (m *Matchmaker) createMatch(ctx context.Context, p1 match.Player, char1Numb
 	}
 
 	match := match.New(player1, player2, false)
-	go func() {
-		err := match.Run(ctx)
-		if err != nil {
-			slog.Error("match ended with an error", "err", err)
-		}
-	}()
+	go match.Run(ctx)
 
 	return nil
 }
