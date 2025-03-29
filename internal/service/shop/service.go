@@ -30,7 +30,7 @@ type CharacterPicker interface {
 }
 
 type AvailableCharacterRepository interface {
-	AddCharacters(ctx context.Context, userID uuid.UUID, chars []game.Character) error
+	AddCharacters(ctx context.Context, userID uuid.UUID, chars []int) error
 }
 
 type TransactionManager interface {
@@ -97,9 +97,8 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.Character, er
 		}
 
 		charNum := s.charPicker.RandomCharacter()
-		char = game.Character{Number: charNum}
 
-		err = s.availCharRepo.AddCharacters(ctx, session.UserID, []game.Character{char})
+		err = s.availCharRepo.AddCharacters(ctx, session.UserID, []int{charNum})
 		if err != nil && !errors.Is(err, errs.ErrAlreadyExists) {
 			return fmt.Errorf("add characters: %w", err)
 		}

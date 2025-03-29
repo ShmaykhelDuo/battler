@@ -46,6 +46,12 @@ type MessageGiveUp struct {
 }
 
 type MessageGameEnd struct {
+	Result         int `json:"result"`
+	PrevLevel      int `json:"prev_level"`
+	PrevExperience int `json:"prev_experience"`
+	Level          int `json:"level"`
+	Experience     int `json:"experience"`
+	Reward         int `json:"reward"`
 }
 
 var ErrInvalidMessageType = errors.New("invalid message type")

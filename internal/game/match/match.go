@@ -58,6 +58,7 @@ func New(p1, p2 CharacterPlayer, invertedOrder bool) *Match {
 		p2:            p2,
 		invertedOrder: invertedOrder,
 		skillLog:      make(SkillLog),
+		result:        make(chan ResultError),
 	}
 }
 

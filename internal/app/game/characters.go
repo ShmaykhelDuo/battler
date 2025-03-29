@@ -8,7 +8,11 @@ import (
 )
 
 type Character struct {
-	Number int `json:"number"`
+	Number          int `json:"number"`
+	Level           int `json:"level"`
+	LevelExperience int `json:"level_experience"`
+	MatchCount      int `json:"match_count"`
+	WinCount        int `json:"win_count"`
 }
 
 func (h *Handler) Characters(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +25,11 @@ func (h *Handler) Characters(w http.ResponseWriter, r *http.Request) {
 	dto := make([]Character, len(chars))
 	for i, c := range chars {
 		dto[i] = Character{
-			Number: c.Number,
+			Number:          c.Number,
+			Level:           c.Level,
+			LevelExperience: c.LevelExperience,
+			MatchCount:      c.MatchCount,
+			WinCount:        c.WinCount,
 		}
 	}
 
