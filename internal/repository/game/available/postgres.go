@@ -14,7 +14,16 @@ import (
 )
 
 type Character struct {
-	Number int
+	Number          int `db:"number"`
+	Level           int `db:"level"`
+	LevelExperience int `db:"level_experience"`
+	MatchCount      int `db:"match_count"`
+	WinCount        int `db:"win_count"`
+}
+
+type CharacterLevelExperience struct {
+	Level           int `db:"level"`
+	LevelExperience int `db:"level_experience"`
 }
 
 type PostgresRepository struct {
@@ -26,7 +35,19 @@ func NewPostgresRepository(db *postgres.DB) *PostgresRepository {
 }
 
 func (r *PostgresRepository) AvailableCharacters(ctx context.Context, userID uuid.UUID) ([]model.Character, error) {
-	sql := "SELECT number FROM available_characters WHERE user_id = $1;"
+	sql := `
+		SELECT
+			ac.number, ac.level, ac.level_experience,
+			count(mp.match_id) AS match_count,
+			count(mp.match_id) FILTER (WHERE mp.result = 1) AS win_count
+		FROM available_characters ac
+		LEFT JOIN match_participants mp
+			ON ac.user_id = mp.user_id
+			AND ac.number = mp.character_number
+		WHERE ac.user_id = $1
+		GROUP BY ac.user_id, ac.number
+		ORDER BY ac.number;
+	`
 
 	var dto []Character
 	err := r.db.Select(ctx, &dto, sql, userID)
@@ -37,7 +58,11 @@ func (r *PostgresRepository) AvailableCharacters(ctx context.Context, userID uui
 	chars := make([]model.Character, len(dto))
 	for i, c := range dto {
 		chars[i] = model.Character{
-			Number: c.Number,
+			Number:          c.Number,
+			Level:           c.Level,
+			LevelExperience: c.LevelExperience,
+			MatchCount:      c.MatchCount,
+			WinCount:        c.WinCount,
 		}
 	}
 	return chars, nil
@@ -55,13 +80,13 @@ func (r *PostgresRepository) AvailableCharactersCount(ctx context.Context, userI
 	return count, nil
 }
 
-func (r *PostgresRepository) AddCharacters(ctx context.Context, userID uuid.UUID, chars []model.Character) error {
-	valuesSQL := make([]string, len(chars))
-	args := make([]any, 2*len(chars))
-	for i, c := range chars {
+func (r *PostgresRepository) AddCharacters(ctx context.Context, userID uuid.UUID, numbers []int) error {
+	valuesSQL := make([]string, len(numbers))
+	args := make([]any, 2*len(numbers))
+	for i, num := range numbers {
 		valuesSQL[i] = fmt.Sprintf("($%d, $%d)", 2*i+1, 2*i+2)
 		args[2*i] = userID
-		args[2*i+1] = c.Number
+		args[2*i+1] = num
 	}
 
 	sql := fmt.Sprintf("INSERT INTO available_characters (user_id, number) VALUES %s;", strings.Join(valuesSQL, ", "))
@@ -89,4 +114,27 @@ func (r *PostgresRepository) AreAllAvailable(ctx context.Context, userID uuid.UU
 	}
 
 	return count == len(numbers), nil
+}
+
+func (r *PostgresRepository) CharacterLevelExperience(ctx context.Context, userID uuid.UUID, number int) (level int, exp int, err error) {
+	sql := "SELECT level, level_experience FROM available_characters WHERE user_id = $1 AND number = $2;"
+
+	var res CharacterLevelExperience
+	err = r.db.Get(ctx, &res, sql, userID, number)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return res.Level, res.LevelExperience, nil
+}
+
+func (r *PostgresRepository) UpdateCharacterLevelExperience(ctx context.Context, userID uuid.UUID, number int, level int, exp int) error {
+	sql := "UPDATE available_characters SET level = $3, level_experience = $4 WHERE user_id = $1 AND number = $2;"
+
+	_, err := r.db.Exec(ctx, sql, userID, number, level, exp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

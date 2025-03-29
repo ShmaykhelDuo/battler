@@ -14,7 +14,7 @@ import (
 type AvailableCharacterRepository interface {
 	AvailableCharacters(ctx context.Context, userID uuid.UUID) ([]model.Character, error)
 	AvailableCharactersCount(ctx context.Context, userID uuid.UUID) (int, error)
-	AddCharacters(ctx context.Context, userID uuid.UUID, chars []model.Character) error
+	AddCharacters(ctx context.Context, userID uuid.UUID, chars []int) error
 }
 
 type CharacterPicker interface {
@@ -60,12 +60,6 @@ func (s *Service) UnlockInitialCharacters(ctx context.Context) error {
 	}
 
 	charNums := s.cp.RandomCharacters(2)
-	chars := make([]model.Character, len(charNums))
-	for i, n := range charNums {
-		chars[i] = model.Character{
-			Number: n,
-		}
-	}
 
 	err = s.tm.Transact(ctx, db.TxIsolationSerializable, func(ctx context.Context) error {
 		count, err := s.cr.AvailableCharactersCount(ctx, session.UserID)
@@ -80,7 +74,7 @@ func (s *Service) UnlockInitialCharacters(ctx context.Context) error {
 			}
 		}
 
-		err = s.cr.AddCharacters(ctx, session.UserID, chars)
+		err = s.cr.AddCharacters(ctx, session.UserID, charNums)
 		if err != nil {
 			return fmt.Errorf("add characters: %w", err)
 		}

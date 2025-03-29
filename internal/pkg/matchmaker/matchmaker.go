@@ -2,35 +2,28 @@ package matchmaker
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
 	"math/rand/v2"
 	"time"
 
 	"github.com/ShmaykhelDuo/battler/internal/bot/alphabeta2"
-	"github.com/ShmaykhelDuo/battler/internal/game"
-	"github.com/ShmaykhelDuo/battler/internal/game/match"
+	model "github.com/ShmaykhelDuo/battler/internal/model/game"
 )
 
 type CharacterRepository interface {
-	Character(number int) (*game.CharacterData, error)
 	Characters() []int
 }
 
-type matchRequest struct {
-	conn            match.Player
-	main, secondary int
-}
-
 type Matchmaker struct {
-	cr CharacterRepository
-	in chan matchRequest
+	in  chan model.MatchRequest
+	out chan [2]model.MatchPlayer
+	cr  CharacterRepository
 }
 
 func New(cr CharacterRepository) *Matchmaker {
 	return &Matchmaker{
-		cr: cr,
-		in: make(chan matchRequest),
+		in:  make(chan model.MatchRequest),
+		out: make(chan [2]model.MatchPlayer),
+		cr:  cr,
 	}
 }
 
@@ -38,40 +31,45 @@ func (m *Matchmaker) Run(ctx context.Context) error {
 	for {
 		select {
 		case player1Req := <-m.in:
+			var res [2]model.MatchPlayer
+			res[0].PlayerID.UserID = player1Req.UserID
+			res[0].Conn = player1Req.Conn
+
 			select {
 			case player2Req := <-m.in:
-				var char1Num, char2Num int
-				if player1Req.main != player2Req.main {
-					char1Num = player1Req.main
-					char2Num = player2Req.main
-				} else if player1Req.secondary != player2Req.secondary {
-					char1Num = player1Req.secondary
-					char2Num = player2Req.secondary
-				} else {
-					char1Num = player1Req.main
-					char2Num = player2Req.secondary
-				}
+				res[1].PlayerID.UserID = player2Req.UserID
+				res[1].Conn = player2Req.Conn
 
-				err := m.createMatch(ctx, player1Req.conn, char1Num, player2Req.conn, char2Num)
-				if err != nil {
-					slog.Error("error while creating match", "err", err)
+				if player1Req.Main != player2Req.Main {
+					res[0].Character = player1Req.Main
+					res[1].Character = player2Req.Main
+				} else if player1Req.Secondary != player2Req.Secondary {
+					res[0].Character = player1Req.Secondary
+					res[1].Character = player2Req.Secondary
+				} else {
+					res[0].Character = player1Req.Main
+					res[1].Character = player2Req.Secondary
 				}
 
 			case <-time.After(5 * time.Second):
-				botCharNum := m.selectBotCharacter()
-				var charNum int
-				if player1Req.main != botCharNum {
-					charNum = player1Req.main
+				res[1].PlayerID.IsBot = true
+				res[1].Conn = alphabeta2.NewBot(5)
+
+				res[1].Character = m.selectBotCharacter()
+				if player1Req.Main != res[1].Character {
+					res[0].Character = player1Req.Main
 				} else {
-					charNum = player1Req.secondary
+					res[0].Character = player1Req.Secondary
 				}
 
-				bot := alphabeta2.NewBot(5)
+			case <-ctx.Done():
+				return ctx.Err()
+			}
 
-				err := m.createMatch(ctx, player1Req.conn, charNum, bot, botCharNum)
-				if err != nil {
-					slog.Error("error while creating match", "err", err)
-				}
+			select {
+			case m.out <- res:
+			case <-ctx.Done():
+				return ctx.Err()
 			}
 
 		case <-ctx.Done():
@@ -80,46 +78,12 @@ func (m *Matchmaker) Run(ctx context.Context) error {
 	}
 }
 
-func (m *Matchmaker) createMatch(ctx context.Context, p1 match.Player, char1Number int, p2 match.Player, char2Number int) error {
-	char1, err := m.cr.Character(char1Number)
-	if err != nil {
-		return fmt.Errorf("get character: %w", err)
-	}
-
-	char2, err := m.cr.Character(char2Number)
-	if err != nil {
-		return fmt.Errorf("get character: %w", err)
-	}
-
-	player1 := match.CharacterPlayer{
-		Character: game.NewCharacter(char1),
-		Player:    p1,
-	}
-
-	player2 := match.CharacterPlayer{
-		Character: game.NewCharacter(char2),
-		Player:    p2,
-	}
-
-	match := match.New(player1, player2, false)
-	go match.Run(ctx)
-
-	return nil
+func (m *Matchmaker) RequestMatch() chan<- model.MatchRequest {
+	return m.in
 }
 
-func (m *Matchmaker) MakeMatch(ctx context.Context, conn match.Player, main, secondary int) error {
-	req := matchRequest{
-		conn:      conn,
-		main:      main,
-		secondary: secondary,
-	}
-
-	select {
-	case m.in <- req:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+func (m *Matchmaker) Match() <-chan [2]model.MatchPlayer {
+	return m.out
 }
 
 func (m *Matchmaker) selectBotCharacter() int {

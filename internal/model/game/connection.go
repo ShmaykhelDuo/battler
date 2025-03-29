@@ -3,7 +3,6 @@ package game
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
@@ -13,21 +12,19 @@ import (
 
 type Connection struct {
 	userID    uuid.UUID
-	endFunc   func(ctx context.Context, userID uuid.UUID) error
 	state     match.GameState
 	stateChan chan match.GameState
 	errorChan chan error
-	endChan   chan any
+	endChan   chan MatchPlayerEndResult
 	skillChan chan int
 }
 
-func NewConnection(userID uuid.UUID, endFunc func(ctx context.Context, userID uuid.UUID) error) *Connection {
+func NewConnection(userID uuid.UUID) *Connection {
 	return &Connection{
 		userID:    userID,
-		endFunc:   endFunc,
 		stateChan: make(chan match.GameState),
 		errorChan: make(chan error),
-		endChan:   make(chan any),
+		endChan:   make(chan MatchPlayerEndResult),
 		skillChan: make(chan int),
 	}
 }
@@ -76,18 +73,17 @@ func (c *Connection) handleError(err error) error {
 	return err
 }
 
-func (c *Connection) End() <-chan any {
+func (c *Connection) End() <-chan MatchPlayerEndResult {
 	return c.endChan
 }
 
 func (c *Connection) SendEnd(ctx context.Context) error {
-	err := c.endFunc(ctx, c.userID)
-	if err != nil {
-		return fmt.Errorf("end func: %w", err)
-	}
+	return nil
+}
 
+func (c *Connection) SendEndResult(ctx context.Context, res MatchPlayerEndResult) error {
 	select {
-	case c.endChan <- struct{}{}:
+	case c.endChan <- res:
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()

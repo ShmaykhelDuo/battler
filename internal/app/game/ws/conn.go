@@ -123,8 +123,18 @@ func (c *Conn) handleSend(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-		case <-c.conn.End():
-			msg := MessageGameEnd{}
+		case res, ok := <-c.conn.End():
+			if !ok {
+				return model.ErrChanClosed
+			}
+			msg := MessageGameEnd{
+				Result:         int(res.Result),
+				PrevLevel:      res.PrevLevel,
+				PrevExperience: res.PrevExperience,
+				Level:          res.Level,
+				Experience:     res.Experience,
+				Reward:         res.Reward,
+			}
 			err := c.sendMessage(msg)
 			if err != nil {
 				return err

@@ -26,6 +26,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/repository/game/available"
 	characterrepo "github.com/ShmaykhelDuo/battler/internal/repository/game/character"
 	connectionrepo "github.com/ShmaykhelDuo/battler/internal/repository/match/connection"
+	matchrepo "github.com/ShmaykhelDuo/battler/internal/repository/match/match"
 	balancerepo "github.com/ShmaykhelDuo/battler/internal/repository/money/balance"
 	currencyconversionrepo "github.com/ShmaykhelDuo/battler/internal/repository/money/conversion"
 	"github.com/ShmaykhelDuo/battler/internal/repository/shop/chest"
@@ -57,7 +58,7 @@ func run() error {
 	h := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})
 	slog.SetDefault(slog.New(h))
 
-	mux, mm, err := constructDependencies(ctx)
+	mux, ms, mm, err := constructDependencies(ctx)
 	if err != nil {
 		return fmt.Errorf("construct dependencies: %w", err)
 	}
@@ -68,6 +69,14 @@ func run() error {
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		err := ms.HandleMatches(ctx)
+		if errors.Is(err, context.Canceled) {
+			return nil
+		}
+		return err
+	})
 
 	eg.Go(func() error {
 		err := mm.Run(ctx)
@@ -105,12 +114,12 @@ func run() error {
 	return eg.Wait()
 }
 
-func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Matchmaker, error) {
+func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *matchmaker.Matchmaker, error) {
 	connString := os.Getenv("DB_CONN")
 
 	pool, err := pgxpool.New(ctx, connString)
 	if err != nil {
-		return nil, nil, fmt.Errorf("pgxpool: %w", err)
+		return nil, nil, nil, fmt.Errorf("pgxpool: %w", err)
 	}
 
 	db := postgres.NewDB(pool)
@@ -119,7 +128,7 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	cacheUrl := os.Getenv("CACHE_URL")
 	opts, err := redis.ParseURL(cacheUrl)
 	if err != nil {
-		return nil, nil, fmt.Errorf("redis parse url: %w", err)
+		return nil, nil, nil, fmt.Errorf("redis parse url: %w", err)
 	}
 	redisCli := redis.NewClient(opts)
 
@@ -130,6 +139,7 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	availableCharRepo := available.NewPostgresRepository(db)
 	characterRepo := characterrepo.NewGameRepository()
 	connectionRepo := connectionrepo.NewInMemoryRepository()
+	matchRepo := matchrepo.NewPostgresRepository(db)
 
 	balanceRepo := balancerepo.NewPostgresRepository(db)
 	currencyConvRepo := currencyconversionrepo.NewPostgresRepository(db)
@@ -140,7 +150,7 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 
 	passwordHasher, err := bcrypt.NewPasswordHasher(10)
 	if err != nil {
-		return nil, nil, fmt.Errorf("bcrypt: %w", err)
+		return nil, nil, nil, fmt.Errorf("bcrypt: %w", err)
 	}
 
 	characterPicker := character.NewPicker(characterRepo)
@@ -151,7 +161,7 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 	matchmaker := matchmaker.New(characterRepo)
 
 	gameService := game.NewService(availableCharRepo, characterPicker, tm)
-	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker, balanceRepo, tm)
+	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker, balanceRepo, tm, characterRepo, matchRepo)
 	gameHandler := gamehandler.NewHandler(gameService, matchService)
 
 	moneyService := money.NewService(balanceRepo, currencyConvRepo, tm)
@@ -174,5 +184,5 @@ func constructDependencies(ctx context.Context) (http.Handler, *matchmaker.Match
 
 	mux.Handle("/web/", http.StripPrefix("/web", http.FileServerFS(web.FS)))
 
-	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchmaker, nil
+	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchService, matchmaker, nil
 }
