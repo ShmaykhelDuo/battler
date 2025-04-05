@@ -2,6 +2,7 @@ package money
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/model/api"
 	"github.com/ShmaykhelDuo/battler/internal/model/errs"
 	model "github.com/ShmaykhelDuo/battler/internal/model/money"
+	"github.com/ShmaykhelDuo/battler/internal/model/notification"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/auth"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/db"
 	"github.com/google/uuid"
@@ -31,17 +33,23 @@ type TransactionManager interface {
 	Transact(ctx context.Context, isolation db.TxIsolation, f func(context.Context) error) error
 }
 
+type NotificationRepository interface {
+	CreateNotification(ctx context.Context, userID uuid.UUID, n notification.Notification) error
+}
+
 type Service struct {
 	br BalanceRepository
 	cr ConversionRepository
 	tm TransactionManager
+	nr NotificationRepository
 }
 
-func NewService(br BalanceRepository, cr ConversionRepository, tm TransactionManager) *Service {
+func NewService(br BalanceRepository, cr ConversionRepository, tm TransactionManager, nr NotificationRepository) *Service {
 	return &Service{
 		br: br,
 		cr: cr,
 		tm: tm,
+		nr: nr,
 	}
 }
 
@@ -134,6 +142,27 @@ func (s *Service) Convert(ctx context.Context, sourceCurrency model.Currency, am
 		err = s.cr.CreateConversion(ctx, session.UserID, conv)
 		if err != nil {
 			return fmt.Errorf("create conversion: %w", err)
+		}
+
+		payload, err := json.Marshal(model.CurrencyConversionNotification{
+			ConversionID:   conv.ID,
+			TargetCurrency: spec.NextCurrency,
+			TargetAmount:   targetAmount,
+		})
+		if err != nil {
+			return fmt.Errorf("marshal notification: %w", err)
+		}
+
+		notification := notification.Notification{
+			ID:         uuid.Must(uuid.NewV7()),
+			Type:       notification.TypeCurrencyConversionFinished,
+			Payload:    payload,
+			CreateTime: conv.FinishTime,
+		}
+
+		err = s.nr.CreateNotification(ctx, session.UserID, notification)
+		if err != nil {
+			return fmt.Errorf("create notification: %w", err)
 		}
 
 		return nil

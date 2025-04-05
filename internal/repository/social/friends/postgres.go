@@ -110,6 +110,18 @@ func (r *PostgresRepository) RemoveFriendLink(ctx context.Context, userID uuid.U
 	return nil
 }
 
+func (r *PostgresRepository) FriendLinkExists(ctx context.Context, userID uuid.UUID, otherID uuid.UUID) (bool, error) {
+	sql := "SELECT EXISTS (SELECT 1 FROM users_friends WHERE user_id = $1 AND friend_id = $2);"
+
+	var res bool
+	err := r.db.Get(ctx, &res, sql, userID, otherID)
+	if err != nil {
+		return false, err
+	}
+
+	return res, nil
+}
+
 func dtoToProfiles(dtos []Profile) []social.Profile {
 	res := make([]social.Profile, len(dtos))
 	for i, dto := range dtos {

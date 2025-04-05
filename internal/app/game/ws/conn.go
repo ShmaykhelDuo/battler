@@ -169,6 +169,8 @@ func (c *Conn) handleReceive(ctx context.Context) error {
 				case c.conn.Skill() <- msg.Move:
 				}
 				slog.Debug("sent a move", "msg", msg)
+			case MessageGiveUp:
+				
 			default:
 				err := c.handleError(api.Error{
 					Kind:    api.KindInvalidRequest,

@@ -14,6 +14,7 @@ import (
 	friendhandler "github.com/ShmaykhelDuo/battler/internal/app/friends"
 	gamehandler "github.com/ShmaykhelDuo/battler/internal/app/game"
 	moneyhandler "github.com/ShmaykhelDuo/battler/internal/app/money"
+	notificationhandler "github.com/ShmaykhelDuo/battler/internal/app/notification"
 	shophandler "github.com/ShmaykhelDuo/battler/internal/app/shop"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/api"
 	authhttp "github.com/ShmaykhelDuo/battler/internal/pkg/auth/http"
@@ -29,13 +30,16 @@ import (
 	matchrepo "github.com/ShmaykhelDuo/battler/internal/repository/match/match"
 	balancerepo "github.com/ShmaykhelDuo/battler/internal/repository/money/balance"
 	currencyconversionrepo "github.com/ShmaykhelDuo/battler/internal/repository/money/conversion"
+	notificationrepo "github.com/ShmaykhelDuo/battler/internal/repository/notification/notification"
 	"github.com/ShmaykhelDuo/battler/internal/repository/shop/chest"
 	friendrepo "github.com/ShmaykhelDuo/battler/internal/repository/social/friends"
+	profilerepo "github.com/ShmaykhelDuo/battler/internal/repository/social/profile"
 	authservice "github.com/ShmaykhelDuo/battler/internal/service/auth"
 	"github.com/ShmaykhelDuo/battler/internal/service/friends"
 	"github.com/ShmaykhelDuo/battler/internal/service/game"
 	"github.com/ShmaykhelDuo/battler/internal/service/match"
 	"github.com/ShmaykhelDuo/battler/internal/service/money"
+	"github.com/ShmaykhelDuo/battler/internal/service/notification"
 	"github.com/ShmaykhelDuo/battler/internal/service/shop"
 	"github.com/ShmaykhelDuo/battler/web"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -147,6 +151,9 @@ func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *
 	chestRepo := chest.NewRepository()
 
 	friendRepo := friendrepo.NewPostgresRepository(db)
+	profileRepo := profilerepo.NewPostgresRepository(db)
+
+	notificationRepo := notificationrepo.NewPostgresRepository(db)
 
 	passwordHasher, err := bcrypt.NewPasswordHasher(10)
 	if err != nil {
@@ -164,14 +171,17 @@ func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *
 	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker, balanceRepo, tm, characterRepo, matchRepo)
 	gameHandler := gamehandler.NewHandler(gameService, matchService)
 
-	moneyService := money.NewService(balanceRepo, currencyConvRepo, tm)
+	moneyService := money.NewService(balanceRepo, currencyConvRepo, tm, notificationRepo)
 	moneyHandler := moneyhandler.NewHandler(moneyService)
 
 	shopService := shop.NewService(chestRepo, balanceRepo, characterPicker, availableCharRepo, tm)
 	shopHandler := shophandler.NewHandler(shopService)
 
-	friendService := friends.NewService(friendRepo)
+	friendService := friends.NewService(friendRepo, profileRepo, tm, notificationRepo)
 	friendHandler := friendhandler.NewHandler(friendService)
+
+	notificationService := notification.NewService(notificationRepo, tm)
+	notificationHandler := notificationhandler.NewHandler(notificationService)
 
 	authMiddleware := authhttp.NewAuthMiddleware(sessionRepo)
 
@@ -181,6 +191,7 @@ func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *
 	mux.Handle("/money/", http.StripPrefix("/money", moneyhandler.Mux(moneyHandler)))
 	mux.Handle("/shop/", http.StripPrefix("/shop", shophandler.Mux(shopHandler)))
 	mux.Handle("/friends/", http.StripPrefix("/friends", friendhandler.Mux(friendHandler)))
+	mux.Handle("/notifications/", http.StripPrefix("/notifications", notificationhandler.Mux(notificationHandler)))
 
 	mux.Handle("/web/", http.StripPrefix("/web", http.FileServerFS(web.FS)))
 
