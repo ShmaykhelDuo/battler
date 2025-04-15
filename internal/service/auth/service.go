@@ -9,6 +9,7 @@ import (
 	model "github.com/ShmaykhelDuo/battler/internal/model/auth"
 	"github.com/ShmaykhelDuo/battler/internal/model/errs"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/auth"
+	"github.com/ShmaykhelDuo/battler/internal/pkg/db"
 	"github.com/google/uuid"
 )
 
@@ -28,17 +29,35 @@ type PasswordHasher interface {
 	Check(hash []byte, password string) error
 }
 
+type CharacterPicker interface {
+	RandomCharacters(n int) []int
+}
+
+type TransactionManager interface {
+	Transact(ctx context.Context, isolation db.TxIsolation, f func(context.Context) error) error
+}
+
+type AvailableCharacterRepository interface {
+	AddCharacters(ctx context.Context, userID uuid.UUID, chars []int) error
+}
+
 type Service struct {
 	ur UserRepository
 	sr SessionRepository
 	h  PasswordHasher
+	cp CharacterPicker
+	tm TransactionManager
+	cr AvailableCharacterRepository
 }
 
-func NewService(ur UserRepository, sr SessionRepository, h PasswordHasher) *Service {
+func NewService(ur UserRepository, sr SessionRepository, h PasswordHasher, cp CharacterPicker, tm TransactionManager, cr AvailableCharacterRepository) *Service {
 	return &Service{
 		ur: ur,
 		sr: sr,
 		h:  h,
+		cp: cp,
+		tm: tm,
+		cr: cr,
 	}
 }
 
@@ -54,16 +73,28 @@ func (s *Service) Register(ctx context.Context, username string, password string
 		PasswordHash: passwordHash,
 	}
 
-	err = s.ur.CreateUser(ctx, u)
-	if err != nil {
-		if errors.Is(err, errs.ErrAlreadyExists) {
-			return "", api.Error{
-				Kind:    api.KindAlreadyExists,
-				Message: "user with this username already exists",
+	err = s.tm.Transact(ctx, db.TxIsolationReadCommitted, func(ctx context.Context) error {
+		err = s.ur.CreateUser(ctx, u)
+		if err != nil {
+			if errors.Is(err, errs.ErrAlreadyExists) {
+				return api.Error{
+					Kind:    api.KindAlreadyExists,
+					Message: "user with this username already exists",
+				}
 			}
+
+			return fmt.Errorf("create user: %w", err)
 		}
 
-		return "", fmt.Errorf("create user: %w", err)
+		err := s.unlockInitialCharacters(ctx, u.ID)
+		if err != nil {
+			return fmt.Errorf("unlock initial characters: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return "", err
 	}
 
 	return s.createNewSession(ctx, u.ID)
@@ -119,4 +150,15 @@ func (s *Service) createNewSession(ctx context.Context, userID uuid.UUID) (strin
 	}
 
 	return session.ID.String(), nil
+}
+
+func (s *Service) unlockInitialCharacters(ctx context.Context, userID uuid.UUID) error {
+	charNums := s.cp.RandomCharacters(2)
+
+	err := s.cr.AddCharacters(ctx, userID, charNums)
+	if err != nil {
+		return fmt.Errorf("add characters: %w", err)
+	}
+
+	return nil
 }

@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+	"log"
+	"log/slog"
 	"math"
 
 	"github.com/ShmaykhelDuo/battler/internal/bot/ml"
@@ -57,6 +59,8 @@ func (m *Model) Predict(state match.GameState) (int, error) {
 
 	switch val := res[0].Value().(type) {
 	case [][]float32:
+		slog.Debug("got model result", "val", val)
+
 		maxIndex := -1
 		maxVal := float32(math.Inf(-1))
 
@@ -70,6 +74,9 @@ func (m *Model) Predict(state match.GameState) (int, error) {
 		return maxIndex, nil
 
 	case []int64:
+		slog.Debug("got model result", "val", val)
+		log.Printf("result %v\n", val)
+
 		return int(val[0]), nil
 
 	default:

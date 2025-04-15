@@ -131,9 +131,12 @@ func (s *eloScoring) match(p1, p2 string) (match.Result, error) {
 	invertedOrder := rand.IntN(2) == 1
 	m := match.New(cp1, cp2, invertedOrder)
 
-	m.Run(context.Background())
+	fmt.Printf("starting match %s %s\n", p1, p2)
+
+	go m.Run(context.Background())
 
 	reserr := <-m.Result()
+	fmt.Printf("got results for match %s %s\n", p1, p2)
 	if reserr.Err != nil {
 		return match.Result{}, fmt.Errorf("match result: %w", reserr.Err)
 	}

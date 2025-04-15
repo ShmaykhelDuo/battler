@@ -78,16 +78,22 @@ func (s *Service) OutgoingFriendRequests(ctx context.Context) ([]social.Profile,
 	return s.fr.OutgoingFriendRequests(ctx, session.UserID)
 }
 
-func (s *Service) CreateFriendLink(ctx context.Context, id uuid.UUID) error {
+func (s *Service) CreateFriendLink(ctx context.Context, id uuid.UUID) (social.Profile, error) {
 	session, err := auth.Session(ctx)
 	if err != nil {
-		return api.Error{Kind: api.KindUnauthenticated}
+		return social.Profile{}, api.Error{Kind: api.KindUnauthenticated}
 	}
 
+	var friendProfile social.Profile
 	err = s.tm.Transact(ctx, db.TxIsolationRepeatableRead, func(ctx context.Context) error {
 		err := s.fr.CreateFriendLink(ctx, session.UserID, id)
 		if err != nil {
 			return fmt.Errorf("create friend link: %w", err)
+		}
+
+		friendProfile, err = s.pr.Profile(ctx, id)
+		if err != nil {
+			return fmt.Errorf("get profile: %w", err)
 		}
 
 		profile, err := s.pr.Profile(ctx, session.UserID)
@@ -137,10 +143,10 @@ func (s *Service) CreateFriendLink(ctx context.Context, id uuid.UUID) error {
 		return nil
 	})
 	if err != nil {
-		return err
+		return social.Profile{}, err
 	}
 
-	return nil
+	return friendProfile, nil
 }
 
 func (s *Service) RemoveFriendLink(ctx context.Context, id uuid.UUID) error {
