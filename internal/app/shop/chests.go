@@ -14,6 +14,7 @@ type Chest struct {
 	Name            string `json:"name"`
 	PriceCurrencyID int    `json:"currency_id"`
 	PriceAmount     int64  `json:"price"`
+	Available       bool   `json:"available"`
 }
 
 type Character struct {
@@ -34,6 +35,7 @@ func (h *Handler) Chests(w http.ResponseWriter, r *http.Request) {
 			Name:            c.Name,
 			PriceCurrencyID: int(c.PriceCurrency),
 			PriceAmount:     c.PriceAmount,
+			Available:       c.Available,
 		}
 	}
 

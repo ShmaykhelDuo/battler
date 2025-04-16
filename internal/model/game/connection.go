@@ -11,21 +11,23 @@ import (
 )
 
 type Connection struct {
-	userID    uuid.UUID
-	state     match.GameState
-	stateChan chan match.GameState
-	errorChan chan error
-	endChan   chan MatchPlayerEndResult
-	skillChan chan int
+	userID     uuid.UUID
+	state      match.GameState
+	stateChan  chan match.GameState
+	errorChan  chan error
+	endChan    chan MatchPlayerEndResult
+	skillChan  chan int
+	giveUpChan chan any
 }
 
 func NewConnection(userID uuid.UUID) *Connection {
 	return &Connection{
-		userID:    userID,
-		stateChan: make(chan match.GameState),
-		errorChan: make(chan error),
-		endChan:   make(chan MatchPlayerEndResult),
-		skillChan: make(chan int),
+		userID:     userID,
+		stateChan:  make(chan match.GameState),
+		errorChan:  make(chan error),
+		endChan:    make(chan MatchPlayerEndResult),
+		skillChan:  make(chan int),
+		giveUpChan: make(chan any),
 	}
 }
 
@@ -106,8 +108,12 @@ func (c *Connection) RequestSkill(ctx context.Context) (int, error) {
 	}
 }
 
+func (c *Connection) SendGivenUp() chan<- any {
+	return c.giveUpChan
+}
+
 func (c *Connection) GivenUp() <-chan any {
-	return nil
+	return c.giveUpChan
 }
 
 func (c *Connection) LastState() match.GameState {

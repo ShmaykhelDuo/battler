@@ -57,27 +57,11 @@ func main() {
 	modelRoot := "ml/models"
 
 	modelNames := map[string]modelDesc{
-		"ruby-vs-milana-val20": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"ruby-vs-milana-noval": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"ruby-vs-milana-dqn": modelDesc{
+		"policy_10_51": modelDesc{
 			prefix: "action_0_observation_",
 			format: formats.FullStateFormat{},
 		},
-		"milana-vs-ruby-val20": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"milana-vs-ruby-noval": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"milana-vs-ruby-dqn": modelDesc{
+		"policy_51_10": modelDesc{
 			prefix: "action_0_observation_",
 			format: formats.FullStateFormat{},
 		},
@@ -94,28 +78,16 @@ func main() {
 	}
 
 	players := map[string]playerGenerator{
-		"random":    randomPlayerGenerator{},
-		"minimax2":  miniMaxPlayerGenerator{depth: 2},
-		"minimax4":  miniMaxPlayerGenerator{depth: 4},
-		"minimax6":  miniMaxPlayerGenerator{depth: 6},
-		"minimax8":  miniMaxPlayerGenerator{depth: 8},
-		"minimax10": miniMaxPlayerGenerator{depth: 10},
-		"mlval20": modelPlayerGenerator{
-			models: map[game.CharacterDescription]*model.Model{
-				ruby.CharacterRuby.Desc:     models["ruby-vs-milana-val20"],
-				milana.CharacterMilana.Desc: models["milana-vs-ruby-val20"],
-			},
-		},
-		"mlnoval": modelPlayerGenerator{
-			models: map[game.CharacterDescription]*model.Model{
-				ruby.CharacterRuby.Desc:     models["ruby-vs-milana-noval"],
-				milana.CharacterMilana.Desc: models["milana-vs-ruby-noval"],
-			},
-		},
+		"random":   randomPlayerGenerator{},
+		"minimax2": miniMaxPlayerGenerator{depth: 2},
+		"minimax4": miniMaxPlayerGenerator{depth: 4},
+		// "minimax6":  miniMaxPlayerGenerator{depth: 6},
+		// "minimax8":  miniMaxPlayerGenerator{depth: 8},
+		// "minimax10": miniMaxPlayerGenerator{depth: 10},
 		"mldqn": modelPlayerGenerator{
 			models: map[game.CharacterDescription]*model.Model{
-				ruby.CharacterRuby.Desc:     models["ruby-vs-milana-dqn"],
-				milana.CharacterMilana.Desc: models["milana-vs-ruby-dqn"],
+				ruby.CharacterRuby.Desc:     models["policy_10_51"],
+				milana.CharacterMilana.Desc: models["policy_51_10"],
 			},
 		},
 	}
@@ -124,7 +96,7 @@ func main() {
 
 	for range 10 {
 		s := newEloScoring(ruby.CharacterRuby, milana.CharacterMilana, players)
-		err := s.run(5)
+		err := s.run(50)
 		if err != nil {
 			log.Fatal(err)
 		}

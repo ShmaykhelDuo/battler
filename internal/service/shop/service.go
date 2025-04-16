@@ -27,6 +27,7 @@ type BalanceRepository interface {
 
 type CharacterPicker interface {
 	RandomCharacter() int
+	RandomCharacterOfRarity(rarity game.CharacterRarity) int
 }
 
 type AvailableCharacterRepository interface {
@@ -59,13 +60,13 @@ func (s *Service) Chests(ctx context.Context) ([]model.Chest, error) {
 	return s.chestRepo.Chests(ctx)
 }
 
-func (s *Service) BuyChest(ctx context.Context, chestID int) (game.Character, error) {
+func (s *Service) BuyChest(ctx context.Context, chestID int) (game.AvailableCharacter, error) {
 	session, err := auth.Session(ctx)
 	if err != nil {
-		return game.Character{}, api.Error{Kind: api.KindUnauthenticated}
+		return game.AvailableCharacter{}, api.Error{Kind: api.KindUnauthenticated}
 	}
 
-	var char game.Character
+	var char game.AvailableCharacter
 	err = s.tm.Transact(ctx, db.TxIsolationRepeatableRead, func(ctx context.Context) error {
 		chest, err := s.chestRepo.Chest(ctx, chestID)
 		if err != nil {
@@ -76,6 +77,13 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.Character, er
 				}
 			}
 			return fmt.Errorf("get chest: %w", err)
+		}
+
+		if !chest.Available {
+			return api.Error{
+				Kind:    api.KindInvalidRequest,
+				Message: "chest is not available for purchase",
+			}
 		}
 
 		balance, err := s.balanceRepo.CurrencyBalance(ctx, session.UserID, chest.PriceCurrency)
@@ -96,7 +104,7 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.Character, er
 			return fmt.Errorf("set balance: %w", err)
 		}
 
-		charNum := s.charPicker.RandomCharacter()
+		charNum := s.charPicker.RandomCharacterOfRarity(chest.CharacterRarity)
 
 		err = s.availCharRepo.AddCharacters(ctx, session.UserID, []int{charNum})
 		if err != nil && !errors.Is(err, errs.ErrAlreadyExists) {
@@ -106,7 +114,7 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.Character, er
 		return nil
 	})
 	if err != nil {
-		return game.Character{}, err
+		return game.AvailableCharacter{}, err
 	}
 
 	return char, nil

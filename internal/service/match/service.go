@@ -10,6 +10,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/model/api"
 	model "github.com/ShmaykhelDuo/battler/internal/model/game"
 	"github.com/ShmaykhelDuo/battler/internal/model/money"
+	"github.com/ShmaykhelDuo/battler/internal/model/social"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/db"
 	"github.com/google/uuid"
 )
@@ -40,12 +41,16 @@ type TransactionManager interface {
 }
 
 type CharacterRepository interface {
-	Character(number int) (*game.CharacterData, error)
+	Character(number int) (model.Character, error)
 }
 
 type MatchRepository interface {
 	CreateMatch(ctx context.Context, id uuid.UUID) error
 	CreateMatchParticipant(ctx context.Context, userID uuid.UUID, matchID uuid.UUID, characterNum int, res match.ResultPlayer) error
+}
+
+type ProfileRepository interface {
+	Profile(ctx context.Context, id uuid.UUID) (social.Profile, error)
 }
 
 type Service struct {
@@ -56,9 +61,10 @@ type Service struct {
 	tm        TransactionManager
 	charRepo  CharacterRepository
 	matchRepo MatchRepository
+	profRepo  ProfileRepository
 }
 
-func NewService(connRepo ConnectionRepository, acr AvailableCharacterRepository, mm Matchmaker, br BalanceRepository, tm TransactionManager, charRepo CharacterRepository, matchRepo MatchRepository) *Service {
+func NewService(connRepo ConnectionRepository, acr AvailableCharacterRepository, mm Matchmaker, br BalanceRepository, tm TransactionManager, charRepo CharacterRepository, matchRepo MatchRepository, profRepo ProfileRepository) *Service {
 	return &Service{
 		connRepo:  connRepo,
 		acr:       acr,
@@ -67,6 +73,7 @@ func NewService(connRepo ConnectionRepository, acr AvailableCharacterRepository,
 		tm:        tm,
 		charRepo:  charRepo,
 		matchRepo: matchRepo,
+		profRepo:  profRepo,
 	}
 }
 
@@ -100,12 +107,12 @@ func (s *Service) createMatch(p1, p2 model.MatchPlayer) (*match.Match, error) {
 	}
 
 	player1 := match.CharacterPlayer{
-		Character: game.NewCharacter(char1),
+		Character: game.NewCharacter(char1.Character),
 		Player:    p1.Conn,
 	}
 
 	player2 := match.CharacterPlayer{
-		Character: game.NewCharacter(char2),
+		Character: game.NewCharacter(char2.Character),
 		Player:    p2.Conn,
 	}
 
@@ -122,6 +129,7 @@ func (s *Service) handleMatchResult(ctx context.Context, m *match.Match, players
 		}
 
 		var ret1, ret2 model.MatchPlayerEndResult
+		var prof1, prof2 social.Profile
 
 		matchID := uuid.Must(uuid.NewV7())
 		err := s.tm.Transact(ctx, db.TxIsolationRepeatableRead, func(ctx context.Context) error {
@@ -138,6 +146,11 @@ func (s *Service) handleMatchResult(ctx context.Context, m *match.Match, players
 				if err != nil {
 					return fmt.Errorf("update match participant: %w", err)
 				}
+
+				prof1, err = s.profRepo.Profile(ctx, players[0].PlayerID.UserID)
+				if err != nil {
+					return fmt.Errorf("get profile: %w", err)
+				}
 			}
 
 			if !players[1].PlayerID.IsBot {
@@ -148,6 +161,11 @@ func (s *Service) handleMatchResult(ctx context.Context, m *match.Match, players
 				if err != nil {
 					return fmt.Errorf("update match participant: %w", err)
 				}
+
+				prof2, err = s.profRepo.Profile(ctx, players[1].PlayerID.UserID)
+				if err != nil {
+					return fmt.Errorf("get profile: %w", err)
+				}
 			}
 
 			return nil
@@ -156,6 +174,9 @@ func (s *Service) handleMatchResult(ctx context.Context, m *match.Match, players
 			slog.Error("failed to save match results", "err", err)
 			return
 		}
+
+		ret1.OpponentProfile = prof2
+		ret2.OpponentProfile = prof1
 
 		conn1, ok := players[0].Conn.(*model.Connection)
 		if ok {
@@ -184,6 +205,11 @@ func (s *Service) updateMatchParticipant(ctx context.Context, userID uuid.UUID, 
 		return model.MatchPlayerEndResult{}, fmt.Errorf("create match participant: %w", err)
 	}
 
+	character, err := s.charRepo.Character(characterNum)
+	if err != nil {
+		return model.MatchPlayerEndResult{}, fmt.Errorf("get character: %w", err)
+	}
+
 	level, exp, err := s.acr.CharacterLevelExperience(ctx, userID, characterNum)
 	if err != nil {
 		return model.MatchPlayerEndResult{}, fmt.Errorf("get character level experience: %w", err)
@@ -195,32 +221,47 @@ func (s *Service) updateMatchParticipant(ctx context.Context, userID uuid.UUID, 
 		PrevExperience: exp,
 	}
 
-	exp += 1
-	if exp >= model.CharacterLevelCaps[level-1] {
-		level += 1
-		exp = 0
-	}
+	if !res.HasGivenUp && level < len(model.CharacterLevelCaps[character.Rarity]) {
+		exp += 1
+		if exp >= model.CharacterLevelCaps[character.Rarity][level-1] {
+			level += 1
+			exp = 0
+		}
 
-	err = s.acr.UpdateCharacterLevelExperience(ctx, userID, characterNum, level, exp)
-	if err != nil {
-		return model.MatchPlayerEndResult{}, fmt.Errorf("update character level experience: %w", err)
+		err = s.acr.UpdateCharacterLevelExperience(ctx, userID, characterNum, level, exp)
+		if err != nil {
+			return model.MatchPlayerEndResult{}, fmt.Errorf("update character level experience: %w", err)
+		}
 	}
 
 	ret.Level = level
 	ret.Experience = exp
 
-	balance, err := s.br.CurrencyBalance(ctx, userID, money.CurrencyWhiteDust)
-	if err != nil {
-		return model.MatchPlayerEndResult{}, fmt.Errorf("get currency balance: %w", err)
+	if res.HasGivenUp {
+		ret.Reward = 0
+	} else {
+		switch res.Status {
+		case match.ResultStatusWon:
+			ret.Reward = 10 + model.ResultModifiers[character.Rarity]
+		case match.ResultStatusLost:
+			ret.Reward = 10 - model.ResultModifiers[character.Rarity]
+		default:
+			ret.Reward = 10
+		}
 	}
 
-	balance += 10
-	err = s.br.SetBalance(ctx, userID, money.CurrencyWhiteDust, balance)
-	if err != nil {
-		return model.MatchPlayerEndResult{}, fmt.Errorf("set balance: %w", err)
-	}
+	if ret.Reward != 0 {
+		balance, err := s.br.CurrencyBalance(ctx, userID, money.CurrencyWhiteDust)
+		if err != nil {
+			return model.MatchPlayerEndResult{}, fmt.Errorf("get currency balance: %w", err)
+		}
 
-	ret.Reward = 10
+		balance += int64(ret.Reward)
+		err = s.br.SetBalance(ctx, userID, money.CurrencyWhiteDust, balance)
+		if err != nil {
+			return model.MatchPlayerEndResult{}, fmt.Errorf("set balance: %w", err)
+		}
+	}
 
 	return ret, nil
 }

@@ -2,6 +2,7 @@ package game
 
 import (
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
+	"github.com/ShmaykhelDuo/battler/internal/model/social"
 	"github.com/google/uuid"
 )
 
@@ -23,10 +24,11 @@ type MatchPlayer struct {
 }
 
 type MatchPlayerEndResult struct {
-	Result         match.ResultStatus
-	PrevLevel      int
-	PrevExperience int
-	Level          int
-	Experience     int
-	Reward         int
+	Result          match.ResultStatus
+	PrevLevel       int
+	PrevExperience  int
+	Level           int
+	Experience      int
+	Reward          int64
+	OpponentProfile social.Profile
 }

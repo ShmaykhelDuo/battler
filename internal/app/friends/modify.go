@@ -18,13 +18,18 @@ func (h *Handler) CreateFriendLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.s.CreateFriendLink(r.Context(), id)
+	profile, err := h.s.CreateFriendLink(r.Context(), id)
 	if err != nil {
 		api.HandleError(w, err)
 		return
 	}
 
-	api.WriteJSONResponse(w, http.StatusCreated, id)
+	res := Profile{
+		ID:       profile.ID,
+		Username: profile.Username,
+	}
+
+	api.WriteJSONResponse(w, http.StatusCreated, res)
 }
 
 func (h *Handler) RemoveFriendLink(w http.ResponseWriter, r *http.Request) {

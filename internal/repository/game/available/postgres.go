@@ -34,7 +34,7 @@ func NewPostgresRepository(db *postgres.DB) *PostgresRepository {
 	return &PostgresRepository{db: db}
 }
 
-func (r *PostgresRepository) AvailableCharacters(ctx context.Context, userID uuid.UUID) ([]model.Character, error) {
+func (r *PostgresRepository) AvailableCharacters(ctx context.Context, userID uuid.UUID) ([]model.AvailableCharacter, error) {
 	sql := `
 		SELECT
 			ac.number, ac.level, ac.level_experience,
@@ -55,9 +55,9 @@ func (r *PostgresRepository) AvailableCharacters(ctx context.Context, userID uui
 		return nil, err
 	}
 
-	chars := make([]model.Character, len(dto))
+	chars := make([]model.AvailableCharacter, len(dto))
 	for i, c := range dto {
-		chars[i] = model.Character{
+		chars[i] = model.AvailableCharacter{
 			Number:          c.Number,
 			Level:           c.Level,
 			LevelExperience: c.LevelExperience,
