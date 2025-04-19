@@ -134,6 +134,10 @@ func (c *Conn) handleSend(ctx context.Context) error {
 				Level:          res.Level,
 				Experience:     res.Experience,
 				Reward:         res.Reward,
+				OpponentProfile: Profile{
+					ID:       res.OpponentProfile.ID,
+					Username: res.OpponentProfile.Username,
+				},
 			}
 			err := c.sendMessage(msg)
 			if err != nil {
@@ -170,7 +174,11 @@ func (c *Conn) handleReceive(ctx context.Context) error {
 				}
 				slog.Debug("sent a move", "msg", msg)
 			case MessageGiveUp:
-				
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case c.conn.SendGivenUp() <- struct{}{}:
+				}
 			default:
 				err := c.handleError(api.Error{
 					Kind:    api.KindInvalidRequest,

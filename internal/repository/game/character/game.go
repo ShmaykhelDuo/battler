@@ -4,7 +4,6 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/euphoria"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/milana"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/ruby"
@@ -13,16 +12,38 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/structure"
 	"github.com/ShmaykhelDuo/battler/internal/game/characters/z89"
 	"github.com/ShmaykhelDuo/battler/internal/model/errs"
+	model "github.com/ShmaykhelDuo/battler/internal/model/game"
 )
 
-var characters = map[int]*game.CharacterData{
-	1:   storyteller.CharacterStoryteller,
-	8:   z89.CharacterZ89,
-	9:   euphoria.CharacterEuphoria,
-	10:  ruby.CharacterRuby,
-	33:  speed.CharacterSpeed,
-	51:  milana.CharacterMilana,
-	119: structure.CharacterStructure,
+var characters = map[int]model.Character{
+	1: {
+		Character: storyteller.CharacterStoryteller,
+		Rarity:    model.CharacterRarityLF,
+	},
+	8: {
+		Character: z89.CharacterZ89,
+		Rarity:    model.CharacterRarityAD,
+	},
+	9: {
+		Character: euphoria.CharacterEuphoria,
+		Rarity:    model.CharacterRarityAD,
+	},
+	10: {
+		Character: ruby.CharacterRuby,
+		Rarity:    model.CharacterRaritySP,
+	},
+	33: {
+		Character: speed.CharacterSpeed,
+		Rarity:    model.CharacterRarityAD,
+	},
+	51: {
+		Character: milana.CharacterMilana,
+		Rarity:    model.CharacterRaritySP,
+	},
+	119: {
+		Character: structure.CharacterStructure,
+		Rarity:    model.CharacterRarityLF,
+	},
 }
 
 type GameRepository struct {
@@ -36,10 +57,22 @@ func (r GameRepository) Characters() []int {
 	return slices.Collect(maps.Keys(characters))
 }
 
-func (r GameRepository) Character(number int) (*game.CharacterData, error) {
+func (r GameRepository) CharactersOfRarity(rarity model.CharacterRarity) []int {
+	var res []int
+
+	for num, c := range characters {
+		if c.Rarity == rarity {
+			res = append(res, num)
+		}
+	}
+
+	return res
+}
+
+func (r GameRepository) Character(number int) (model.Character, error) {
 	char, ok := characters[number]
 	if !ok {
-		return nil, errs.ErrNotFound
+		return model.Character{}, errs.ErrNotFound
 	}
 
 	return char, nil

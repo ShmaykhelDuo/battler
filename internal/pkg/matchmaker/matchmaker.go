@@ -2,10 +2,11 @@ package matchmaker
 
 import (
 	"context"
+	"log/slog"
 	"math/rand/v2"
 	"time"
 
-	"github.com/ShmaykhelDuo/battler/internal/bot/alphabeta2"
+	"github.com/ShmaykhelDuo/battler/internal/game/match"
 	model "github.com/ShmaykhelDuo/battler/internal/model/game"
 )
 
@@ -13,17 +14,23 @@ type CharacterRepository interface {
 	Characters() []int
 }
 
+type BotFactory interface {
+	Bot(botChar, playerChar int) (match.Player, error)
+}
+
 type Matchmaker struct {
 	in  chan model.MatchRequest
 	out chan [2]model.MatchPlayer
 	cr  CharacterRepository
+	bf  BotFactory
 }
 
-func New(cr CharacterRepository) *Matchmaker {
+func New(cr CharacterRepository, bf BotFactory) *Matchmaker {
 	return &Matchmaker{
 		in:  make(chan model.MatchRequest),
 		out: make(chan [2]model.MatchPlayer),
 		cr:  cr,
+		bf:  bf,
 	}
 }
 
@@ -53,13 +60,19 @@ func (m *Matchmaker) Run(ctx context.Context) error {
 
 			case <-time.After(5 * time.Second):
 				res[1].PlayerID.IsBot = true
-				res[1].Conn = alphabeta2.NewBot(5)
 
 				res[1].Character = m.selectBotCharacter()
+
 				if player1Req.Main != res[1].Character {
 					res[0].Character = player1Req.Main
 				} else {
 					res[0].Character = player1Req.Secondary
+				}
+
+				var err error
+				res[1].Conn, err = m.bf.Bot(res[1].Character, res[0].Character)
+				if err != nil {
+					slog.Error("failed to create bot", "err", err)
 				}
 
 			case <-ctx.Done():

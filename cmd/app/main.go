@@ -18,6 +18,7 @@ import (
 	shophandler "github.com/ShmaykhelDuo/battler/internal/app/shop"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/api"
 	authhttp "github.com/ShmaykhelDuo/battler/internal/pkg/auth/http"
+	"github.com/ShmaykhelDuo/battler/internal/pkg/botfactory"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/character"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/db/postgres"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/matchmaker"
@@ -162,13 +163,18 @@ func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *
 
 	characterPicker := character.NewPicker(characterRepo)
 
-	authService := authservice.NewService(userRepo, sessionRepo, passwordHasher)
+	authService := authservice.NewService(userRepo, sessionRepo, passwordHasher, characterPicker, tm, availableCharRepo)
 	authHandler := authhandler.NewHandler(authService)
 
-	matchmaker := matchmaker.New(characterRepo)
+	botFactory, err := botfactory.New(characterRepo, "ml/models")
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("bot factory: %w", err)
+	}
 
-	gameService := game.NewService(availableCharRepo, characterPicker, tm)
-	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker, balanceRepo, tm, characterRepo, matchRepo)
+	matchmaker := matchmaker.New(characterRepo, botFactory)
+
+	gameService := game.NewService(availableCharRepo)
+	matchService := match.NewService(connectionRepo, availableCharRepo, matchmaker, balanceRepo, tm, characterRepo, matchRepo, profileRepo)
 	gameHandler := gamehandler.NewHandler(gameService, matchService)
 
 	moneyService := money.NewService(balanceRepo, currencyConvRepo, tm, notificationRepo)

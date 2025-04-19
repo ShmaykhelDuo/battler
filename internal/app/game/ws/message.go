@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/ShmaykhelDuo/battler/internal/app/game/ws/gamestate"
+	"github.com/google/uuid"
 )
 
 type MessageType int
@@ -46,12 +47,18 @@ type MessageGiveUp struct {
 }
 
 type MessageGameEnd struct {
-	Result         int `json:"result"`
-	PrevLevel      int `json:"prev_level"`
-	PrevExperience int `json:"prev_experience"`
-	Level          int `json:"level"`
-	Experience     int `json:"experience"`
-	Reward         int `json:"reward"`
+	Result          int     `json:"result"`
+	PrevLevel       int     `json:"prev_level"`
+	PrevExperience  int     `json:"prev_experience"`
+	Level           int     `json:"level"`
+	Experience      int     `json:"experience"`
+	Reward          int64   `json:"reward"`
+	OpponentProfile Profile `json:"opponent"`
+}
+
+type Profile struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
 }
 
 var ErrInvalidMessageType = errors.New("invalid message type")
