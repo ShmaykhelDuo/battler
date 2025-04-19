@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html class="wrapper">
+<head>
+    <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen"/>
+    <meta charset="utf-8">
+    <title>Battler Interface wwww</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .canvas {
+            position: absolute;
+            max-height: 100%;
+            max-width: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .navigation {
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            color: #323232;
+            font-size: 6vw;
+            position: fixed;
+            z-index: 2;
+            visibility: hidden;
+            background-color: rgba(170, 170, 170, 0.95);
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+
+        .navigation:active {
+            background-color: rgba(135, 135, 135, 0.95);
+        }
+
+        #button1 {
+            left: 22vw;
+            width: 18vw;
+            height: 18vh;
+            bottom: 5vh;
+        }
+
+        #button2 {
+            left: 41vw;
+            width: 18vw;
+            height: 18vh;
+            bottom: 5vh;
+        }
+
+        #button3 {
+            left: 60vw;
+            width: 18vw;
+            height: 18vh;
+            bottom: 5vh;
+        }
+
+        #button4 {
+            top: 31.5vh;
+            width: 18vh;
+            height: 18vh;
+            right: 5vh;
+        }
+
+
+        #button5 {
+            top: 51.5vh;
+            width: 18vh;
+            height: 18vh;
+            right: 5vh;
+        }
+
+
+        @media screen and (max-width: 1100px){
+            .bottom {
+                visibility: visible;
+            }
+        }
+
+        @media screen and (max-height: 370px){
+            .right {
+                visibility: visible;
+            }
+        }
+    </style>
+    <script src="/web/scripts/lib/p5.min.js"></script>
+    <!-- <script src="/scripts/p5.dom.min.js"></script> -->
+    <script src="/web/scripts/constants.js"></script>
+    <script src="interface.js"></script>
+    <script src="interface_structs.js"></script>
+    <script src="/web/scripts/utils.js"></script>
+    <script src="script.js"></script>
+    <script src="backcanvas.js"></script>
+    <!-- <script src="/scripts/POPUP.js"></script> -->
+    <script src="scroll.js"></script>
+</head>
+<body>
+<div align="left" id="bacc" class="canvas"></div>
+<div align="left" id="interface" class="canvas"></div>
+<div align="left" id="p5_loading" class="loadingclass canvas"></div>
+<button class="navigation bottom" id="button1" onclick="scrollToPointLeft(0, false)">⇦</button>
+<button class="navigation bottom" id="button2" onclick="scrollToPointLeft(0.5, true, 350)">○</button>
+<button class="navigation bottom" id="button3" onclick="scrollToPointLeft(730, false)">⇨</button>
+<button class="navigation right" id="button4" onclick="scrollToPointUp(0)">⇧</button>
+<button class="navigation right" id="button5" onclick="scrollToPointUp(230)">⇩</button>
+<div align="right" id="popupWrapper" class="popupWrapper"></div>
+</body>
+</html>

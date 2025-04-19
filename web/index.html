@@ -1,14 +1,90 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" href="styles.css">
-        <script src="/web/auth/script.js"></script>
-    </head>
-    <body>
-        <h1>Hello!</h1>
-        <button onclick="signout()">Sign out</button>
-        <script>
-            window.location.href = "/web/game/characters"
-        </script>
-    </body>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen"/>
+    <meta charset="UTF-8">
+    <title>My profile</title>
+    <script src="/web/scripts/utils.js"></script>
+    <script src="/web/scripts/profile.js"></script>
+    <!-- <script src="/scripts/POPUP.js"></script> -->
+    <!-- <script src="/scripts/constants.js"></script> -->
+</head>
+<body>
+<table WIDTH="100%">
+    <tr>
+        <td width="250px">
+            <div align="center" id="username"></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web">My Profile</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/game/characters">Choose chars</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/money/conversion">Conversion</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/shop">Shop</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/friends">Friend list</a></div>
+        </td>
+        <td class="rightc">
+            <div align="right"><a href="/logout">Logout</a></div>
+        </td>
+    </tr>
+</table>
+<table border="0px" width="100%">
+    <tr>
+        <td width="250px" style="vertical-align: top">
+            <table id="moneytable" style="width: 250px;" border="0px">
+                <tr>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/white_dust.png" style="width:40px;height:40px;"
+                             alt="white dust"><br>
+                        <div id="wDust">0
+                        </div>
+                    </td>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/blue_dust.png" style="width:40px;height:40px;"
+                             alt="blue dust"><br>
+                        <div id="bDust">0
+                        </div>
+                    </td>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/yellow_dust.png" style="width:40px;height:40px;"
+                             alt="yellow dust"><br>
+                        <div id="yDust">0
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/purple_dust.png" style="width:40px;height:40px;"
+                             alt="purple dust"><br>
+                        <div id="pDust">0
+                        </div>
+                    </td>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/star_dust.png" style="width:40px;height:40px;"
+                             alt="stardust"><br>
+                        <div id="sDust">0
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td>
+        </td>
+    </tr>
+</table>
+<div align="center">
+    <div><b>My profile:</b></div>
+    <div id="username2" class="username" align="center"></div>
+    <br>
+    <div id="battles2" class="battleswon" align="center"></div>
+</div>
+<div align="right" id="popupWrapper" class="popupWrapper"></div>
+</body>
 </html>
