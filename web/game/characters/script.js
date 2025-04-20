@@ -172,21 +172,23 @@ function display(girllist) {
 }
 
 function okayforfilter(girl, filter, type) {
-    return (type === "colour" && girl.SkillColours.indexOf(filter) !== -1 ||
-        type === "rarity" && girl.Rarity === filter ||
-        type === "tag" && girl.Tags.indexOf(filter) !== -1);
+    const char = characters[girl.number];
+    return (type === "colour" && char.skills.map((val) => val.colourName).indexOf(filter) !== -1 ||
+        type === "rarity" && char.rarity === filter ||
+        type === "tag" && char.tags.indexOf(filter) !== -1);
 }
 
 function checkallothers(girl, filter, type) {
+    const char = characters[girl.number];
     if (type === "colour") {
-        for (let colour of girl.SkillColours) {
-            if (colour !== filter && document.getElementById(colour).checked) {
+        for (let skill of char.skills) {
+            if (skill.colourName !== filter && document.getElementById(skill.colourName).checked) {
                 return true;
             }
         }
         return false;
     } else if (type === "tag") {
-        for (let tag of girl.Tags) {
+        for (let tag of char.tags) {
             if (tag !== filter && document.getElementById(tag).checked) {
                 return true;
             }
@@ -197,12 +199,13 @@ function checkallothers(girl, filter, type) {
 }
 
 function oneofall(girl) {
-    if (!document.getElementById(girl.Rarity).checked) {
+    const char = characters[girl.number];
+    if (!document.getElementById(char.rarity).checked) {
         return false;
     } else {
         let verdict = false;
-        for (let colour of girl.SkillColours) {
-            if (document.getElementById(colour).checked) {
+        for (let skill of char.skills) {
+            if (document.getElementById(skill.colourName).checked) {
                 verdict = true;
                 break;
             }
@@ -211,7 +214,7 @@ function oneofall(girl) {
             return verdict;
         }
         verdict = false;
-        for (let tag of girl.Tags) {
+        for (let tag of char.tags) {
             if (document.getElementById(tag).checked) {
                 verdict = true;
                 break;

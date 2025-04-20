@@ -15,6 +15,7 @@ import (
 	gamehandler "github.com/ShmaykhelDuo/battler/internal/app/game"
 	moneyhandler "github.com/ShmaykhelDuo/battler/internal/app/money"
 	notificationhandler "github.com/ShmaykhelDuo/battler/internal/app/notification"
+	profilehandler "github.com/ShmaykhelDuo/battler/internal/app/profile"
 	shophandler "github.com/ShmaykhelDuo/battler/internal/app/shop"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/api"
 	authhttp "github.com/ShmaykhelDuo/battler/internal/pkg/auth/http"
@@ -41,6 +42,7 @@ import (
 	"github.com/ShmaykhelDuo/battler/internal/service/match"
 	"github.com/ShmaykhelDuo/battler/internal/service/money"
 	"github.com/ShmaykhelDuo/battler/internal/service/notification"
+	"github.com/ShmaykhelDuo/battler/internal/service/profile"
 	"github.com/ShmaykhelDuo/battler/internal/service/shop"
 	"github.com/ShmaykhelDuo/battler/web"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -189,6 +191,9 @@ func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *
 	notificationService := notification.NewService(notificationRepo, tm)
 	notificationHandler := notificationhandler.NewHandler(notificationService)
 
+	profileService := profile.NewService(profileRepo)
+	profileHandler := profilehandler.NewHandler(profileService)
+
 	authMiddleware := authhttp.NewAuthMiddleware(sessionRepo)
 
 	mux := http.NewServeMux()
@@ -198,6 +203,7 @@ func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *
 	mux.Handle("/shop/", http.StripPrefix("/shop", shophandler.Mux(shopHandler)))
 	mux.Handle("/friends/", http.StripPrefix("/friends", friendhandler.Mux(friendHandler)))
 	mux.Handle("/notifications/", http.StripPrefix("/notifications", notificationhandler.Mux(notificationHandler)))
+	mux.Handle("/profile/", http.StripPrefix("/profile", profilehandler.Mux(profileHandler)))
 
 	mux.Handle("/web/", http.StripPrefix("/web", http.FileServerFS(web.FS)))
 

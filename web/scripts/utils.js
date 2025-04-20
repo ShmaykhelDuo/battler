@@ -1,4 +1,14 @@
 async function UpdateFreeData(after) {
+    const profResponse = await fetch("/profile");
+    if (!profResponse.ok) {
+        if (profResponse.status === 401) {
+            window.location.href = "/web/auth/signin";
+        }
+        return;
+    }
+
+    const prof = await profResponse.json();
+
     const response = await fetch("/money/balance");
     if (!response.ok) {
         if (response.status === 401) {
@@ -10,9 +20,9 @@ async function UpdateFreeData(after) {
     const res = await response.json();
 
     console.log(res);
-    let welcome = "Welcome, " + res.Username;
+    let welcome = "Welcome, " + prof.username;
     if (welcome.length > 19) {
-        document.getElementById("username").innerText = "Hi, " + res.Username;
+        document.getElementById("username").innerText = "Hi, " + prof.username;
     } else {
         document.getElementById("username").innerText = welcome;
     }
@@ -58,27 +68,36 @@ async function UpdateFreeData(after) {
     // };
 }
 
-function UpdateProfileData(r) {
-    
-
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', '/profileinfo', true);
-    xhr.send();
-    xhr.onreadystatechange = (e) => {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                let response = JSON.parse(xhr.responseText);
-                document.getElementById("username2").innerText = r.Username;
-                if (response.BattlesTotal > 0) {
-                    document.getElementById("battles2").innerText = "Battle stats: " + response.BattlesWon + "/" + response.BattlesTotal + " (" + roundUp(response.BattlesWon / response.BattlesTotal * 100) + "% winrate)";
-                } else {
-                    document.getElementById("battles2").innerText = "Battle stats: " + 0 + "/" + 0 + " (" + 0 + "% winrate)";
-                }
-            } else {
-                console.log(xhr.responseText);
-            }
+async function UpdateProfileData(r) {
+    const response = await fetch("/profile");
+    if (!response.ok) {
+        if (response.status === 401) {
+            window.location.href = "/web/auth/signin";
         }
-    };
+        return;
+    }
+
+    const res = await response.json();
+    document.getElementById("username2").innerText = res.username;
+
+    // let xhr = new XMLHttpRequest();
+    // xhr.open('GET', '/profileinfo', true);
+    // xhr.send();
+    // xhr.onreadystatechange = (e) => {
+    //     if (xhr.readyState === 4) {
+    //         if (xhr.status === 200) {
+    //             let response = JSON.parse(xhr.responseText);
+    //             document.getElementById("username2").innerText = r.Username;
+    //             if (response.BattlesTotal > 0) {
+    //                 document.getElementById("battles2").innerText = "Battle stats: " + response.BattlesWon + "/" + response.BattlesTotal + " (" + roundUp(response.BattlesWon / response.BattlesTotal * 100) + "% winrate)";
+    //             } else {
+    //                 document.getElementById("battles2").innerText = "Battle stats: " + 0 + "/" + 0 + " (" + 0 + "% winrate)";
+    //             }
+    //         } else {
+    //             console.log(xhr.responseText);
+    //         }
+    //     }
+    // };
 }
 
 function is_touch_device4() {
