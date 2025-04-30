@@ -32,6 +32,7 @@ type CharacterPicker interface {
 
 type AvailableCharacterRepository interface {
 	AddCharacters(ctx context.Context, userID uuid.UUID, chars []int) error
+	AreAllAvailable(ctx context.Context, userID uuid.UUID, numbers []int) (bool, error)
 }
 
 type TransactionManager interface {
@@ -66,7 +67,7 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.AvailableChar
 		return game.AvailableCharacter{}, api.Error{Kind: api.KindUnauthenticated}
 	}
 
-	var char game.AvailableCharacter
+	var charNum int
 	err = s.tm.Transact(ctx, db.TxIsolationRepeatableRead, func(ctx context.Context) error {
 		chest, err := s.chestRepo.Chest(ctx, chestID)
 		if err != nil {
@@ -104,11 +105,18 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.AvailableChar
 			return fmt.Errorf("set balance: %w", err)
 		}
 
-		charNum := s.charPicker.RandomCharacterOfRarity(chest.CharacterRarity)
+		charNum = s.charPicker.RandomCharacterOfRarity(chest.CharacterRarity)
 
-		err = s.availCharRepo.AddCharacters(ctx, session.UserID, []int{charNum})
-		if err != nil && !errors.Is(err, errs.ErrAlreadyExists) {
-			return fmt.Errorf("add characters: %w", err)
+		isAvail, err := s.availCharRepo.AreAllAvailable(ctx, session.UserID, []int{charNum})
+		if err != nil {
+			return fmt.Errorf("is character avail: %w", err)
+		}
+
+		if !isAvail {
+			err = s.availCharRepo.AddCharacters(ctx, session.UserID, []int{charNum})
+			if err != nil {
+				return fmt.Errorf("add characters: %w", err)
+			}
 		}
 
 		return nil
@@ -117,5 +125,11 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.AvailableChar
 		return game.AvailableCharacter{}, err
 	}
 
-	return char, nil
+	return game.AvailableCharacter{
+		Number:          charNum,
+		Level:           1,
+		LevelExperience: 0,
+		MatchCount:      0,
+		WinCount:        0,
+	}, nil
 }
