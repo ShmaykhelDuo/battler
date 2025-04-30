@@ -287,7 +287,7 @@ async function init() {
             let el = getElement(ID);
             let im = getElement(ID + "image");
             let txt = getElement(ID + "text");
-            if (data[currency] && cost <= int(data[currency])) {
+            if (item.available && data[currency] && cost <= int(data[currency])) {
                 el.setState(0);
                 txt.setColour(dark);
                 im.transparency = 255;
@@ -296,7 +296,9 @@ async function init() {
                 txt.setColour(light);
                 im.transparency = 126;
             }
-            txt.setText(cost);
+            if (item.available) {
+                txt.setText(cost);
+            }
             im.image = loadImage("/web/images/locked/" + DUSTS.get("wbyps"[currency - 1]).toLowerCase() + "_dust_small.png");
         }
     }
