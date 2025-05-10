@@ -81,8 +81,8 @@ function LoadingBar(x, y, w, h, radius, id, c, c2) {
     };
 
     this.in = function() {
-        let x = mouseX;
-        let y = mouseY;
+        let x = fixCoordScale(mouseX);
+        let y = fixCoordScale(mouseY);
         return (this.x <= x && x <= (this.width + this.x) && this.y <= y && y <= (this.h + this.y))
     };
 

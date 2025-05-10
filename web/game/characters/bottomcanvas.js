@@ -59,8 +59,8 @@ bottomSketch = function (p) {
     };
 
     p.mousePressed = function () {
-        let x = p.mouseX;
-        let y = p.mouseY;
+        let x = fixCoordScale(p.mouseX);
+        let y = fixCoordScale(p.mouseY);
         for (obj of bottomobjects) {
             if (obj.clickable && obj.in(x, y)) {
                 obj.clicked();

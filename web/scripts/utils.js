@@ -279,3 +279,72 @@ async function addFriend(name, fromFriendList) {
         init();
     }
 }
+
+async function logout() {
+    const response = await fetch("/auth/signout", {
+        method: "POST"
+    });
+    if (!response.ok) {
+        error = await response.json();
+        return;
+    }
+
+    window.location.href = "/web/auth/signin/";
+}
+
+var scaleFactor = 1.0;
+
+window.addEventListener("load", () => {
+    function updatebody() {
+        const body = document.getElementsByTagName("body")[0]
+        const bodyw = body.offsetWidth;
+        const bodyh = body.offsetHeight;
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
+
+        const scale = Math.min(ww / bodyw, wh / bodyh);
+        body.style['transform'] = `translate(-50%, 0) scale(${scale})`;
+        console.log("set body style", body.style['transform'], `scale(${scale})`, ww, wh, bodyw, bodyh);
+        scaleFactor = scale;
+    }
+
+    window.onresize = updatebody;
+    updatebody();
+
+    new ResizeObserver(updatebody).observe(document.querySelector("body"));
+})
+
+function fixCoordScale(c) {
+    return c / scaleFactor;
+}
+
+function testMatch() {
+    if (window.location.pathname === "/web/game/match/") {
+        return;
+    }
+
+    let loc = window.location, new_uri;
+    if (loc.protocol === "https:") {
+        new_uri = "wss:";
+    } else {
+        new_uri = "ws:";
+    }
+    new_uri += "//" + loc.host + "/game/match";
+    const ws = new WebSocket(new_uri);
+
+    ws.onopen = function (evt) {
+        console.log("OPEN");
+        ws.send(JSON.stringify({ type: 2, payload: {} }));
+        connected = true;
+    };
+    
+    ws.onmessage = function (evt) {
+        let battleresponse = JSON.parse(evt.data);
+        if (battleresponse.type !== 3) {
+            window.location.href = "/web/game/match";
+        }
+        ws.close();
+    };
+}
+
+// testMatch();

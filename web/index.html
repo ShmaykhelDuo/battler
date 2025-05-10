@@ -4,10 +4,12 @@
     <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen"/>
     <meta charset="UTF-8">
     <title>My profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="/web/scripts/utils.js"></script>
     <script src="/web/scripts/profile.js"></script>
     <script src="/web/scripts/notifications.js"></script>
     <script src="/web/scripts/constants.js"></script>
+    <script src="/web/scripts/tutorial.js"></script>
 </head>
 <body>
 <table WIDTH="100%">
@@ -31,7 +33,7 @@
             <div align="center"><a href="/web/friends">Friend list</a></div>
         </td>
         <td class="rightc">
-            <div align="right"><a href="/logout">Logout</a></div>
+            <div align="right"><a href="#" onclick="logout()">Logout</a></div>
         </td>
     </tr>
 </table>
@@ -86,5 +88,11 @@
     <div id="battles2" class="battleswon" align="center"></div>
 </div>
 <div align="right" id="popupWrapper" class="popupWrapper"></div>
+<div id="tutorial" class="hidden">
+    <div id="tutorial-text"></div>
+    <button id="tutorial-next" class="standardbutton" onclick="nextTutorialStep()">Next</button>
+    <button id="tutorial-close" class="standardbutton" onclick="stopTutorial()">Close</button>
+</div>
+<div id="overlay" class="hidden">Rotate the screen to interact with the game</div>
 </body>
 </html>

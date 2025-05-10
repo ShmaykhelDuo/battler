@@ -4,6 +4,7 @@
     <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen"/>
     <meta charset="utf-8">
     <title>Battler Interface wwww</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         * {
             box-sizing: border-box;
@@ -11,7 +12,7 @@
             margin: 0;
         }
 
-        body {
+        /* body {
             margin: 0;
             position: relative;
             max-width: 100%;
@@ -20,15 +21,20 @@
             height: 100%;
             top: 0;
             left: 0;
+        } */
+
+        body {
+            width: 1280px;
+            min-height: 550px;
         }
 
-        .canvas {
+        /* .canvas {
             position: absolute;
             max-height: 100%;
             max-width: 100%;
             top: 0;
             left: 0;
-        }
+        } */
 
         .navigation {
             user-select: none;
@@ -90,6 +96,12 @@
         }
 
 
+        #tutorial {
+            top: 20vh;
+            bottom: auto;
+        }
+
+
         @media screen and (max-width: 1100px){
             .bottom {
                 visibility: visible;
@@ -112,6 +124,7 @@
     <script src="backcanvas.js"></script>
     <!-- <script src="/scripts/POPUP.js"></script> -->
     <script src="scroll.js"></script>
+    <script src="/web/scripts/tutorial.js"></script>
 </head>
 <body>
 <div align="left" id="bacc" class="canvas"></div>
@@ -123,5 +136,10 @@
 <button class="navigation right" id="button4" onclick="scrollToPointUp(0)">⇧</button>
 <button class="navigation right" id="button5" onclick="scrollToPointUp(230)">⇩</button>
 <div align="right" id="popupWrapper" class="popupWrapper"></div>
+<div id="tutorial" class="hidden">
+    <div id="tutorial-text"></div>
+    <button id="tutorial-next" class="standardbutton" onclick="nextTutorialStep()">Next</button>
+    <button id="tutorial-close" class="standardbutton" onclick="stopTutorial()">Close</button>
+</div>
 </body>
 </html>

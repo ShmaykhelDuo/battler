@@ -87,8 +87,8 @@ function Panel(x, y, w, h, s) {
     };
 
     this.in = function () {
-        let x = mouseX;
-        let y = mouseY;
+        let x = fixCoordScale(mouseX);
+        let y = fixCoordScale(mouseY);
         return (this.x <= x && x <= (this.width + this.x) && this.y <= y && y <= (this.height + this.y))
     };
 
@@ -482,8 +482,8 @@ function TextInfo(x, y, colour, t, size, id, type, width, height, hoverable) {
     };
 
     this.in = function () {
-        let x = mouseX;
-        let y = mouseY;
+        let x = fixCoordScale(mouseX);
+        let y = fixCoordScale(mouseY);
         return (this.x <= x && x <= (this.width + this.x) && y <= this.y && (this.y - this.height) <= y);
     };
 
@@ -578,7 +578,7 @@ function TextInfo(x, y, colour, t, size, id, type, width, height, hoverable) {
                 if (i >= this.images.length) {
                     return;
                 }
-                if (Math.floor((mouseY - this.y + this.height) / this.images[0].height) === i) {
+                if (Math.floor((fixCoordScale(mouseY) - this.y + this.height) / this.images[0].height) === i) {
                     this.hoverText = this.hoverTexts[i];
                     this.hoverLines = this.hoverHeights[i];
                     break;
@@ -593,9 +593,9 @@ function TextInfo(x, y, colour, t, size, id, type, width, height, hoverable) {
             textSize(hoverSize);
             noStroke();
             fill(hoverc);
-            rect(mouseX, mouseY, 355, 70, 5);
-            let y_pos = mouseY + hoverSize + 5;
-            let x_pos = mouseX + 10;
+            rect(fixCoordScale(mouseX), fixCoordScale(mouseY), 355, 70, 5);
+            let y_pos = fixCoordScale(mouseY) + hoverSize + 5;
+            let x_pos = fixCoordScale(mouseX) + 10;
             let map = new Map(COLOURIDS);
             for (let i = 0; i < COLOURIDS.length; i++) {
                 //noStroke();
@@ -616,7 +616,7 @@ function TextInfo(x, y, colour, t, size, id, type, width, height, hoverable) {
                 textAlign(RIGHT);
                 text(amount, x_pos + 75, y_pos);
                 if ((i + 1) % 4 === 0) {
-                    x_pos = mouseX + 10;
+                    x_pos = fixCoordScale(mouseX) + 10;
                     y_pos += hoverSize + 5;
                 } else {
                     x_pos += 85;
@@ -740,8 +740,8 @@ function TurnLog(x, y, colour, size, id, width, height, hoverable) {
     };
 
     this.in = function () {
-        let x = mouseX;
-        let y = mouseY;
+        let x = fixCoordScale(mouseX);
+        let y = fixCoordScale(mouseY);
         return (this.x <= x && x <= (this.width + this.x) && y <= this.y && (this.y - this.height) <= y);
     };
 
@@ -961,8 +961,8 @@ function SkillButton(x, y, type, t, id, mine) {
     };
 
     this.in = function () {
-        let x = mouseX;
-        let y = mouseY;
+        let x = fixCoordScale(mouseX);
+        let y = fixCoordScale(mouseY);
         if (this.type === 1) {
             let top_y = 0.77792 * x + (this.y - 25 - (this.x + 5) * 0.77792);
 
@@ -1193,12 +1193,12 @@ function displayStandardHoverBubble(hoverText, lines) {
     let w = textWidth(hoverText);
     let amnt = 965;
     if (touch) amnt-= 40;
-    if (mouseX >= amnt && w < 290) {
+    if (fixCoordScale(mouseX) >= amnt && w < 290) {
         changerForFlipping = -w - 20;
         if (touch) {
             changerForFlipping -= 40;
         }
-    } else if (mouseX >= amnt) {
+    } else if (fixCoordScale(mouseX) >= amnt) {
         changerForFlipping = -310;
         if (touch) {
             changerForFlipping -= 40;
@@ -1211,22 +1211,22 @@ function displayStandardHoverBubble(hoverText, lines) {
     }
     let changerForFlippingY;
     let h = lines * hoverSize + (lines - 1) * 5;
-    if (mouseY + h + 10 >= 550) {
+    if (fixCoordScale(mouseY) + h + 10 >= 550) {
         changerForFlippingY = -h;
     } else {
         changerForFlippingY = 0;
     }
     if (h === hoverSize && w < 290) {
-        rect(mouseX + changerForFlipping, mouseY + changerForFlippingY, w + 20, h + 10, 5);
+        rect(fixCoordScale(mouseX) + changerForFlipping, fixCoordScale(mouseY) + changerForFlippingY, w + 20, h + 10, 5);
     } else {
-        rect(mouseX + changerForFlipping, mouseY + changerForFlippingY, 310, h + 10, 5);
+        rect(fixCoordScale(mouseX) + changerForFlipping, fixCoordScale(mouseY) + changerForFlippingY, 310, h + 10, 5);
     }
     strokeWeight(0.5);
     stroke(dark);
     fill(dark);
     textLeading(20);
 
-    text(hoverText, mouseX + 10 + changerForFlipping, mouseY + changerForFlippingY + 5, 290);
+    text(hoverText, fixCoordScale(mouseX) + 10 + changerForFlipping, fixCoordScale(mouseY) + changerForFlippingY + 5, 290);
 }
 
 function StandardButton(x, y, s, t, size, id, col) {
@@ -1325,8 +1325,8 @@ function StandardButton(x, y, s, t, size, id, col) {
     };
 
     this.in = function () {
-        let x = mouseX;
-        let y = mouseY;
+        let x = fixCoordScale(mouseX);
+        let y = fixCoordScale(mouseY);
         return (this.x <= x && x <= (this.width + this.x) && this.y <= y && y <= (this.height + this.y))
     };
 
@@ -1334,8 +1334,8 @@ function StandardButton(x, y, s, t, size, id, col) {
         this.colour = this.clickedColour;
         this.clickTimer = this.clickLinger;
         if (this.id === "back") {
-            console.log("RELOCATED!~", "/afterbattle");
-            window.location = '/afterbattle';
+            console.log("RELOCATED!~", "/web/game/rewards/");
+            window.location = '/web/game/rewards/';
             return
         } if (!this.warned && this.id === "GiveUp") {
             this.warned = true;
@@ -1606,8 +1606,8 @@ function SkillButtonMini(x, y, t, id) {
     };
 
     this.in = function () {
-        let x = mouseX;
-        let y = mouseY;
+        let x = fixCoordScale(mouseX);
+        let y = fixCoordScale(mouseY);
         return (this.x <= x && x <= (this.width + this.x) && this.y <= y && y <= (this.height + this.y));
     };
 

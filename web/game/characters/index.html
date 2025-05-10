@@ -4,6 +4,7 @@
     <link rel="stylesheet" type="text/css" href="/web/scripts/style.css"/>
     <meta charset="UTF-8">
     <title>Character List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="/web/scripts/lib/p5.min.js"></script>
     <script src="/web/scripts/constants.js"></script>
     <script src="/web/scripts/pinterface.js"></script>
@@ -13,6 +14,7 @@
     <script src="/web/scripts/utils.js"></script>
     <script src="script.js"></script>
     <script src="/web/scripts/notifications.js"></script>
+    <script src="/web/scripts/tutorial.js"></script>
 </head>
 <body>
 <table WIDTH="100%">
@@ -33,7 +35,7 @@
             <div align="center"><a href="/web/friends">Friend list</a></div>
         </td>
         <td class="rightc">
-            <div align="right"><a href="/logout">Logout</a></div>
+            <div align="right"><a href="#" onclick="logout()">Logout</a></div>
         </td>
     </tr>
 </table>
@@ -90,5 +92,10 @@
     </table>
 </div>
 <div align="right" id="popupWrapper" class="popupWrapper"></div>
+<div id="tutorial" class="hidden">
+    <div id="tutorial-text"></div>
+    <button id="tutorial-next" class="standardbutton" onclick="nextTutorialStep()">Next</button>
+    <button id="tutorial-close" class="standardbutton" onclick="stopTutorial()">Close</button>
+</div>
 </body>
 </html>

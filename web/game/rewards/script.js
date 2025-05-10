@@ -277,8 +277,8 @@ function add_match() {
 }
 
 function mousePressed() {
-    let x = mouseX;
-    let y = mouseY;
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
     for (obj of objects) {
         if (obj.clickable && obj.in(x, y)) {
             obj.clicked();

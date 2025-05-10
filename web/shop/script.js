@@ -111,8 +111,8 @@ function open() {
             rect(this.x, this.y, this.width, this.height, 5);
         },
         in: function () {
-            let x = mouseX;
-            let y = mouseY;
+            let x = fixCoordScale(mouseX);
+            let y = fixCoordScale(mouseY);
             return (this.x <= x && x <= (this.width + this.x) && this.y <= y && y <= (this.y + this.height));
         }
     };
@@ -406,8 +406,8 @@ function sendSkill(ID) {
 }
 
 function mouseClicked() {
-    let x = mouseX;
-    let y = mouseY;
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
     for (obj of shopobjects) {
         if (obj.clickable && obj.in(x, y) && STATE === "NO_WINDOW") {
             obj.clicked();

@@ -55,8 +55,8 @@ leftSketch = function (p) {
 
     p.mousePressed = function () {
         if (registered) {
-            let x = p.mouseX;
-            let y = p.mouseY;
+            let x = fixCoordScale(p.mouseX);
+            let y = fixCoordScale(p.mouseY);
             for (obj of leftobjects) {
                 if (obj.clickable && obj.in(x, y)) {
                     obj.clicked();

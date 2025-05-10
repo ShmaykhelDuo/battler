@@ -164,6 +164,7 @@ function display(girllist) {
         button.onClick = function () {
             this.index = girl.number;
             refreshCurGirl(this.index);
+            tutorialTrigger("characterSelectionDisplay");
         };
         let c = leftP.lerpColor(leftP.color(girl.colour), light, 0.45);
         button.setColour(c.toString());
@@ -383,6 +384,10 @@ function random() {
     if (old_prompt !== "") {
         getElementBottom("prompts").setText(old_prompt);
     }
+
+    if (mainNum !== -1 && secNum !== -1) {
+        tutorialTrigger("characterSelectionBothSelected");
+    }
 }
 
 function setasmain() {
@@ -400,6 +405,10 @@ function setasmain() {
     }
     getElementRight("set").setText("Set as Main!")
     //document.getElementById("mainset").textContent = "Set as Main!";
+
+    if (mainNum !== -1 && secNum !== -1) {
+        tutorialTrigger("characterSelectionBothSelected");
+    }
 }
 
 function setassec() {
@@ -416,6 +425,10 @@ function setassec() {
     }
     getElementRight("set").setText("Set as Secondary!")
     //document.getElementById("secset").textContent = "Set as Secondary!";
+
+    if (mainNum !== -1 && secNum !== -1) {
+        tutorialTrigger("characterSelectionBothSelected");
+    }
 }
 
 function clearsetgirls() {

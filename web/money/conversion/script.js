@@ -81,8 +81,8 @@ function setup() {
 }
 
 function mousePressed() {
-    let x = mouseX;
-    let y = mouseY;
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
     for (obj of convobjects) {
         if (obj.clickable && obj.in(x, y)) {
             obj.clicked(x);
@@ -91,8 +91,8 @@ function mousePressed() {
 }
 
 function mouseDragged() {
-    let x = mouseX;
-    let y = mouseY;
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
     for (obj of convobjects) {
         if (obj.clickable && obj.draggable && obj.in(x, y)) {
             obj.clicked(x);
@@ -257,6 +257,8 @@ function handleConversionDone(convData, m) {
     setMoney(m, true, false);
     setDustType(dustType, m[convData.currency_id], true);
     bar.setPercentage(100);
+
+    tutorialTrigger("conversionEnd");
 }
 
 const currMap = {
@@ -283,6 +285,8 @@ async function convert(amount, type) {
         return
     }
 
+    tutorialTrigger("conversionStart");
+
     const convData = await response.json();
     CONVINFO = convData;
     let after = function (data) {
@@ -302,6 +306,8 @@ async function claimConversion() {
     if (!response.ok) {
         return;
     }
+
+    tutorialTrigger("conversionClaim");
 
     CONVINFO = null;
     let after = function (data) {

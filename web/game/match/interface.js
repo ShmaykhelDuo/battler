@@ -103,8 +103,8 @@ function InterfaceButton(p, x, y, t, size, id, type, width, height) {
     };
 
     this.in = function () {
-        let x = this.p.mouseX;
-        let y = this.p.mouseY;
+        let x = fixCoordScale(this.p.mouseX);
+        let y = fixCoordScale(this.p.mouseY);
         return (this.x <= x && x <= (this.width + this.x) && this.y <= y && y <= (this.height + this.y))
     };
 
@@ -224,8 +224,8 @@ function InterfaceText(p, x, y, colour, t, size, id, type, width) {
     };
 
     this.in = function () {
-        let x = this.p.mouseX;
-        let y = this.p.mouseY;
+        let x = fixCoordScale(this.p.mouseX);
+        let y = fixCoordScale(this.p.mouseY);
         return (this.x <= x && x <= (this.width + this.x) && y <= this.y && (this.y - this.height) <= y);
     };
 
@@ -334,6 +334,7 @@ function InterfaceImage(p, x, y, path, id, name, width, height, colour) {
 
     this.display = function () {
         if (this.image) {
+            p.smooth();
             p.image(this.image, this.x, this.y, this.width, this.height);
         }
     };
@@ -578,8 +579,8 @@ function SkillButtonMiniP(p, x, y, t, id) {
     };
 
     this.in = function () {
-        let x = this.p.mouseX;
-        let y = this.p.mouseY;
+        let x = fixCoordScale(this.p.mouseX);
+        let y = fixCoordScale(this.p.mouseY);
         return (this.x <= x && x <= (this.width + this.x) && this.y <= y && y <= (this.height + this.y));
     };
 
@@ -710,12 +711,12 @@ function displayStandardHoverBubbleP(p, hoverText, lines) {
     let w = p.textWidth(hoverText);
     let amnt = 965;
     if (touch) amnt-= 40;
-    if (p.mouseX >= amnt && w < 290) {
+    if (fixCoordScale(p.mouseX) >= amnt && w < 290) {
         changerForFlipping = -w - 20;
         if (touch) {
             changerForFlipping -= 40;
         }
-    } else if (p.mouseX >= amnt) {
+    } else if (fixCoordScale(p.mouseX) >= amnt) {
         changerForFlipping = -310;
         if (touch) {
             changerForFlipping -= 40;
@@ -728,21 +729,21 @@ function displayStandardHoverBubbleP(p, hoverText, lines) {
     }
     let changerForFlippingY;
     let h = lines * hoverSize + (lines - 1) * 5;
-    if (p.mouseY + h + 10 >= 550) {
+    if (fixCoordScale(p.mouseY) + h + 10 >= 550) {
         changerForFlippingY = -h;
     } else {
         changerForFlippingY = 0;
     }
     if (h === hoverSize && w < 290) {
-        p.rect(p.mouseX + changerForFlipping, p.mouseY + changerForFlippingY, w + 20, h + 10, 5);
+        p.rect(fixCoordScale(p.mouseX) + changerForFlipping, fixCoordScale(p.mouseY) + changerForFlippingY, w + 20, h + 10, 5);
     } else {
-        p.rect(p.mouseX + changerForFlipping, p.mouseY + changerForFlippingY, 310, h + 10, 5);
+        p.rect(fixCoordScale(p.mouseX) + changerForFlipping, fixCoordScale(p.mouseY) + changerForFlippingY, 310, h + 10, 5);
     }
     p.strokeWeight(0.5);
     p.stroke(dark);
     p.fill(dark);
     p.textLeading(20);
-    p.text(hoverText, p.mouseX + 10 + changerForFlipping, p.mouseY + changerForFlippingY + 5, 290);
+    p.text(hoverText, fixCoordScale(p.mouseX) + 10 + changerForFlipping, fixCoordScale(p.mouseY) + changerForFlippingY + 5, 290);
 }
 
 

@@ -4,6 +4,8 @@
 <head>
     <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen" />
     <title>Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/web/scripts/tutorial.js"></script>
     <script>
         async function registerFunc() {
             let username = document.getElementById("username").value;
@@ -57,6 +59,7 @@
                 return;
             }
 
+            enableTutorial();
             window.location.href = "/web/";
 
             // let xhr = new XMLHttpRequest();

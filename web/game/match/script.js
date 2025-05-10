@@ -174,9 +174,12 @@ function clicked() {
     if (document.activeElement.classList.contains("navigation")) {
         return
     }
+    if (document.activeElement.id.includes("tutorial")) {
+        return
+    }
 
-    let x = mouseX;
-    let y = mouseY;
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
 
     if (leftPanel.in(x, y)) {
         for (obj of leftPanel.objects) {
@@ -216,8 +219,8 @@ function touchStarted() {
         FS = FullScreen(touch);
     }
 
-    let x = mouseX;
-    let y = mouseY;
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
 
     for (let Panel of [leftPanel, rightPanel, bottomPanel, topPanel]) {
         if (Panel.in(x, y)) {
@@ -236,9 +239,12 @@ function touchMoved() {
     if (document.activeElement.classList.contains("navigation")) {
         return
     }
+    if (document.activeElement.id.includes("tutorial")) {
+        return
+    }
 
-    let x = mouseX;
-    let y = mouseY;
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
 
     for (let Panel of [leftPanel, rightPanel, bottomPanel, topPanel]) {
         if (Panel.in(x, y)) {
@@ -274,8 +280,11 @@ function touchEnded() {
     if (document.activeElement.classList.contains("navigation")) {
         return
     }
-    let x = mouseX;
-    let y = mouseY;
+    if (document.activeElement.id.includes("tutorial")) {
+        return
+    }
+    let x = fixCoordScale(mouseX);
+    let y = fixCoordScale(mouseY);
     if (current) {
         if (current.clickable && current.hoverTimer < current.hoverLinger && current.in(x, y)) {
             console.log(current.id, current.hoverTimer, current.hoverLinger);
@@ -912,6 +921,9 @@ function connectToServer() {
             loading = false;
         }
         let battleresponse = JSON.parse(evt.data);
+        if (battleresponse.type === 3) {
+            window.location.href = "/web/game/characters";
+        }
         console.log(battleresponse);
         parseState(battleresponse);
     };
