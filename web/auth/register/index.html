@@ -1,20 +1,121 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" href="/web/styles.css">
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <script src="/web/error.js"></script>
-        <script src="script.js"></script>
-    </head>
-    <body>
-        <div id="main" x-data="registerData()">
-            <div class="error" x-show="error !== null" x-text="error"></div>
-            <div>
-                <input type="text" x-model="username">
-                <input type="password" x-model="password">
-                <input type="password" x-model="repeatedPassword">
-                <button @click="register()">Register</button>
-            </div>
-        </div>
-    </body>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen" />
+    <title>Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            position: relative;
+            width: auto;
+            height: auto;
+            left: auto;
+        }
+    </style>
+    <script src="/web/scripts/tutorial.js"></script>
+    <script>
+        async function registerFunc() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            let password2 = document.getElementById("password2").value;
+            if (username.length < 3 || username.length > 32) {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").innerText = "Username should be between 3 and 32 chars long.";
+                return;
+            }
+            if (password.length < 6 || password.length > 32) {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").innerText = "Password should be between 6 and 32 chars long.";
+                return;
+            }
+            if (password !== password2) {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").innerText = "Passwords do not match.";
+                return;
+            }
+            let regex = /[^ぁ-ンa-zA-Zа-яА-Я0-9\-_•ёЁ.]+/;
+            if (username.match(regex) !== null) {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").innerText = "Username should only contain latin, cyrillic letters, kana, numbers, or -_.•";
+                return;
+            }
+            let regex2 = /\s/;
+            if (password.match(regex2) !== null) {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").innerText = "Password should not contain whitespaces!";
+                return;
+            }
+
+            const response = await fetch("/auth/register", {
+                method: "POST",
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+            if (!response.ok) {
+                error = await response.json();
+
+                if (response.status === 400) {
+                    document.getElementById("warnings").style = "color: #FF4133;";
+                    document.getElementById("warnings").innerText = error.error.message;
+                } else {
+                    document.getElementById("warnings").style = "color: #323232;";
+                    document.getElementById("warnings").innerText = error.error.message;
+                }
+                return;
+            }
+
+            enableTutorial();
+            window.location.href = "/web/";
+
+            // let xhr = new XMLHttpRequest();
+            // xhr.open('POST', '/register', true);
+            // xhr.send(JSON.stringify({"username": username, "password": password}));
+            // xhr.onreadystatechange = (e) => {
+            //     if (xhr.readyState === 4) {
+            //         if (xhr.status === 200) {
+            //             console.log(xhr.responseText);
+            //             location = xhr.responseText;
+            //         } else if (xhr.status === 400) {
+            //             document.getElementById("warnings").style = "color: #FF4133;";
+            //             document.getElementById("warnings").innerText = xhr.responseText;
+            //         } else {
+            //             document.getElementById("warnings").style = "color: #323232;";
+            //             document.getElementById("warnings").innerText = xhr.responseText;
+            //         }
+            //     }
+            // }
+        }
+    </script>
+</head>
+
+<body>
+    <div align="center">
+        <form>
+            <!-- <h2><b><a href="/registerbyID">Have you been given an ID?</a></b></h2> -->
+            <br>
+            <h2><b>Please enter your profile info</b></h2>
+            <br>
+            <input type="text" id="username" placeholder="Username or ID" autofocus
+                onkeypress="if (event.keyCode === 13) { document.getElementById('password').focus()}" />
+            <br>
+            <input type="password" id="password" placeholder="Password"
+                onkeypress="if (event.keyCode === 13) {document.getElementById('password2').focus()}" />
+            <br>
+            <input type="password" id="password2" placeholder="Repeat your password"
+                onkeypress="if (event.keyCode === 13) {registerFunc()}" />
+            <br>
+            <div id="warnings" style="color: #FF4133;"></div>
+            <br>
+            <button id="register" type="button" onclick="registerFunc()" class="standardbutton">Request registration
+            </button>
+            <br>
+            <br>
+            <a href="/web/auth/signin">Already have an account?</a>
+        </form>
+    </div>
+</body>
+
 </html>

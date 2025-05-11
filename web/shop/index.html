@@ -1,47 +1,99 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="/web/styles.css">
-    <link rel="stylesheet" href="styles.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="/web/auth/script.js"></script>
-    <script src="/web/money/script.js"></script>
+    <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen"/>
+    <meta charset="UTF-8">
+    <title>Shop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/web/scripts/lib/p5.min.js"></script>
+    <script src="/web/scripts/interface_structs.js"></script>
     <script src="script.js"></script>
+    <script src="/web/scripts/constants.js"></script>
+    <script src="/web/scripts/loading_bar.js"></script>
+    <script src="/web/scripts/utils.js"></script>
+    <script src="/web/scripts/notifications.js"></script>
+    <script src="/web/scripts/tutorial.js"></script>
 </head>
-
 <body>
-    <div id="nav">
-        <div><a href="/web/game/characters">Play</a></div>
-        <div><a href="/web/money/conversion">Conversion</a></div>
-        <div><a href="/web/shop">Shop</a></div>
-        <div><a href="/web/friends">Friends</a></div>
-        <div><button onclick="signout()">Sign out</button></div>
-    </div>
-
-    <div id="main" x-data="chests()" x-init="init()">
-        <div id="balance">
-            <template x-for="(amount, currency) in balance.balance">
-                <div class="balance-item">
-                    <div class="balance-currency" x-text="currencies[currency]"></div>
-                    <div class="balance-amount" x-text="amount"></div>
-                </div>
-            </template>
-        </div>
-
-        <div id="chests">
-            <template x-for="chest in chests">
-                <div class="chest">
-                    <div x-text="chest.name"></div>
-                    <div>
-                        <span x-text="currencies[chest.currency_id]"></span>
-                        <span x-text="chest.price"></span>
-                    </div>
-                    <button @click="buy(chest.id)" :disabled="chest.price > balance.balance[chest.currency_id]">Buy</button>
-                </div>
-            </template>
-        </div>
-    </div>
+<table WIDTH="100%">
+    <tr>
+        <td width="250px">
+            <div align="center" id="username"></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web">My Profile</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/game/characters">Choose chars</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/money/conversion">Conversion</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/friends">Friend list</a></div>
+        </td>
+        <td class="rightc">
+            <div align="right"><a href="#" onclick="logout()">Logout</a></div>
+        </td>
+    </tr>
+</table>
+<table border="0px" width="100%">
+    <tr>
+        <td width="250px" style="vertical-align: top">
+            <table id="moneytable" style="width: 250px;" border="0px">
+                <tr>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/white_dust.png" style="width:40px;height:40px;"
+                             alt="white dust"><br>
+                        <div id="wDust">0
+                        </div>
+                    </td>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/blue_dust.png" style="width:40px;height:40px;"
+                             alt="blue dust"><br>
+                        <div id="bDust">0
+                        </div>
+                    </td>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/yellow_dust.png" style="width:40px;height:40px;"
+                             alt="yellow dust"><br>
+                        <div id="yDust">0
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/purple_dust.png" style="width:40px;height:40px;"
+                             alt="purple dust"><br>
+                        <div id="pDust">0
+                        </div>
+                    </td>
+                    <td width="33%" class="middlec">
+                        <img src="/web/images/locked/star_dust.png" style="width:40px;height:40px;"
+                             alt="stardust"><br>
+                        <div id="sDust">0
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td>
+            <div align="center"><h2><b>Shop</b></h2></div>
+        </td>
+    </tr>
+</table>
+<table WIDTH="100%">
+    <tr>
+        <td>
+            <div align="center" id="shop"></div>
+        </td>
+    </tr>
+</table>
+<div align="right" id="popupWrapper" class="popupWrapper"></div>
+<div id="tutorial" class="hidden">
+    <div id="tutorial-text"></div>
+    <button id="tutorial-next" class="standardbutton" onclick="nextTutorialStep()">Next</button>
+    <button id="tutorial-close" class="standardbutton" onclick="stopTutorial()">Close</button>
+</div>
 </body>
-
 </html>

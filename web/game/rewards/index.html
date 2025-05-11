@@ -3,14 +3,14 @@
 <head>
     <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen"/>
     <meta charset="UTF-8">
-    <title>Conversion</title>
+    <title>Battle rewards</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="/web/scripts/lib/p5.min.js"></script>
     <script src="/web/scripts/constants.js"></script>
-    <script src="/web/scripts/utils.js"></script>
     <script src="script.js"></script>
     <script src="/web/scripts/loading_bar.js"></script>
     <script src="/web/scripts/interface_structs.js"></script>
+    <script src="/web/scripts/utils.js"></script>
     <script src="/web/scripts/notifications.js"></script>
     <script src="/web/scripts/tutorial.js"></script>
 </head>
@@ -18,13 +18,16 @@
 <table WIDTH="100%">
     <tr>
         <td width="250px">
-            <div align="center" id="username" class="username"></div>
+            <div align="center" id="username"></div>
         </td>
         <td class="centerc">
             <div align="center"><a href="/web">My Profile</a></div>
         </td>
         <td class="centerc">
             <div align="center"><a href="/web/game/characters">Choose chars</a></div>
+        </td>
+        <td class="centerc">
+            <div align="center"><a href="/web/money/conversion">Conversion</a></div>
         </td>
         <td class="centerc">
             <div align="center"><a href="/web/shop">Shop</a></div>
@@ -79,28 +82,15 @@
         </td>
         <td>
             <div align="center">
-                <h2>Conversion</h2>
+                <table WIDTH="100%">
+                    <tr>
+                        <td>
+                            <div align="center" id="rewards_sketch">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
-        </td>
-    </tr>
-</table>
-<table align="center" WIDTH="100%">
-    <tr>
-        <td>
-            <div id="items" align="center">
-            </div>
-            <table width="1024px" align="center" border="0">
-                <tr>
-                    <td width="10px">
-                    </td>
-                    <td width="502px">
-                        <div align="left" id="rarityselect"></div>
-                    </td>
-                    <td width="512px">
-                        <div align="center" id="number">0</div>
-                    </td>
-                </tr>
-            </table>
         </td>
     </tr>
 </table>

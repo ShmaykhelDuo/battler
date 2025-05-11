@@ -1,19 +1,105 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" href="/web/styles.css">
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <script src="/web/error.js"></script>
-        <script src="script.js"></script>
-    </head>
-    <body>
-        <div id="main" x-data="signinData()">
-            <div class="error" x-show="error !== null" x-text="error"></div>
-            <div>
-                <input type="text" x-model="username">
-                <input type="password" x-model="password">
-                <button @click="signin()">Sign in</button>
-            </div>
-        </div>
-    </body>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen" />
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            position: relative;
+            width: auto;
+            height: auto;
+            left: auto;
+        }
+    </style>
+    <script>
+        async function loginFunc() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            if (username === '' || password === '') {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").innerText = "Please fill in both username and password!";
+                return;
+            }
+            if (username.length > 32) {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").textContent = "Your username must be shorter (32 symbols max).";
+                return;
+            }
+            if (password.length > 32) {
+                document.getElementById("warnings").style = "color: #FF4133;";
+                document.getElementById("warnings").textContent = "Your password must be shorter (32 symbols max).";
+
+                return;
+            }
+
+            const response = await fetch("/auth/signin", {
+                method: "POST",
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+            if (!response.ok) {
+                error = await response.json();
+
+                if (response.status === 400) {
+                    document.getElementById("warnings").style = "color: #FF4133;";
+                    document.getElementById("warnings").innerText = error.error.message;
+                } else {
+                    document.getElementById("warnings").style = "color: #323232;";
+                    document.getElementById("warnings").innerText = error.error.message;
+                }
+                return;
+            }
+
+            window.location.href = "/web/";
+
+            // let xhr = new XMLHttpRequest();
+            // xhr.open('POST', '/login', true);
+            // xhr.send(JSON.stringify({
+            //     "username": username,
+            //     "password": password,
+            //     "rememberme": document.getElementById("remember").checked
+            // }));
+            // xhr.onreadystatechange = (e) => {
+            //     if (xhr.readyState === 4) {
+            //         if (xhr.status === 200) {
+            //             window.location.href = xhr.responseText;
+            //         } else if (xhr.status === 400) {
+            //             document.getElementById("warnings").style = "color: #FF4133;";
+            //             document.getElementById("warnings").innerText = xhr.responseText;
+            //         } else {
+            //             document.getElementById("warnings").style = "color: #323232;";
+            //             document.getElementById("warnings").innerText = xhr.responseText;
+            //         }
+            //     }
+            // };
+        }
+    </script>
+</head>
+
+<body>
+    <div align="center">
+        <form>
+            <h2><b>Welcome home</b></h2>
+            <br><br>
+            <input type="text" id="username" placeholder="Username or ID" autofocus
+                onkeypress="if (event.keyCode === 13) { document.getElementById('password').focus()}" />
+            <br>
+            <input type="password" id="password" placeholder="Password"
+                onkeypress="if (event.keyCode === 13) {loginFunc()}" />
+            <br>
+            <!-- <label class="checkbox"><input type="checkbox" id="remember">Keep me logged in</label> -->
+            <div id="warnings" style="color: #FF4133;"></div>
+            <button id="login" type="button" onclick="loginFunc()" class="standardbutton">Login
+            </button>
+            <br>
+            <br>
+            <a href="/web/auth/register">Or register instead</a>
+        </form>
+    </div>
+</body>
+
 </html>

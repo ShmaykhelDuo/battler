@@ -1,0 +1,258 @@
+body {
+    font-family: sans-serif;
+    background: #E6E6E6;
+    color: #323232;
+    font-size: x-large;
+    padding: 0;
+    position: absolute;
+    left: 50%;
+    width: 1280px;
+    height: auto;
+    min-height: 720px;
+    transform-origin: 50% 0;
+    overflow: hidden;
+    margin: 0;
+}
+
+.middlec {
+    text-align: center;
+    font-size: large;
+}
+
+.username {
+    font-weight: bold;
+    font-size: x-large;
+}
+
+.centerc {
+    vertical-align: top;
+}
+
+.rightc {
+    vertical-align: text-top;
+}
+
+#moneytable {
+    font-size: xx-large;
+}
+
+label {
+    font-size: x-large;
+}
+
+/* Style the buttons inside the tab */
+.standardbutton {
+    background-color: #aaaaaa;
+    float: top;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 10px 15px;
+    transition: 0.3s;
+    font-size: large;
+}
+
+/* Change background color of buttons on hover */
+.standardbutton:hover {
+    background-color: #878787;
+}
+
+/* Create an active/current tablink class */
+.standardbutton.active {
+    background-color: #878787;
+}
+
+/* Style the tab */
+.tab {
+    width: 800px;
+    overflow: hidden;
+    border: 0;
+    background-color: #E6E6E6;
+    border-bottom: none;
+}
+
+/* Style the tab content */
+.tabcontent {
+    width: 800px;
+    display: none;
+    border: 0;
+}
+
+input[type=checkbox] {
+    /* Double-sized Checkboxes */
+    -ms-transform: scale(2); /* IE */
+    -moz-transform: scale(2); /* FF */
+    -webkit-transform: scale(2); /* Safari and Chrome */
+    -o-transform: scale(2); /* Opera */
+    margin: 10px;
+}
+
+input[type=text], input[type=password] {
+    min-width: 350px;
+    font-size: x-large;
+    border: 2px solid #aaaaaa;
+    border-radius: 5px;
+    margin: 3px;
+    padding-left: 20px;
+    padding-top: 5px;
+    padding-right: 2px;
+    padding-bottom: 5px;
+}
+
+input[type=text], input[type=password] :focus {
+    box-shadow: 0 0 10px #aaaaaa;
+}
+
+input:focus {
+    border: 2px solid #323232;
+    border-radius: 5px;
+    transition: 0.3s;
+    outline: none;
+}
+
+input:-webkit-autofill {
+    font-family: sans-serif;
+    font-size: x-large;
+    /*-webkit-box-shadow: 0 0 0 30px white inset !important;*/
+    -webkit-text-fill-color: #323232 !important;
+}
+
+input:-webkit-autofill:hover {
+    font-family: sans-serif;
+    color: #323232;
+    font-size: x-large;
+}
+
+input:-webkit-autofill:focus {
+    font-family: sans-serif;
+    color: #323232;
+    font-size: x-large;
+}
+
+.popupWrapper {
+    z-index: 1;
+    position: absolute;
+    bottom: 0.5vmin;
+    width: 100%;
+}
+
+.popup {
+    width: 30vw;
+    min-height: 4vh;
+    font-size: 4vh;
+    visibility: hidden;
+    background-color: rgba(50, 50, 50, 0.95);
+    color: #aaaaaa;
+    text-align: center;
+    border-radius: 1vmin;
+    padding: 2vmin;
+    right: 0.5vmin;
+    display: block;
+    position: relative;
+    cursor: pointer;
+    margin-top: 0.5vmin;
+    box-shadow: 0 0 5vmin #aaaaaa inset;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /*Chrome, Opera and Firefox */
+}
+
+.notifImage {
+    width: 4vh;
+    height: 4vh;
+    vertical-align: middle;
+}
+
+.popupWrapper :hover {
+    outline: none;
+    box-shadow: 0 0 2vmin #323232;
+    background-color: rgba(50, 50, 50, 1);
+}
+
+.popup.show {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s forwards;
+    animation: fadeIn 1s forwards;
+}
+
+.popup.remove {
+    -webkit-animation: fadeOut 0.6s forwards;
+    animation: fadeOut 0.6s forwards;
+}
+
+#tutorial {
+    /* z-index: 2;
+    position: absolute;
+    bottom: 20%; */
+    width: 40em;
+    background-color: rgba(50, 50, 50, 0.95);
+    color: #aaaaaa;
+    border-radius: 1vmin;
+    padding: 2vmin;
+}
+
+#tutorial.hidden {
+    display: none;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(50, 50, 50, 0.95);
+    color: #aaaaaa;
+    width: 100%;
+    height: 100%;
+}
+
+#overlay.hidden {
+    display: none;
+}
+
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+
+}
+
+@-webkit-keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+    100% {
+        visibility: hidden;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+
+    }
+    100% {
+        visibility: hidden;
+    }
+}
