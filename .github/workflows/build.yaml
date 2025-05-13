@@ -18,9 +18,9 @@ jobs:
       - name: Download assets
         run: |
           wget -q "$IMAGES_URL" -O images.zip
-          unzip images.zip -d images/
+          unzip -q images.zip -d web/images/
           wget -q "$MODELS_URL" -O models.zip
-          unzip models.zip -d ml/
+          unzip -q models.zip -d ml/
         env:
           IMAGES_URL: ${{ secrets.IMAGES_URL }}
           MODELS_URL: ${{ secrets.MODELS_URL }}
