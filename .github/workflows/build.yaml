@@ -21,6 +21,9 @@ jobs:
           unzip images.zip -d images/
           wget -q "$MODELS_URL" -O models.zip
           unzip models.zip -d ml/
+        env:
+          IMAGES_URL: ${{ secrets.IMAGES_URL }}
+          MODELS_URL: ${{ secrets.MODELS_URL }}
       - name: Build
         run: go build -v ./cmd/... ./internal/...
       - name: Test
