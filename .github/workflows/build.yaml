@@ -61,5 +61,5 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/ShmaykhelDuo/battler:${{ github.sha }}
+          tags: ghcr.io/shmaykhelduo/battler:${{ github.sha }}
 
