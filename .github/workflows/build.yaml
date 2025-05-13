@@ -48,6 +48,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: battler
+      - name: Fix permissions
+        run: chmod +x battler
       - name: Download models
         run: |
           wget -q "$MODELS_URL" -O models.zip
