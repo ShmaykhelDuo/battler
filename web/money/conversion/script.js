@@ -154,11 +154,11 @@ function removeElement(id) {
 }
 
 async function getConversionStatus() {
-    const response = await fetch("/money/conversion");
+    const response = await fetch("/api/v1/money/conversion");
 
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin";
+            window.location.href = "/auth/signin";
         }
         else if (response.status == 404) {
             CONVINFO = null;
@@ -226,7 +226,7 @@ function handleConversionInProgress(conv, m) {
         emntEl.show();
     }
     if (!getElement('dustpic')) {
-        let im = new CanvasImage(emntEl.x - 65, emntEl.y - 50, "/web/images/locked/" + DUSTS.get(dustType).toLowerCase() + "_dust.png", "dustpic", DUSTS.get(dustType).toLowerCase() + "_dust.png", 50, 50);
+        let im = new CanvasImage(emntEl.x - 65, emntEl.y - 50, "/images/locked/" + DUSTS.get(dustType).toLowerCase() + "_dust.png", "dustpic", DUSTS.get(dustType).toLowerCase() + "_dust.png", 50, 50);
         convobjects.push(im);
     }
     bar.setNewPercentage((bar.total - left) / bar.total * 100);
@@ -240,7 +240,7 @@ function handleConversionDone(convData, m) {
     let get = convData.amount;
     let n = document.getElementById("number");
     let dustType = "wbyps"[convData.currency_id - 1];
-    n.innerHTML = " <img src=\"/web/images/locked/" + DUSTS.get(dustType).toLowerCase() + "_dust.png\" style=\"width:40px;height:40px;\" alt=\"" + DUSTS.get(dustType) + " dust\"><br>" + get;
+    n.innerHTML = " <img src=\"/images/locked/" + DUSTS.get(dustType).toLowerCase() + "_dust.png\" style=\"width:40px;height:40px;\" alt=\"" + DUSTS.get(dustType) + " dust\"><br>" + get;
     let emntEl = getElement("willGet");
     if (emntEl.visible) {
         emntEl.hide();
@@ -270,7 +270,7 @@ const currMap = {
 }
 
 async function convert(amount, type) {
-    const response = await fetch("/money/conversion", {
+    const response = await fetch("/api/v1/money/conversion", {
         method: "POST",
         body: JSON.stringify({
             currency_id: currMap[type],
@@ -280,7 +280,7 @@ async function convert(amount, type) {
 
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin";
+            window.location.href = "/auth/signin";
         }
         return
     }
@@ -300,7 +300,7 @@ async function convert(amount, type) {
 }
 
 async function claimConversion() {
-    const response = await fetch("/money/conversion/claim", {
+    const response = await fetch("/api/v1/money/conversion/claim", {
         method: "POST"
     });
     if (!response.ok) {

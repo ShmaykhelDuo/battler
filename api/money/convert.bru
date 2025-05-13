@@ -5,14 +5,14 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/money/conversion
+  url: {{baseUrl}}/api/v1/money/conversion
   body: json
   auth: none
 }
 
 body:json {
   {
-    "currency_id": 2,
+    "currency_id": 1,
     "amount": 2
   }
 }

@@ -197,15 +197,15 @@ func constructDependencies(ctx context.Context) (http.Handler, *match.Service, *
 	authMiddleware := authhttp.NewAuthMiddleware(sessionRepo)
 
 	mux := http.NewServeMux()
-	mux.Handle("/auth/", http.StripPrefix("/auth", authhandler.Mux(authHandler)))
-	mux.Handle("/game/", http.StripPrefix("/game", gamehandler.Mux(gameHandler)))
-	mux.Handle("/money/", http.StripPrefix("/money", moneyhandler.Mux(moneyHandler)))
-	mux.Handle("/shop/", http.StripPrefix("/shop", shophandler.Mux(shopHandler)))
-	mux.Handle("/friends/", http.StripPrefix("/friends", friendhandler.Mux(friendHandler)))
-	mux.Handle("/notifications/", http.StripPrefix("/notifications", notificationhandler.Mux(notificationHandler)))
-	mux.Handle("/profile/", http.StripPrefix("/profile", profilehandler.Mux(profileHandler)))
+	mux.Handle("/api/v1/auth/", http.StripPrefix("/api/v1/auth", authhandler.Mux(authHandler)))
+	mux.Handle("/api/v1/game/", http.StripPrefix("/api/v1/game", gamehandler.Mux(gameHandler)))
+	mux.Handle("/api/v1/money/", http.StripPrefix("/api/v1/money", moneyhandler.Mux(moneyHandler)))
+	mux.Handle("/api/v1/shop/", http.StripPrefix("/api/v1/shop", shophandler.Mux(shopHandler)))
+	mux.Handle("/api/v1/friends/", http.StripPrefix("/api/v1/friends", friendhandler.Mux(friendHandler)))
+	mux.Handle("/api/v1/notifications/", http.StripPrefix("/api/v1/notifications", notificationhandler.Mux(notificationHandler)))
+	mux.Handle("/api/v1/profile/", http.StripPrefix("/api/v1/profile", profilehandler.Mux(profileHandler)))
 
-	mux.Handle("/web/", http.StripPrefix("/web", http.FileServerFS(web.FS)))
+	mux.Handle("/", http.FileServerFS(web.FS))
 
 	return api.PanicHandlerMiddleware(authMiddleware.Middleware(mux)), matchService, matchmaker, nil
 }

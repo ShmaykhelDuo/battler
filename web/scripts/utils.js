@@ -1,18 +1,18 @@
 async function UpdateFreeData(after) {
-    const profResponse = await fetch("/profile");
+    const profResponse = await fetch("/api/v1/profile");
     if (!profResponse.ok) {
         if (profResponse.status === 401) {
-            window.location.href = "/web/auth/signin";
+            window.location.href = "/auth/signin";
         }
         return;
     }
 
     const prof = await profResponse.json();
 
-    const response = await fetch("/money/balance");
+    const response = await fetch("/api/v1/money/balance");
     if (!response.ok) {
         if (response.status === 401) {
-            window.location.href = "/web/auth/signin";
+            window.location.href = "/auth/signin";
         }
         return;
     }
@@ -69,10 +69,10 @@ async function UpdateFreeData(after) {
 }
 
 async function UpdateProfileData(r) {
-    const response = await fetch("/profile");
+    const response = await fetch("/api/v1/profile");
     if (!response.ok) {
         if (response.status === 401) {
-            window.location.href = "/web/auth/signin";
+            window.location.href = "/auth/signin";
         }
         return;
     }
@@ -265,12 +265,12 @@ function parseSeconds(n, strip) {
 async function addFriend(name, fromFriendList) {
     console.log("add: " + name);
 
-    const response = await fetch(`/friends/${name}`, {
+    const response = await fetch(`/api/v1/friends/${name}`, {
         method: "POST"
     });
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin"
+            window.location.href = "/auth/signin"
         }
         return;
     }
@@ -281,7 +281,7 @@ async function addFriend(name, fromFriendList) {
 }
 
 async function logout() {
-    const response = await fetch("/auth/signout", {
+    const response = await fetch("/api/v1/auth/signout", {
         method: "POST"
     });
     if (!response.ok) {
@@ -289,7 +289,7 @@ async function logout() {
         return;
     }
 
-    window.location.href = "/web/auth/signin/";
+    window.location.href = "/auth/signin/";
 }
 
 var scaleFactor = 1.0;
@@ -319,7 +319,7 @@ function fixCoordScale(c) {
 }
 
 function testMatch() {
-    if (window.location.pathname === "/web/game/match/") {
+    if (window.location.pathname === "/game/match/") {
         return;
     }
 
@@ -329,7 +329,7 @@ function testMatch() {
     } else {
         new_uri = "ws:";
     }
-    new_uri += "//" + loc.host + "/game/match";
+    new_uri += "//" + loc.host + "/api/v1/game/match";
     const ws = new WebSocket(new_uri);
 
     ws.onopen = function (evt) {
@@ -341,7 +341,7 @@ function testMatch() {
     ws.onmessage = function (evt) {
         let battleresponse = JSON.parse(evt.data);
         if (battleresponse.type !== 3) {
-            window.location.href = "/web/game/match";
+            window.location.href = "/game/match";
         }
         ws.close();
     };

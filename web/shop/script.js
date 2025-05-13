@@ -269,10 +269,10 @@ function getElement(id) {
 }
 
 async function init() {
-    const response = await fetch("/shop/chests");
+    const response = await fetch("/api/v1/shop/chests");
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin"
+            window.location.href = "/auth/signin"
         }
         return;
     }
@@ -299,7 +299,7 @@ async function init() {
             if (item.available) {
                 txt.setText(cost);
             }
-            im.image = loadImage("/web/images/locked/" + DUSTS.get("wbyps"[currency - 1]).toLowerCase() + "_dust_small.png");
+            im.image = loadImage("/images/locked/" + DUSTS.get("wbyps"[currency - 1]).toLowerCase() + "_dust_small.png");
         }
     }
 
@@ -316,12 +316,12 @@ async function purchase(ID) {
     }
 
     if (STATE !== "WINDOW") {
-        const response = await fetch(`/shop/chests/${idMap[ID]}`, {
+        const response = await fetch(`/api/v1/shop/chests/${idMap[ID]}`, {
             method: "POST"
         });
         if (!response.ok) {
             if (response.status == 401) {
-                window.location.href = "/web/auth/signin"
+                window.location.href = "/auth/signin"
             }
             addPopup(await response.json());
             return;
@@ -367,9 +367,9 @@ function parse(curGirl) {
     let name = char.name;
     if (!imageBox.contains(name)) {
         if (existsPortrait(char.number)) {
-            imageBox.add(new CanvasImage(right_pos, 15, "/web/images/locked/" + name + "_portrait.png", "girl", name, 201, 268, char.colour));
+            imageBox.add(new CanvasImage(right_pos, 15, "/images/locked/" + name + "_portrait.png", "girl", name, 201, 268, char.colour));
         } else {
-            imageBox.add(new CanvasImage(right_pos, 15, "/web/images/locked/Placeholder_portrait.png", "girl", name, 201, 268, char.colour));
+            imageBox.add(new CanvasImage(right_pos, 15, "/images/locked/Placeholder_portrait.png", "girl", name, 201, 268, char.colour));
         }
     }
     //setloadingscreencolours;

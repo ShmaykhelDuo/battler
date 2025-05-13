@@ -589,7 +589,7 @@ function handleEnd(result) {
     disableButtons(0);
     disableOppButtons(0);
     rightPanel.discard(getElement("GiveUp"));
-    setwhere("/web/game/rewards");
+    setwhere("/game/rewards");
     redirect(true);
     switch (result.result) {
         case 1: // win
@@ -902,7 +902,7 @@ function connectToServer() {
     } else {
         new_uri = "ws:";
     }
-    new_uri += "//" + loc.host + "/game/match";
+    new_uri += "//" + loc.host + "/api/v1/game/match";
     ws = new WebSocket(new_uri);
 
     ws.onopen = function (evt) {
@@ -922,7 +922,7 @@ function connectToServer() {
         }
         let battleresponse = JSON.parse(evt.data);
         if (battleresponse.type === 3) {
-            window.location.href = "/web/game/characters";
+            window.location.href = "/game/characters";
         }
         console.log(battleresponse);
         parseState(battleresponse);
