@@ -15,7 +15,59 @@ jobs:
           wget -q --no-check-certificate https://storage.googleapis.com/tensorflow/libtensorflow/${FILENAME}
           sudo tar -C /usr/local -xzf ${FILENAME}
           sudo ldconfig /usr/local/lib
+      - name: Download assets
+        run: |
+          wget -q "$IMAGES_URL" -O images.zip
+          unzip -q images.zip -d web/images/
+        env:
+          IMAGES_URL: ${{ secrets.IMAGES_URL }}
       - name: Build
         run: go build -v ./cmd/... ./internal/...
       - name: Test
         run: go build -v ./cmd/... ./internal/...
+      - name: Build binary
+        run: go build -o battler ./cmd/app
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: battler
+          path: battler
+  
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: battler
+      - name: Fix permissions
+        run: chmod +x battler
+      - name: Download models
+        run: |
+          wget -q "$MODELS_URL" -O models.zip
+          unzip -q models.zip -d ml/
+        env:
+          MODELS_URL: ${{ secrets.MODELS_URL }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/shmaykhelduo/battler:${{ github.sha }}
+

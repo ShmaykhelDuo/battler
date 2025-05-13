@@ -530,7 +530,7 @@ function TextInfo(x, y, colour, t, size, id, type, width, height, hoverable) {
                 if (!IMAGEBOX.contains(name)) {
                     //if they are not, add them (Adding a canvas image.).
                     let new_image = new CanvasImage(this.x + add, this.y - this.height + effIconSize * i,
-                        "/web/images/locked/" + name + ".png", this.id + "_" + name, name, effIconSize,
+                        "/images/locked/" + name + ".png", this.id + "_" + name, name, effIconSize,
                         effIconSize);
                     IMAGEBOX.add(new_image);
                     this.images.push(new_image);
@@ -1334,8 +1334,8 @@ function StandardButton(x, y, s, t, size, id, col) {
         this.colour = this.clickedColour;
         this.clickTimer = this.clickLinger;
         if (this.id === "back") {
-            console.log("RELOCATED!~", "/web/game/rewards/");
-            window.location = '/web/game/rewards/';
+            console.log("RELOCATED!~", "/game/rewards/");
+            window.location = '/game/rewards/';
             return
         } if (!this.warned && this.id === "GiveUp") {
             this.warned = true;

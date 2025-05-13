@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <link rel="stylesheet" type="text/css" href="/web/scripts/style.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/scripts/style.css" media="screen" />
     <title>Register</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
@@ -13,7 +13,7 @@
             left: auto;
         }
     </style>
-    <script src="/web/scripts/tutorial.js"></script>
+    <script src="/scripts/tutorial.js"></script>
     <script>
         async function registerFunc() {
             let username = document.getElementById("username").value;
@@ -47,7 +47,7 @@
                 return;
             }
 
-            const response = await fetch("/auth/register", {
+            const response = await fetch("/api/v1/auth/register", {
                 method: "POST",
                 body: JSON.stringify({
                     username: username,
@@ -68,7 +68,7 @@
             }
 
             enableTutorial();
-            window.location.href = "/web/";
+            window.location.href = "/";
 
             // let xhr = new XMLHttpRequest();
             // xhr.open('POST', '/register', true);
@@ -113,7 +113,7 @@
             </button>
             <br>
             <br>
-            <a href="/web/auth/signin">Already have an account?</a>
+            <a href="/auth/signin">Already have an account?</a>
         </form>
     </div>
 </body>

@@ -159,7 +159,7 @@ function setup() {
     getElement("girlList").clicked = function () {
         this.colour = this.clickedColour;
         this.clickTimer = this.clickLinger;
-        window.location = "/web/game/characters";
+        window.location = "/game/characters";
     };
     UpdateFreeData();
     GetInfo();

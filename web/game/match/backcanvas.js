@@ -18,14 +18,14 @@ backSketch = function (p) {
         oppscreen = new LoadingScreen(p, 730 + 0.4 * 550, 0.4 * 550, 0.2 * 550, 0.2 * 550);
         oppscreen.setColours(OC, OW, OE, OR);
         if (myChar.name !== PlN && getResolution(PlNum)[0] !== 0) {
-            myChar.open("/web/images/locked/" + PlN + "_left.png", PlN, getResolution(PlNum)[0], getResolution(PlNum)[1]);
+            myChar.open("/images/locked/" + PlN + "_left.png", PlN, getResolution(PlNum)[0], getResolution(PlNum)[1]);
         } else if (myChar.name !== PlNum) {
-            myChar.open("/web/images/locked/Placeholder_left.png", PlNum, 350, 550);
+            myChar.open("/images/locked/Placeholder_left.png", PlNum, 350, 550);
         }
         if (oppChar.name !== ON && getResolution(ONum)[0] !== 0) {
-            oppChar.open("/web/images/locked/" + ON + "_right.png", ON, getResolution(ONum)[0], getResolution(ONum)[1]);
+            oppChar.open("/images/locked/" + ON + "_right.png", ON, getResolution(ONum)[0], getResolution(ONum)[1]);
         } else if (oppChar.name !== ON) {
-            oppChar.open("/web/images/locked/Placeholder_right.png", ONum, 350, 550);
+            oppChar.open("/images/locked/Placeholder_right.png", ONum, 350, 550);
         }
     };
     p.draw = function () {

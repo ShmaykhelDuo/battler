@@ -16,10 +16,10 @@ function init(first) {
 }
 
 async function fetchFriends() {
-    const response = await fetch("/friends");
+    const response = await fetch("/api/v1/friends");
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin"
+            window.location.href = "/auth/signin"
         }
         return;
     }
@@ -27,10 +27,10 @@ async function fetchFriends() {
 }
 
 async function fetchIncoming() {
-    const response = await fetch("/friends/incoming");
+    const response = await fetch("/api/v1/friends/incoming");
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin"
+            window.location.href = "/auth/signin"
         }
         return;
     }
@@ -38,10 +38,10 @@ async function fetchIncoming() {
 }
 
 async function fetchPending() {
-    const response = await fetch("/friends/outgoing");
+    const response = await fetch("/api/v1/friends/outgoing");
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin"
+            window.location.href = "/auth/signin"
         }
         return;
     }
@@ -51,12 +51,12 @@ async function fetchPending() {
 async function removeFriend(name, fromFriendList) {
     console.log("remove: " + name);
 
-    const response = await fetch(`/friends/${name}`, {
+    const response = await fetch(`/api/v1/friends/${name}`, {
         method: "DELETE"
     });
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin"
+            window.location.href = "/auth/signin"
         }
         return;
     }

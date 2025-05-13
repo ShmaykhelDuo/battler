@@ -1,0 +1,19 @@
+services:
+  battler:
+    build: .
+    environment:
+      DB_CONN: postgres://postgres:mysecretpassword@postgres:5432/postgres?sslmode=disable
+      CACHE_URL: redis://valkey:6379/0
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+      - valkey
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+
+  valkey:
+    image: valkey/valkey:8.0.2-alpine

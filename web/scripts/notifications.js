@@ -35,7 +35,7 @@ function setText(id, t) {
     let final_text = t;
     let emoji = final_text.match(regExpNextEmojiName);
     while (emoji) {
-        final_text = final_text.replace(regExpEmoji, "<img class='notifImage' src='/web/images/locked/emojis/" + emoji + ".png'>");
+        final_text = final_text.replace(regExpEmoji, "<img class='notifImage' src='/images/locked/emojis/" + emoji + ".png'>");
         emoji = final_text.match(regExpNextEmojiName);
     }
     document.getElementById(id).innerHTML = final_text;
@@ -123,7 +123,7 @@ function customFunction(ev) {
 // }
 
 function connectNotifications() {
-    notWS = new WebSocket("/notifications/");
+    notWS = new WebSocket("/api/v1/notifications/");
 
     notWS.addEventListener("message", (event) => {
         const msg = JSON.parse(event.data);
@@ -145,15 +145,15 @@ function handleNotification(n) {
     switch (n.type) {
         case 1: // currency conversion finished
             const text1 = `Your conversion for ${n.payload.amount} :${conversionToEmoji[n.payload.currency_id]}: is over!`;
-            addPopup(text1, "/web/money/conversion", n.id);
+            addPopup(text1, "/money/conversion", n.id);
             break;
         case 2: // new friend request
             const text2 = `<b>${n.payload.username}</b> has sent you a friend request.`;
-            addPopup(text2, "/web/friends", n.id);
+            addPopup(text2, "/friends", n.id);
             break;
         case 3: // accepted friend request
             const text3 = `<b>${n.payload.username}</b> has accepted your friend request.`
-            addPopup(text3, "/web/friends", n.id);
+            addPopup(text3, "/friends", n.id);
             break;
     }
 }

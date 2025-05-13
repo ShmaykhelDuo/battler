@@ -86,9 +86,9 @@ function refreshCurGirl(number) {
     let name = girl.name;
     if (!imageBox.contains(name)) {
         if (existsPortrait(girl.number)) {
-            imageBox.add(new InterfaceImage(rightP, 519.5, 5, "/web/images/locked/" + name + "_portrait.png", "girl", name, 201, 268, girl.colour));
+            imageBox.add(new InterfaceImage(rightP, 519.5, 5, "/images/locked/" + name + "_portrait.png", "girl", name, 201, 268, girl.colour));
         } else {
-            imageBox.add(new InterfaceImage(rightP, 519.5, 5, "/web/images/locked/Placeholder_portrait.png", "girl", name, 201, 268, girl.colour));
+            imageBox.add(new InterfaceImage(rightP, 519.5, 5, "/images/locked/Placeholder_portrait.png", "girl", name, 201, 268, girl.colour));
         }
     }
     //setloadingscreencolours;
@@ -329,10 +329,10 @@ function parse(response) {
 }
 
 async function getgirllist() {
-    const response = await fetch("/game/characters");
+    const response = await fetch("/api/v1/game/characters");
     if (!response.ok) {
         if (response.status == 401) {
-            window.location.href = "/web/auth/signin"
+            window.location.href = "/auth/signin"
         }
         return;
     }
@@ -463,7 +463,7 @@ function battle() {
         } else {
             new_uri = "ws:";
         }
-        new_uri += "//" + loc.host + "/game/match";
+        new_uri += "//" + loc.host + "/api/v1/game/match";
         ws = new WebSocket(new_uri);
 
         ws.onopen = function (evt) {
@@ -489,7 +489,7 @@ function battle() {
             if (battleresponse.hasOwnProperty("type") && battleresponse.type === 4) {
                 console.log("RELOCATE~!!");
                 setCookie("GirlList", mainNum + " " + secNum, 3);
-                location = "/web/game/match";
+                location = "/game/match";
             } else {
                 console.log("Server dced me :<");
                 ws.close();
