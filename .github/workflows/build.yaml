@@ -15,6 +15,12 @@ jobs:
           wget -q --no-check-certificate https://storage.googleapis.com/tensorflow/libtensorflow/${FILENAME}
           sudo tar -C /usr/local -xzf ${FILENAME}
           sudo ldconfig /usr/local/lib
+      - name: Download assets
+        run: |
+          wget -q "$IMAGES_URL" -O images.zip
+          unzip images.zip -d images/
+          wget -q "$MODELS_URL" -O models.zip
+          unzip models.zip -d ml/
       - name: Build
         run: go build -v ./cmd/... ./internal/...
       - name: Test
