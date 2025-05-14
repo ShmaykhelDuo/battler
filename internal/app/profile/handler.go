@@ -8,9 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type Profile struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
+type ProfileStatistics struct {
+	ID         uuid.UUID `json:"id"`
+	Username   string    `json:"username"`
+	MatchCount int       `json:"match_count"`
+	WinCount   int       `json:"win_count"`
 }
 
 type Handler struct {
@@ -28,9 +30,11 @@ func (h *Handler) Profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := Profile{
-		ID:       profile.ID,
-		Username: profile.Username,
+	res := ProfileStatistics{
+		ID:         profile.ID,
+		Username:   profile.Username,
+		MatchCount: profile.MatchCount,
+		WinCount:   profile.WinCount,
 	}
 
 	api.WriteJSONResponse(w, http.StatusCreated, res)

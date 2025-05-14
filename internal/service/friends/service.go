@@ -3,10 +3,12 @@ package friends
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/ShmaykhelDuo/battler/internal/model/api"
+	"github.com/ShmaykhelDuo/battler/internal/model/errs"
 	"github.com/ShmaykhelDuo/battler/internal/model/notification"
 	"github.com/ShmaykhelDuo/battler/internal/model/social"
 	"github.com/ShmaykhelDuo/battler/internal/pkg/auth"
@@ -86,19 +88,32 @@ func (s *Service) CreateFriendLink(ctx context.Context, id uuid.UUID) (social.Pr
 
 	var friendProfile social.Profile
 	err = s.tm.Transact(ctx, db.TxIsolationRepeatableRead, func(ctx context.Context) error {
-		err := s.fr.CreateFriendLink(ctx, session.UserID, id)
-		if err != nil {
-			return fmt.Errorf("create friend link: %w", err)
-		}
-
+		var err error
 		friendProfile, err = s.pr.Profile(ctx, id)
 		if err != nil {
+			if errors.Is(err, errs.ErrNotFound) {
+				return api.Error{
+					Kind:    api.KindNotFound,
+					Message: "user with such id not found",
+				}
+			}
 			return fmt.Errorf("get profile: %w", err)
 		}
 
 		profile, err := s.pr.Profile(ctx, session.UserID)
 		if err != nil {
 			return fmt.Errorf("get profile: %w", err)
+		}
+
+		err = s.fr.CreateFriendLink(ctx, session.UserID, id)
+		if err != nil {
+			if errors.Is(err, errs.ErrAlreadyExists) {
+				return api.Error{
+					Kind:    api.KindAlreadyExists,
+					Message: "friend link with this user already exists",
+				}
+			}
+			return fmt.Errorf("create friend link: %w", err)
 		}
 
 		hasIncoming, err := s.fr.FriendLinkExists(ctx, id, session.UserID)

@@ -61,27 +61,27 @@ func players() map[string]match.Player {
 	modelRoot := "../../ml/models"
 
 	modelNames := map[string]modelDesc{
-		"ruby-vs-milana-val20": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"ruby-vs-milana-noval": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"ruby-vs-milana-dqn": modelDesc{
+		// "ruby-vs-milana-val20": modelDesc{
+		// 	prefix: "serve_",
+		// 	format: formats.FullStateCringeFormat{},
+		// },
+		// "ruby-vs-milana-noval": modelDesc{
+		// 	prefix: "serve_",
+		// 	format: formats.FullStateCringeFormat{},
+		// },
+		"policy_10_51": modelDesc{
 			prefix: "action_0_observation_",
 			format: formats.FullStateFormat{},
 		},
-		"milana-vs-ruby-val20": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"milana-vs-ruby-noval": modelDesc{
-			prefix: "serve_",
-			format: formats.FullStateCringeFormat{},
-		},
-		"milana-vs-ruby-dqn": modelDesc{
+		// "milana-vs-ruby-val20": modelDesc{
+		// 	prefix: "serve_",
+		// 	format: formats.FullStateCringeFormat{},
+		// },
+		// "milana-vs-ruby-noval": modelDesc{
+		// 	prefix: "serve_",
+		// 	format: formats.FullStateCringeFormat{},
+		// },
+		"policy_51_10": modelDesc{
 			prefix: "action_0_observation_",
 			format: formats.FullStateFormat{},
 		},
@@ -98,19 +98,19 @@ func players() map[string]match.Player {
 	}
 
 	players := map[string]match.Player{
-		"random":      &bot.RandomBot{},
-		"minimax2":    minimax.NewBot(minimax.SequentialRunner, 2),
-		"minimax4":    minimax.NewBot(minimax.SequentialRunner, 4),
-		"minimax6":    minimax.NewBot(minimax.SequentialRunner, 6),
-		"minimax8":    minimax.NewBot(minimax.SequentialRunner, 8),
-		"alphabeta2":  alphabeta2.NewBot(2),
-		"alphabeta4":  alphabeta2.NewBot(4),
-		"alphabeta6":  alphabeta2.NewBot(6),
-		"alphabeta8":  alphabeta2.NewBot(8),
-		"alphabeta10": alphabeta2.NewBot(10),
-		"mlval20":     mlbot.NewBot(models["ruby-vs-milana-val20"]),
-		"mlnoval":     mlbot.NewBot(models["ruby-vs-milana-noval"]),
-		"mldqn":       mlbot.NewBot(models["ruby-vs-milana-dqn"]),
+		"random":   &bot.RandomBot{},
+		"minimax2": minimax.NewBot(minimax.SequentialRunner, 2),
+		"minimax4": minimax.NewBot(minimax.SequentialRunner, 4),
+		// "minimax6":    minimax.NewBot(minimax.SequentialRunner, 6),
+		// "minimax8":    minimax.NewBot(minimax.SequentialRunner, 8),
+		"alphabeta2": alphabeta2.NewBot(2),
+		"alphabeta4": alphabeta2.NewBot(4),
+		// "alphabeta6":  alphabeta2.NewBot(6),
+		// "alphabeta8":  alphabeta2.NewBot(8),
+		// "alphabeta10": alphabeta2.NewBot(10),
+		// "mlval20":     mlbot.NewBot(models["ruby-vs-milana-val20"]),
+		// "mlnoval":     mlbot.NewBot(models["ruby-vs-milana-noval"]),
+		"mldqn": mlbot.NewBot(models["policy_10_51"]),
 	}
 
 	return players

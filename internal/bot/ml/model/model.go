@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"math"
 
@@ -75,7 +74,7 @@ func (m *Model) Predict(state match.GameState) (int, error) {
 
 	case []int64:
 		slog.Debug("got model result", "val", val)
-		log.Printf("result %v\n", val)
+		// log.Printf("result %v\n", val)
 
 		return int(val[0]), nil
 

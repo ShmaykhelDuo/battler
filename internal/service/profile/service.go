@@ -11,7 +11,7 @@ import (
 )
 
 type ProfileRepository interface {
-	Profile(ctx context.Context, id uuid.UUID) (social.Profile, error)
+	ProfileStatistics(ctx context.Context, id uuid.UUID) (social.ProfileStatistics, error)
 }
 
 type Service struct {
@@ -24,15 +24,15 @@ func NewService(pr ProfileRepository) *Service {
 	}
 }
 
-func (s *Service) Profile(ctx context.Context) (social.Profile, error) {
+func (s *Service) Profile(ctx context.Context) (social.ProfileStatistics, error) {
 	session, err := auth.Session(ctx)
 	if err != nil {
-		return social.Profile{}, api.Error{Kind: api.KindUnauthenticated}
+		return social.ProfileStatistics{}, api.Error{Kind: api.KindUnauthenticated}
 	}
 
-	profile, err := s.pr.Profile(ctx, session.UserID)
+	profile, err := s.pr.ProfileStatistics(ctx, session.UserID)
 	if err != nil {
-		return social.Profile{}, fmt.Errorf("get profile: %w", err)
+		return social.ProfileStatistics{}, fmt.Errorf("get profile: %w", err)
 	}
 
 	return profile, nil
