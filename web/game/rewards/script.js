@@ -42,7 +42,7 @@ function minusExtra(matches, to_add, level, curr_matches) {
     return [l, c]
 }
 
-function ParseMatches(info, state) {
+async function ParseMatches(info, state) {
     switch (info.result) {
         case 1:
             result = "Victory! ★";
@@ -70,20 +70,21 @@ function ParseMatches(info, state) {
     }
     if (info.opponent && info.opponent.username && info.opponent.username.length > 0) {
         oppName = info.opponent.username;
-        // if (!info.AreFriends) {
-        //     let size = 20;
-        //     let t = "Add friend";
-        //     strokeWeight(1);
-        //     textSize(size);
-        //     let w = textWidth(t);
-        //     objects.push(new StandardButton(x + initial_w - w - 10, y + 125 + size, 5, t, size, info.LastOpponentsName));
-        //     getElement(info.LastOpponentsName).clicked = function () {
-        //         this.colour = this.clickedColour;
-        //         this.clickTimer = this.clickLinger;
-        //         addFriend(this.id);
-        //         removeElement(this.id);
-        //     };
-        // }
+        const friendshipStatus = await getFriendshipStatus(info.opponent.id);
+        if (friendshipStatus === 1 || friendshipStatus === 3) {
+            let size = 20;
+            let t = (friendshipStatus === 1) ? "Add friend" : "Accept friendship request";
+            strokeWeight(1);
+            textSize(size);
+            let w = textWidth(t);
+            objects.push(new StandardButton(x + initial_w - w - 10, y + 125 + size, 5, t, size, info.opponent.id));
+            getElement(info.opponent.id).clicked = function () {
+                this.colour = this.clickedColour;
+                this.clickTimer = this.clickLinger;
+                addFriend(this.id);
+                removeElement(this.id);
+            };
+        }
     }
     globalinfo = info;
     const rarity = characters[state.character.number].rarity;
@@ -114,6 +115,19 @@ function ParseMatches(info, state) {
     // }
     dust = info.reward;
     gname = characters[state.character.number].name;
+}
+
+async function getFriendshipStatus(id) {
+    const response = await fetch(`/api/v1/friends/${id}`);
+    if (!response.ok) {
+        if (response.status == 401) {
+            window.location.href = "/auth/signin"
+        }
+        return;
+    }
+
+    const status = await response.json()
+    return status.friendshipstatus;
 }
 
 function setup() {

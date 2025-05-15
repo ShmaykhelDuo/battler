@@ -727,8 +727,12 @@ function handleNewGameState(state) {
     }
 }
 
+var isMeFirst = null;
+
 function updateSkillLog(state) {
-    const isMeFirst = (state.player_turn != state.as_opp) == state.turn.first;
+    if (isMeFirst === null || !state.turn.end) {
+        isMeFirst = (state.player_turn != state.as_opp) == state.turn.first;
+    }
 
     getElement("turnLog").clear();
 
