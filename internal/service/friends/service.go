@@ -172,3 +172,60 @@ func (s *Service) RemoveFriendLink(ctx context.Context, id uuid.UUID) error {
 
 	return s.fr.RemoveFriendLink(ctx, session.UserID, id)
 }
+
+func (s *Service) FriendshipStatus(ctx context.Context, id uuid.UUID) (social.ProfileFriendshipStatus, error) {
+	session, err := auth.Session(ctx)
+	if err != nil {
+		return social.ProfileFriendshipStatus{}, api.Error{Kind: api.KindUnauthenticated}
+	}
+
+	var (
+		friendProfile            social.Profile
+		hasIncoming, hasOutgoing bool
+	)
+	err = s.tm.Transact(ctx, db.TxIsolationRepeatableRead, func(ctx context.Context) error {
+		var err error
+		friendProfile, err = s.pr.Profile(ctx, id)
+		if err != nil {
+			if errors.Is(err, errs.ErrNotFound) {
+				return api.Error{
+					Kind:    api.KindNotFound,
+					Message: "user with such id not found",
+				}
+			}
+			return fmt.Errorf("get profile: %w", err)
+		}
+
+		hasIncoming, err = s.fr.FriendLinkExists(ctx, id, session.UserID)
+		if err != nil {
+			return fmt.Errorf("get friend link exists: %w", err)
+		}
+
+		hasOutgoing, err = s.fr.FriendLinkExists(ctx, session.UserID, id)
+		if err != nil {
+			return fmt.Errorf("get friend link exists: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return social.ProfileFriendshipStatus{}, err
+	}
+
+	res := social.ProfileFriendshipStatus{
+		ID:       friendProfile.ID,
+		Username: friendProfile.Username,
+	}
+
+	if hasIncoming && hasOutgoing {
+		res.FriendshipStatus = social.FriendshipStatusFriends
+	} else if hasIncoming {
+		res.FriendshipStatus = social.FriendshipStatusIncomingRequest
+	} else if hasOutgoing {
+		res.FriendshipStatus = social.FriendshipStatusOutgoingRequest
+	} else {
+		res.FriendshipStatus = social.FriendshipStatusNone
+	}
+
+	return res, nil
+}

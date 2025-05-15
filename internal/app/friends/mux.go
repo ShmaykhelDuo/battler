@@ -10,6 +10,7 @@ func Mux(h *Handler) http.Handler {
 	mux.HandleFunc("GET /outgoing", h.OutgoingFriendRequests)
 	mux.HandleFunc("POST /{id}", h.CreateFriendLink)
 	mux.HandleFunc("DELETE /{id}", h.RemoveFriendLink)
+	mux.HandleFunc("GET /{id}", h.FriendshipStatus)
 
 	return mux
 }
