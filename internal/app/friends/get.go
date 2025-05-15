@@ -1,7 +1,6 @@
 package friends
 
 import (
-	"context"
 	"net/http"
 
 	apimodel "github.com/ShmaykhelDuo/battler/internal/model/api"
@@ -72,7 +71,7 @@ func (h *Handler) FriendshipStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profileStatus, err := h.s.FriendshipStatus(context.Background(), id)
+	profileStatus, err := h.s.FriendshipStatus(r.Context(), id)
 	if err != nil {
 		api.HandleError(w, err)
 		return
