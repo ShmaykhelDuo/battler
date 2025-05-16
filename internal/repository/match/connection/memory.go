@@ -39,3 +39,8 @@ func (r *InMemoryRepository) Connection(ctx context.Context, userID uuid.UUID) (
 
 	return conn, nil
 }
+
+func (r *InMemoryRepository) RemoveConnection(ctx context.Context, userID uuid.UUID) error {
+	r.conns.Delete(userID)
+	return nil
+}

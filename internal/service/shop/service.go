@@ -112,11 +112,19 @@ func (s *Service) BuyChest(ctx context.Context, chestID int) (game.AvailableChar
 			return fmt.Errorf("is character avail: %w", err)
 		}
 
-		if !isAvail {
-			err = s.availCharRepo.AddCharacters(ctx, session.UserID, []int{charNum})
+		if isAvail {
+			balance += chest.PriceAmount / 2
+			err = s.balanceRepo.SetBalance(ctx, session.UserID, chest.PriceCurrency, balance)
 			if err != nil {
-				return fmt.Errorf("add characters: %w", err)
+				return fmt.Errorf("set balance: %w", err)
 			}
+
+			return nil
+		}
+
+		err = s.availCharRepo.AddCharacters(ctx, session.UserID, []int{charNum})
+		if err != nil {
+			return fmt.Errorf("add characters: %w", err)
 		}
 
 		return nil

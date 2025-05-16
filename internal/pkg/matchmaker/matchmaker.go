@@ -15,7 +15,7 @@ type CharacterRepository interface {
 }
 
 type BotFactory interface {
-	Bot(botChar, playerChar int) (match.Player, error)
+	Bot(botChar, playerChar int, playerLevel int) (match.Player, error)
 }
 
 type Matchmaker struct {
@@ -48,14 +48,14 @@ func (m *Matchmaker) Run(ctx context.Context) error {
 				res[1].Conn = player2Req.Conn
 
 				if player1Req.Main != player2Req.Main {
-					res[0].Character = player1Req.Main
-					res[1].Character = player2Req.Main
+					res[0].Character = player1Req.Main.Number
+					res[1].Character = player2Req.Main.Number
 				} else if player1Req.Secondary != player2Req.Secondary {
-					res[0].Character = player1Req.Secondary
-					res[1].Character = player2Req.Secondary
+					res[0].Character = player1Req.Secondary.Number
+					res[1].Character = player2Req.Secondary.Number
 				} else {
-					res[0].Character = player1Req.Main
-					res[1].Character = player2Req.Secondary
+					res[0].Character = player1Req.Main.Number
+					res[1].Character = player2Req.Secondary.Number
 				}
 
 			case <-time.After(5 * time.Second):
@@ -63,14 +63,17 @@ func (m *Matchmaker) Run(ctx context.Context) error {
 
 				res[1].Character = m.selectBotCharacter()
 
-				if player1Req.Main != res[1].Character {
-					res[0].Character = player1Req.Main
+				var playerLevel int
+				if player1Req.Main.Number != res[1].Character {
+					res[0].Character = player1Req.Main.Number
+					playerLevel = player1Req.Main.Level
 				} else {
-					res[0].Character = player1Req.Secondary
+					res[0].Character = player1Req.Secondary.Number
+					playerLevel = player1Req.Secondary.Level
 				}
 
 				var err error
-				res[1].Conn, err = m.bf.Bot(res[1].Character, res[0].Character)
+				res[1].Conn, err = m.bf.Bot(res[1].Character, res[0].Character, playerLevel)
 				if err != nil {
 					slog.Error("failed to create bot", "err", err)
 				}
