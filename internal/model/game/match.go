@@ -6,10 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type MatchRequestCharacter struct {
+	Number int
+	Level  int
+}
+
 type MatchRequest struct {
 	UserID          uuid.UUID
 	Conn            match.Player
-	Main, Secondary int
+	Main, Secondary MatchRequestCharacter
 }
 
 type PlayerID struct {

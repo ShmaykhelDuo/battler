@@ -350,4 +350,4 @@ function testMatch() {
     };
 }
 
-// testMatch();
+testMatch();

@@ -2,12 +2,14 @@ package match
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
 	"github.com/ShmaykhelDuo/battler/internal/model/api"
+	"github.com/ShmaykhelDuo/battler/internal/model/errs"
 	model "github.com/ShmaykhelDuo/battler/internal/model/game"
 	"github.com/ShmaykhelDuo/battler/internal/model/money"
 	"github.com/ShmaykhelDuo/battler/internal/model/social"
@@ -18,6 +20,7 @@ import (
 type ConnectionRepository interface {
 	CreateConnection(ctx context.Context, conn *model.Connection) error
 	Connection(ctx context.Context, userID uuid.UUID) (*model.Connection, error)
+	RemoveConnection(ctx context.Context, userID uuid.UUID) error
 }
 
 type AvailableCharacterRepository interface {
@@ -123,6 +126,17 @@ func (s *Service) createMatch(p1, p2 model.MatchPlayer) (*match.Match, error) {
 func (s *Service) handleMatchResult(ctx context.Context, m *match.Match, players [2]model.MatchPlayer) {
 	select {
 	case res := <-m.Result():
+		for _, p := range players {
+			if p.PlayerID.IsBot {
+				continue
+			}
+
+			err := s.connRepo.RemoveConnection(ctx, p.PlayerID.UserID)
+			if err != nil {
+				slog.Error("failed to remove connection", "err", err)
+			}
+		}
+
 		if res.Err != nil {
 			slog.Error("match resulted in error", "err", res.Err)
 			return
@@ -267,6 +281,17 @@ func (s *Service) updateMatchParticipant(ctx context.Context, userID uuid.UUID, 
 }
 
 func (s *Service) ConnectToNewMatch(ctx context.Context, userID uuid.UUID, main, secondary int) (*model.Connection, error) {
+	_, err := s.connRepo.Connection(ctx, userID)
+	if err == nil {
+		return nil, api.Error{
+			Kind:    api.KindInvalidRequest,
+			Message: "player is already a participant to an active match",
+		}
+	}
+	if !errors.Is(err, errs.ErrNotFound) {
+		return nil, fmt.Errorf("get connection: %w", err)
+	}
+
 	avail, err := s.acr.AreAllAvailable(ctx, userID, []int{main, secondary})
 	if err != nil {
 		return nil, fmt.Errorf("available characters: %w", err)
@@ -286,6 +311,16 @@ func (s *Service) ConnectToNewMatch(ctx context.Context, userID uuid.UUID, main,
 		}
 	}
 
+	mainLevel, _, err := s.acr.CharacterLevelExperience(ctx, userID, main)
+	if err != nil {
+		return nil, fmt.Errorf("get character level: %w", err)
+	}
+
+	secondaryLevel, _, err := s.acr.CharacterLevelExperience(ctx, userID, secondary)
+	if err != nil {
+		return nil, fmt.Errorf("get character level: %w", err)
+	}
+
 	conn := model.NewConnection(userID)
 	err = s.connRepo.CreateConnection(ctx, conn)
 	if err != nil {
@@ -293,10 +328,16 @@ func (s *Service) ConnectToNewMatch(ctx context.Context, userID uuid.UUID, main,
 	}
 
 	req := model.MatchRequest{
-		UserID:    userID,
-		Conn:      conn,
-		Main:      main,
-		Secondary: secondary,
+		UserID: userID,
+		Conn:   conn,
+		Main: model.MatchRequestCharacter{
+			Number: main,
+			Level:  mainLevel,
+		},
+		Secondary: model.MatchRequestCharacter{
+			Number: secondary,
+			Level:  secondaryLevel,
+		},
 	}
 
 	select {

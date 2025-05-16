@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/ShmaykhelDuo/battler/internal/game"
 	"github.com/ShmaykhelDuo/battler/internal/game/match"
@@ -103,6 +104,14 @@ func (c *Connection) RequestSkill(ctx context.Context) (int, error) {
 			return 0, ErrChanClosed
 		}
 		return skill, nil
+	case <-time.After(2 * time.Minute):
+		select {
+		case c.giveUpChan <- struct{}{}:
+		case <-ctx.Done():
+			return 0, ctx.Err()
+		}
+		<-ctx.Done()
+		return 0, ctx.Err()
 	case <-ctx.Done():
 		return 0, ctx.Err()
 	}
