@@ -708,6 +708,7 @@ function handleNewGameState(state) {
     if (!state.player_turn) {
         disableButtons(1);
         disableOppButtons(1);
+        Are_buttons_disabled = true;
     } else if (state.as_opp) {
         disableButtons(1);
         enableOppButtons({
@@ -716,6 +717,7 @@ function handleNewGameState(state) {
             "OppE": state.opponent.skill_availabilities[2] ? 0 : -1,
             "OppR": state.opponent.skill_availabilities[3] ? 0 : -1
         });
+        Are_buttons_disabled = false;
     } else {
         enableButtons({
             "Q": state.character.skill_availabilities[0] ? 0 : -1,
@@ -724,6 +726,7 @@ function handleNewGameState(state) {
             "R": state.character.skill_availabilities[3] ? 0 : -1
         });
         disableOppButtons(1);
+        Are_buttons_disabled = false;
     }
 }
 
@@ -862,7 +865,7 @@ function setEffects(effects, id) {
 
 function disableButtons(reason) {
     console.log("Disabled buttons");
-    Are_buttons_disabled = true;
+    // Are_buttons_disabled = true;
     getElement("Q").setState(-100);
     getElement("W").setState(-100);
     getElement("E").setState(-100);
@@ -878,7 +881,7 @@ function disableOppButtons(reason) {
 }
 
 function enableButtons(State) {
-    Are_buttons_disabled = false;
+    // Are_buttons_disabled = false;
     console.log("Enabled buttons");
     for (let property in State) {
         if (State.hasOwnProperty(property)) {
@@ -888,6 +891,7 @@ function enableButtons(State) {
 }
 
 function enableOppButtons(State) {
+    // Are_buttons_disabled = false;
     console.log("Enabled opp buttons");
     for (let property in State) {
         if (State.hasOwnProperty(property)) {
@@ -941,23 +945,30 @@ function connectToServer() {
 
 function sendSkill(Skill) {
     if (connected) {
+        console.log("Buttons are disabled?", Are_buttons_disabled);
         if (Are_buttons_disabled && Skill !== "GiveUp") {
             return
         }
         //disableButtons(0);
         Are_buttons_disabled = true;
 
+        console.log("Skill", Skill);
+        
         switch (Skill) {
             case "Q":
+            case "OppQ":
                 ws.send(JSON.stringify({ type: 5, payload: { move: 0 } }));
                 break;
             case "W":
+            case "OppW":
                 ws.send(JSON.stringify({ type: 5, payload: { move: 1 } }));
                 break;
             case "E":
+            case "OppE":
                 ws.send(JSON.stringify({ type: 5, payload: { move: 2 } }));
                 break;
             case "R":
+            case "OppR":
                 ws.send(JSON.stringify({ type: 5, payload: { move: 3 } }));
                 break;
             case "GiveUp":

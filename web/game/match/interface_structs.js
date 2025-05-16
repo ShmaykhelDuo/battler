@@ -981,7 +981,7 @@ function SkillButton(x, y, type, t, id, mine) {
     };
 
     this.clicked = function () {
-        //console.log("CLICKED " + this.id);
+        console.log("CLICKED " + this.id);
         this.colour = this.clickedColour;
         this.clickTimer = this.clickLinger;
         sendSkill(this.id);
@@ -1105,7 +1105,8 @@ function SkillButton(x, y, type, t, id, mine) {
                 }
                 this.textColour.setAlpha(0.87 * 255);
                 this.borderColour = dark;
-                this.clickable = this.isMine;
+                // this.clickable = this.isMine;
+                this.clickable = true;
                 this.borderWidth = 4.5;
                 break;
             case -1:
