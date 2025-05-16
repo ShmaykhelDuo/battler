@@ -80,6 +80,9 @@ async function UpdateProfileData(r) {
     const res = await response.json();
     document.getElementById("username2").innerText = res.username;
 
+    const winRate = res.match_count === 0 ? 0 : roundUp(res.win_count / res.match_count * 100);
+    document.getElementById("battles2").innerText = `Battle stats: ${res.win_count}/${res.match_count} (${winRate}% winrate)`;
+
     // let xhr = new XMLHttpRequest();
     // xhr.open('GET', '/profileinfo', true);
     // xhr.send();

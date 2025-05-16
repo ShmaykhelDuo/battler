@@ -240,8 +240,8 @@ func (m *Match) runTurn(ctx context.Context, turnState game.TurnState) (end bool
 
 func (m *Match) sendState(ctx context.Context, c, opp CharacterPlayer, turnState game.TurnState, skillsLeft int, playerTurn bool, asOpp bool) error {
 	state := GameState{
-		Character:  c.Character,
-		Opponent:   opp.Character,
+		Character:  c.Character.Clone(),
+		Opponent:   opp.Character.Clone(),
 		TurnState:  turnState,
 		SkillsLeft: skillsLeft,
 		SkillLog:   maps.Clone(m.skillLog),

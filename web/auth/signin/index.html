@@ -44,12 +44,12 @@
             if (!response.ok) {
                 error = await response.json();
 
-                if (response.status === 400) {
+                if (error.error && error.error.id === 5) {
                     document.getElementById("warnings").style = "color: #FF4133;";
-                    document.getElementById("warnings").innerText = error.error.message;
+                    document.getElementById("warnings").innerText = "Incorrect username or password";
                 } else {
-                    document.getElementById("warnings").style = "color: #323232;";
-                    document.getElementById("warnings").innerText = error.error.message;
+                    document.getElementById("warnings").style = "color: #FF4133;";
+                    document.getElementById("warnings").innerText = "Unknown error";
                 }
                 return;
             }
@@ -83,7 +83,7 @@
 <body>
     <div align="center">
         <form>
-            <h2><b>Welcome home</b></h2>
+            <h2><b>Welcome to Battler!</b></h2>
             <br><br>
             <input type="text" id="username" placeholder="Username or ID" autofocus
                 onkeypress="if (event.keyCode === 13) { document.getElementById('password').focus()}" />
