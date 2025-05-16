@@ -8,7 +8,7 @@ body {
     left: 50%;
     width: 1280px;
     height: auto;
-    min-height: 720px;
+    /* min-height: 720px; */
     transform-origin: 50% 0;
     overflow: hidden;
     margin: 0;
@@ -182,6 +182,29 @@ input:-webkit-autofill:focus {
 .popup.remove {
     -webkit-animation: fadeOut 0.6s forwards;
     animation: fadeOut 0.6s forwards;
+}
+
+#fullscreen {
+    z-index: 2;
+    position: absolute;
+    bottom: 2em;
+    right: 2em;
+}
+
+#fullscreen button {
+    font-size: x-large;
+}
+
+:fullscreen #fullscreen {
+    display: none;
+}
+
+:-webkit-full-screen #fullscreen {
+    display: none;
+}
+
+:-ms-fullscreen #fullscreen {
+    display: none;
 }
 
 #tutorial {

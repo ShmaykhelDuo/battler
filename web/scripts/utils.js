@@ -295,6 +295,18 @@ async function logout() {
     window.location.href = "/auth/signin/";
 }
 
+var elem = document.documentElement;
+
+function openFullscreen() {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
+
 var scaleFactor = 1.0;
 
 window.addEventListener("load", () => {
@@ -340,7 +352,7 @@ function testMatch() {
         ws.send(JSON.stringify({ type: 2, payload: {} }));
         connected = true;
     };
-    
+
     ws.onmessage = function (evt) {
         let battleresponse = JSON.parse(evt.data);
         if (battleresponse.type !== 3) {

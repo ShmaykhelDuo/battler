@@ -177,6 +177,7 @@ function clicked() {
     if (document.activeElement.id.includes("tutorial")) {
         return
     }
+    openFullscreen();
 
     let x = fixCoordScale(mouseX);
     let y = fixCoordScale(mouseY);
@@ -642,8 +643,8 @@ function handleNewGameState(state) {
     //setOppHP(i.OppHP, i.OppMaxHP);
     let plHP = getElement("playerHP");
     let oppHP = getElement("oppHP");
-    plHP.defenses = state.character.defenses;
-    oppHP.defenses = state.opponent.defenses;
+    plHP.defenses = state.character.defences;
+    oppHP.defenses = state.opponent.defences;
 
     //Animate HP
 
